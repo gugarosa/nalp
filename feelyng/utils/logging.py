@@ -15,9 +15,10 @@ def get_console_handler():
 
     """
 
+    # Creates a stream handler for logger
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setFormatter(FORMATTER)
-    
+
     return console_handler
 
 
@@ -29,6 +30,7 @@ def get_file_handler():
         
     """
 
+    # Creates a timed rotating file handler for logger
     file_handler = TimedRotatingFileHandler(LOG_FILE, when='midnight')
     file_handler.setFormatter(FORMATTER)
 
@@ -46,11 +48,17 @@ def get_logger(logger_name):
         
     """
 
+    # Creates a logger object
     logger = logging.getLogger(logger_name)
 
+    # Sets an log level
+    logger.setLevel(logging.DEBUG)
+
+    # Adds the desired handlers
     logger.addHandler(get_console_handler())
     logger.addHandler(get_file_handler())
 
+    # True or False for propagating logs
     logger.propagate = False
 
     return logger
