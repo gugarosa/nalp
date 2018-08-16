@@ -13,14 +13,15 @@ def load_csv(csv_path):
         csv_path (str): a string holding the .csv's path
 
     Returns:
-        A Panda's dataframe.
+        A Panda's dataframe object.
     """
+
     try:
         # Tries to read .csv file into a dataframe
-        data = pd.read_csv(csv_path)
+        csv = pd.read_csv(csv_path)
     except FileNotFoundError as e:
         # If file is not found, handle the exception and exit
         logger.error('Failed to open file ' + csv_path)
         raise Exception(e)
 
-    return data
+    return csv
