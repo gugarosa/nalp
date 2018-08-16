@@ -11,8 +11,8 @@ def split_data(X, Y, split_size=0.5, random_state=42):
     """Splits X, Y (samples, labels) data into training and testing sets.
 
     Args:
-        X (): Tokenized data.
-        Y (numpy.array | pandas.DataFrame): Numpy array (categorical labels) or panda's dataframe column.
+        X (obj): Input samples object.
+        Y (obj): Input labels object.
         split_size (float): The proportion of test sets.
         random_state (int): Random integer to provide a random state to splitter.
 
