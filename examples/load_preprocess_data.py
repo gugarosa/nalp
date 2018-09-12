@@ -1,7 +1,8 @@
 import feelyng.stream.data as d
-import feelyng.stream.encoder as e
 import feelyng.stream.loader as l
 import feelyng.stream.preprocess as p
+
+import feelyng.encoder.tfidf as e
 
 import pandas as pd
 

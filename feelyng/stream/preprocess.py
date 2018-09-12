@@ -51,5 +51,5 @@ def pipeline(*func):
             x = f(x)
         return x
 
-    logger.info('Pipeline created with ' + str(func))
+    logger.info('Pipeline created with ' + str(func) + '.')
     return process
