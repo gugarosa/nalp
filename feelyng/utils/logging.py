@@ -27,7 +27,7 @@ def get_file_handler():
 
     Returns:
         A handler to output information into files.
-        
+
     """
 
     # Creates a timed rotating file handler for logger
@@ -45,7 +45,7 @@ def get_logger(logger_name):
 
     Returns:
         A handler to output information into console's.
-        
+
     """
 
     # Creates a logger object

@@ -1,8 +1,6 @@
-import pandas as pd
-
 import feelyng.utils.logging as l
+import pandas as pd
 from sklearn.model_selection import train_test_split
-
 
 logger = l.get_logger(__name__)
 

@@ -18,7 +18,8 @@ def learn_tfidf(sentences, max_features=100):
     """
 
     # Creates a TFIDF vectorizer
-    tfidf = TfidfVectorizer(max_features=max_features)
+    tfidf = TfidfVectorizer(max_features=max_features,
+                            preprocessor=lambda p: p, tokenizer=lambda t: t)
 
     # Fits sentences on it
     logger.info('Fitting TFIDF ...')
@@ -40,7 +41,8 @@ def encode_tfidf(tfidf, sentences):
 
     """
 
-    logger.debug('TFIDF encoding size: (' + str(sentences.size) + ', ' + str(tfidf.idf_.shape[0]) + ')')
+    logger.debug('TFIDF encoding size: (' + str(sentences.size) +
+                 ', ' + str(tfidf.idf_.shape[0]) + ')')
 
     # Transform sentences into TFIDF encoding (only if it has been previously fitted)
     logger.info('Encoding data ...')
@@ -50,4 +52,4 @@ def encode_tfidf(tfidf, sentences):
     encoded_X = X.toarray()
     logger.info('Encoding finished.')
 
-    return encoded_X    
+    return encoded_X

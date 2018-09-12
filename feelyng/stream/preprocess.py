@@ -1,6 +1,7 @@
 import re
 
 import feelyng.utils.logging as l
+import nltk
 
 logger = l.get_logger(__name__)
 
@@ -31,6 +32,20 @@ def valid_char(s):
     """
 
     return re.sub('[^a-zA-z0-9\s]', '', s)
+
+
+def sentence_to_word(s):
+    """Tokenizes a sentence to words array.
+
+    Args:
+        s (str): input string
+
+    Returns:
+        Array of tokenized words.
+
+    """
+
+    return nltk.word_tokenize(s)
 
 
 def pipeline(*func):

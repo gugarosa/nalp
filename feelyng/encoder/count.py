@@ -18,7 +18,8 @@ def learn_count(sentences, max_features=100):
     """
 
     # Creates a Count vectorizer
-    count = CountVectorizer(max_features=max_features)
+    count = CountVectorizer(max_features=max_features,
+                            preprocessor=lambda p: p, tokenizer=lambda t: t)
 
     # Fits sentences on it
     logger.info('Fitting CountVectorizer ...')
@@ -40,7 +41,8 @@ def encode_count(count, sentences):
 
     """
 
-    logger.debug('CountVectorizer encoding size: (' + str(sentences.size) + ', ' + str(count.max_features) + ')')
+    logger.debug('CountVectorizer encoding size: (' +
+                 str(sentences.size) + ', ' + str(count.max_features) + ')')
 
     # Transform sentences into CountVectorizer encoding (only if it has been previously fitted)
     logger.info('Encoding data ...')
@@ -50,4 +52,4 @@ def encode_count(count, sentences):
     encoded_X = X.toarray()
     logger.info('Encoding finished.')
 
-    return encoded_X    
+    return encoded_X
