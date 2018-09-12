@@ -13,7 +13,7 @@ def learn_tfidf(sentences, max_features=100):
         max_features (int): Maximum number of features to be fitted.
 
     Returns:
-        A TFIDF Vectorizer object.
+        A TfidfVectorizer object.
 
     """
 
@@ -32,7 +32,7 @@ def encode_tfidf(tfidf, sentences):
     """
 
     Args:
-        tfidf (TfidfVectorizer): A TFIDF Vectorizer object.
+        tfidf (TfidfVectorizer): A TfidfVectorizer object.
         sentences (df): A Panda's dataframe column holding sentences to be encoded.
 
     Returns:
@@ -45,12 +45,9 @@ def encode_tfidf(tfidf, sentences):
     # Transform sentences into TFIDF encoding (only if it has been previously fitted)
     logger.info('Encoding data ...')
     X = tfidf.transform(sentences)
-    
-    # Creates a numpy array to hold encoded TFIDF
-    encoded_X = np.zeros((sentences.size, tfidf.idf_.shape[0]))
 
     # Apply encoded TFIDF to numpy array
-    X.toarray(out=encoded_X)
+    encoded_X = X.toarray()
     logger.info('Encoding finished.')
 
     return encoded_X    

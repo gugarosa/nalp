@@ -9,18 +9,21 @@ def learn_count(sentences, max_features=100):
     """
 
     Args:
+        sentences (df): A Panda's dataframe column holding sentences to be fitted.
+        max_features (int): Maximum number of features to be fitted.
 
     Returns:
+        A CountVectorizer object.
 
     """
 
     # Creates a Count vectorizer
     count = CountVectorizer(max_features=max_features)
-    logger.debug('Count created')
 
     # Fits sentences on it
+    logger.info('Fitting CountVectorizer ...')
     count.fit(sentences)
-    logger.debug('Count fitted')
+    logger.info('CountVectorizer fitted.')
 
     return count
 
@@ -29,22 +32,22 @@ def encode_count(count, sentences):
     """
 
     Args:
+        count (CountVectorizer): A CountVectorizer object.
+        sentences (df): A Panda's dataframe column holding sentences to be encoded.
 
     Returns:
+        An encoded CountVectorizer numpy array.
 
     """
 
-    logger.debug('Count encoding size: (' + str(sentences.size) + ', ' + str(count.max_features) + ')')
-    # Creates an encoded variable to hold encoded text
-    encoded_X = np.zeros((sentences.size, count.max_features))
+    logger.debug('CountVectorizer encoding size: (' + str(sentences.size) + ', ' + str(count.max_features) + ')')
 
-    # Iterate through all sentences 
-    for i in range(1, sentences.size):
-        # Encode each sentence into an array
-        encoded_X[i] = (count.transform([sentences[i]])).toarray()
-    
+    # Transform sentences into CountVectorizer encoding (only if it has been previously fitted)
+    logger.info('Encoding data ...')
+    X = count.transform(sentences)
 
-
-    logger.debug('Count encoding finished')
+    # Apply encoded TFIDF to a numpy array
+    encoded_X = X.toarray()
+    logger.info('Encoding finished.')
 
     return encoded_X    
