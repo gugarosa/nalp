@@ -49,7 +49,7 @@ class Encoder:
 
         elif self.type == 'word2vec':
             # Word2Vec
-            print(self.type)
+            self.encoder = word2vec.learn_word2vec(data_to_learn)
 
     def encode(self, data_to_encode):
         """
@@ -76,4 +76,5 @@ class Encoder:
 
         elif self.type == 'word2vec':
             # Word2Vec
-            print(self.type)
+            self.encoded_data = word2vec.encode_word2vec(
+                self.encoder, data_to_encode)

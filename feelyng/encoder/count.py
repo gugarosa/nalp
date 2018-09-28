@@ -6,7 +6,7 @@ logger = l.get_logger(__name__)
 
 
 def learn_count(sentences, max_features=100):
-    """
+    """Learns a CountVectorizer representation based on the words' counting.
 
     Args:
         sentences (df): A Panda's dataframe column holding sentences to be fitted.
@@ -30,7 +30,7 @@ def learn_count(sentences, max_features=100):
 
 
 def encode_count(count, sentences):
-    """
+    """Actually encodes the data into a CountVectorizer representation.
 
     Args:
         count (CountVectorizer): A CountVectorizer object.
@@ -42,7 +42,7 @@ def encode_count(count, sentences):
     """
 
     logger.info('CountVectorizer encoding size: (' +
-                 str(sentences.size) + ', ' + str(count.max_features) + ')')
+                str(sentences.size) + ', ' + str(count.max_features) + ')')
 
     # Transform sentences into CountVectorizer encoding (only if it has been previously fitted)
     logger.info('Encoding data ...')

@@ -20,7 +20,7 @@ Y = csv['sentiment']
 X = X.apply(lambda x: pipe(x))
 
 # Creating an Encoder class
-e = Encoder(type='tfidf')
+e = Encoder(type='word2vec')
 
 # Calling its internal method to learn an encoding representation
 e.learn(X)

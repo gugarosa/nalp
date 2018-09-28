@@ -6,7 +6,7 @@ logger = l.get_logger(__name__)
 
 
 def learn_tfidf(sentences, max_features=100):
-    """
+    """Learns a TFIDF representation based on the words' frequency.
 
     Args:
         sentences (df): A Panda's dataframe column holding sentences to be fitted.
@@ -30,7 +30,7 @@ def learn_tfidf(sentences, max_features=100):
 
 
 def encode_tfidf(tfidf, sentences):
-    """
+    """Actually encodes the data into a TFIDF representation.
 
     Args:
         tfidf (TfidfVectorizer): A TfidfVectorizer object.
