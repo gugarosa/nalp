@@ -7,13 +7,26 @@ logger = l.get_logger(__name__)
 
 
 class Encoder:
-    """
+    """An Encoder class is responsible for receiving raw data and
+    enconding it on a representation (i.e., count vectorizer, tfidf, word2vec).
+
+    Properties:
+        type (str): The type of the encoder.
+        encoder (obj): An encoder generic object depending on its type (inherit objects from 
+        learning algorithms).
+        encoded_data (np.array): A numpy array holding the encoded data representation.
+
+    Methods:
+        learn(data_to_learn): Learns an encoding representation for its parameter.
+        encode(data_to_encode): Enconde its parameter based on previous learning.
+
     """
 
     def __init__(self, type='count'):
-        """
+        """Initialization method.
 
         Args:
+            type (str): The type of the encoder.
 
         """
 
@@ -33,7 +46,12 @@ class Encoder:
         logger.info('Encoder type: ' + self.type)
 
     def learn(self, data_to_learn):
-        """
+        """The method for learning an encoding representation. Currently, a bunch
+        of 'ifs' statements.
+
+        Args:
+            data_to_learn (df): A Panda's dataframe column holding sentences to be fitted.
+    
         """
 
         logger.debug('Running method: learn()')
@@ -52,7 +70,12 @@ class Encoder:
             self.encoder = word2vec.learn_word2vec(data_to_learn)
 
     def encode(self, data_to_encode):
-        """
+        """The method for encoding new data based on previous learning. Note that,
+        to invoke this class you need to call learn() first and certify thay your
+        'self.enconder' object exists.
+
+        Args:
+            data_to_encode(): A Panda's dataframe column holding sentences to be encoded.
         """
 
         # Check if there is an encoder that actually exists
