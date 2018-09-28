@@ -26,6 +26,7 @@ e = Encoder(type='word2vec')
 e.learn(X)
 
 # Calling its internal method to actually encoded the desired data
+# Does not necessarily needs to be the same X from e.learn()
 e.encode(X)
 
 # Acessing encoded data

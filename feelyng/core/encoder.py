@@ -1,6 +1,6 @@
-import feelyng.encoder.count as count
-import feelyng.encoder.tfidf as tfidf
-import feelyng.encoder.word2vec as word2vec
+import feelyng.encoders.count as count
+import feelyng.encoders.tfidf as tfidf
+import feelyng.encoders.word2vec as word2vec
 import feelyng.utils.logging as l
 
 logger = l.get_logger(__name__)
