@@ -50,8 +50,8 @@ class Encoder:
         of 'ifs' statements.
 
         Args:
-            data_to_learn (df): A Panda's dataframe column holding sentences to be fitted.
-    
+            data_to_learn (df): A Panda's dataframe column holding sentences to be learned.
+
         """
 
         logger.debug('Running method: learn()')
@@ -75,7 +75,8 @@ class Encoder:
         'self.enconder' object exists.
 
         Args:
-            data_to_encode(): A Panda's dataframe column holding sentences to be encoded.
+            data_to_encode (df): A Panda's dataframe column holding sentences to be encoded.
+
         """
 
         # Check if there is an encoder that actually exists
