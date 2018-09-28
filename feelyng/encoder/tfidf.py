@@ -22,9 +22,9 @@ def learn_tfidf(sentences, max_features=100):
                             preprocessor=lambda p: p, tokenizer=lambda t: t)
 
     # Fits sentences on it
-    logger.info('Fitting TFIDF ...')
+    logger.info('Learning TFIDF ...')
     tfidf.fit(sentences)
-    logger.info('TFIDF fitted.')
+    logger.info('TFIDF learned.')
 
     return tfidf
 
@@ -41,7 +41,7 @@ def encode_tfidf(tfidf, sentences):
 
     """
 
-    logger.debug('TFIDF encoding size: (' + str(sentences.size) +
+    logger.info('TFIDF encoding size: (' + str(sentences.size) +
                  ', ' + str(tfidf.idf_.shape[0]) + ')')
 
     # Transform sentences into TFIDF encoding (only if it has been previously fitted)
