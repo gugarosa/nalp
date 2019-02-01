@@ -1,4 +1,4 @@
-import feelyng.utils.logging as l
+import nalp.utils.logging as l
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
 

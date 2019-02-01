@@ -1,12 +1,12 @@
 from setuptools import setup, find_packages
 
 
-setup(name='feelyng',
+setup(name='nalp',
       version='1.0.0',
-      description='Sentiments Analysis for Python',
+      description='Natural Adversarial Language Processing',
       author='Gustavo Rosa',
       author_email='gth.rosa@uol.com.br',
-      url='https://github.com/gugarosa/feelyng',
+      url='https://github.com/gugarosa/nalp',
       license='MIT',
       python_requires='>=3.5',
       install_requires=['gensim>=3.5.0',

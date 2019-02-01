@@ -1,6 +1,6 @@
 import sys
 
-import feelyng.utils.logging as l
+import nalp.utils.logging as l
 import pandas as pd
 
 logger = l.get_logger(__name__)

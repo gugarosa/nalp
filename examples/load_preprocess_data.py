@@ -1,5 +1,5 @@
-import feelyng.stream.loader as l
-import feelyng.stream.preprocess as p
+import nalp.stream.loader as l
+import nalp.stream.preprocess as p
 
 # Loads an input .csv
 csv = l.load_csv('data/twitter_en.csv')

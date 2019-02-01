@@ -1,6 +1,6 @@
 import re
 
-import feelyng.utils.logging as l
+import nalp.utils.logging as l
 import nltk
 
 logger = l.get_logger(__name__)

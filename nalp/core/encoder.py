@@ -1,7 +1,7 @@
-import feelyng.encoders.count as count
-import feelyng.encoders.tfidf as tfidf
-import feelyng.encoders.word2vec as word2vec
-import feelyng.utils.logging as l
+import nalp.encoders.count as count
+import nalp.encoders.tfidf as tfidf
+import nalp.encoders.word2vec as word2vec
+import nalp.utils.logging as l
 
 logger = l.get_logger(__name__)
 
