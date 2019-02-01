@@ -13,12 +13,24 @@ Read the docs at [nalp.recogna.tech](nalp.recogna.tech).
 
 NALP is compatible with: **Python 2.7-3.6**.
 
+---
+
 ## Package guidelines
+
+---
 
 ## Getting started: 60 seconds with NALP
 
+---
+
 ## Installation
+
+---
 
 ## Environment configuration
 
+---
+
 ## Support
+
+---
