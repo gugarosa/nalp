@@ -9,7 +9,7 @@ Use NALP if you need a library or wish to:
 * Mix-and-match different strategies to solve your problem.
 * Because it is cool to play with text.
 
-Read the docs at [nalp.recogna.tech](nalp.recogna.tech).
+Read the docs at [nalp.recogna.tech](http://nalp.recogna.tech).
 
 NALP is compatible with: **Python 2.7-3.6**.
 
