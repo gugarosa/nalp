@@ -1,55 +1,64 @@
 import nalp.utils.logging as l
 import numpy as np
+from nalp.core.encoder import Encoder
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 logger = l.get_logger(__name__)
 
 
-def learn_tfidf(sentences, max_features=100):
-    """Learns a TFIDF representation based on the words' frequency.
+class TFIDF(Encoder):
 
-    Args:
-        sentences (df): A Panda's dataframe column holding sentences to be fitted.
-        max_features (int): Maximum number of features to be fitted.
+    def __init__(self):
+        """Initizaliation method.
 
-    Returns:
-        A TfidfVectorizer object.
+        """
 
-    """
+        logger.info('Overriding class: Encoder -> TFIDF.')
 
-    # Creates a TFIDF vectorizer
-    tfidf = TfidfVectorizer(max_features=max_features,
-                            preprocessor=lambda p: p, tokenizer=lambda t: t)
+        # Overrides its parent class with any custom arguments if needed
+        super(TFIDF, self).__init__()
 
-    # Fits sentences on it
-    logger.info('Learning TFIDF ...')
-    tfidf.fit(sentences)
-    logger.info('TFIDF learned.')
+        logger.info('Class overrided.')
 
-    return tfidf
+    def learn(self, sentences, max_features=100):
+        """Learns a TFIDF representation based on the words' frequency.
 
+        Args:
+            sentences (df): A Panda's dataframe column holding sentences to be fitted.
+            max_features (int): Maximum number of features to be fitted.
 
-def encode_tfidf(tfidf, sentences):
-    """Actually encodes the data into a TFIDF representation.
+        """
 
-    Args:
-        tfidf (TfidfVectorizer): A TfidfVectorizer object.
-        sentences (df): A Panda's dataframe column holding sentences to be encoded.
+        logger.debug('Running public method: learn().')
 
-    Returns:
-        An encoded TFIDF numpy array.
+        # Creates a TfidfVectorizer object
+        self.encoder = TfidfVectorizer(max_features=max_features,
+                                       preprocessor=lambda p: p, tokenizer=lambda t: t)
 
-    """
+        # Fits sentences onto it
+        self.encoder.fit(sentences)
 
-    logger.info('TFIDF encoding size: (' + str(sentences.size) +
-                 ', ' + str(tfidf.idf_.shape[0]) + ')')
+    def encode(self, sentences):
+        """Actually encodes the data into a TfidfVectorizer representation.
 
-    # Transform sentences into TFIDF encoding (only if it has been previously fitted)
-    logger.info('Encoding data ...')
-    X = tfidf.transform(sentences)
+        Args:
+            sentences (df): A Panda's dataframe column holding sentences to be encoded.
 
-    # Apply encoded TFIDF to numpy array
-    encoded_X = X.toarray()
-    logger.info('Encoding finished.')
+        """
 
-    return encoded_X
+        logger.debug('Running public method: encode().')
+
+        # Checks if enconder actually exists, if not raises a RuntimeError
+        if not self.encoder:
+            e = 'You need to call learn() prior to encode() method.'
+            logger.error(e)
+            raise RuntimeError(e)
+
+        # Logging some important information
+        logger.debug(f'Size: ({sentences.size}, {self.encoder.max_features}).')
+
+        # Transforms sentences into TfidfVectorizer encoding (only if it has been previously fitted)
+        X = self.encoder.transform(sentences)
+
+        # Applies encoded TfidfVectorizer to a numpy array
+        self.encoded_data = X.toarray()

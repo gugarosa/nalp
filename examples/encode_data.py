@@ -1,9 +1,9 @@
 import nalp.stream.loader as l
 import nalp.stream.preprocess as p
-from nalp.core.encoder import Encoder
+from nalp.encoders.word2vec import Word2Vec
 
 # Loads an input .csv
-csv = l.load_csv('data/twitter_en.csv')
+csv = l.load_csv('data/16k_twitter_en.csv')
 
 # Creates a pre-processing pipeline
 pipe = p.pipeline(
@@ -19,8 +19,8 @@ Y = csv['sentiment']
 # Applying pre-processing pipeline to X
 X = X.apply(lambda x: pipe(x))
 
-# Creating an Encoder class
-e = Encoder(type='word2vec')
+# Creating a Word2Vec (Enconder's child) class
+e = Word2Vec()
 
 # Calling its internal method to learn an encoding representation
 e.learn(X)

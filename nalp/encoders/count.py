@@ -1,55 +1,64 @@
 import nalp.utils.logging as l
 import numpy as np
+from nalp.core.encoder import Encoder
 from sklearn.feature_extraction.text import CountVectorizer
 
 logger = l.get_logger(__name__)
 
 
-def learn_count(sentences, max_features=100):
-    """Learns a CountVectorizer representation based on the words' counting.
+class Count(Encoder):
 
-    Args:
-        sentences (df): A Panda's dataframe column holding sentences to be fitted.
-        max_features (int): Maximum number of features to be fitted.
+    def __init__(self):
+        """Initizaliation method.
 
-    Returns:
-        A CountVectorizer object.
+        """
 
-    """
+        logger.info('Overriding class: Encoder -> Count.')
 
-    # Creates a Count vectorizer
-    count = CountVectorizer(max_features=max_features,
-                            preprocessor=lambda p: p, tokenizer=lambda t: t)
+        # Overrides its parent class with any custom arguments if needed
+        super(Count, self).__init__()
 
-    # Fits sentences on it
-    logger.info('Learning CountVectorizer ...')
-    count.fit(sentences)
-    logger.info('CountVectorizer learned.')
+        logger.info('Class overrided.')
 
-    return count
+    def learn(self, sentences, max_features=100):
+        """Learns a CountVectorizer representation based on the words' counting.
 
+        Args:
+            sentences (df): A Panda's dataframe column holding sentences to be fitted.
+            max_features (int): Maximum number of features to be fitted.
 
-def encode_count(count, sentences):
-    """Actually encodes the data into a CountVectorizer representation.
+        """
 
-    Args:
-        count (CountVectorizer): A CountVectorizer object.
-        sentences (df): A Panda's dataframe column holding sentences to be encoded.
+        logger.debug('Running public method: learn().')
 
-    Returns:
-        An encoded CountVectorizer numpy array.
+        # Creates a CountVectorizer object
+        self.encoder = CountVectorizer(max_features=max_features,
+                                       preprocessor=lambda p: p, tokenizer=lambda t: t)
 
-    """
+        # Fits sentences onto it
+        self.encoder.fit(sentences)
 
-    logger.info('CountVectorizer encoding size: (' +
-                str(sentences.size) + ', ' + str(count.max_features) + ')')
+    def encode(self, sentences):
+        """Actually encodes the data into a CountVectorizer representation.
 
-    # Transform sentences into CountVectorizer encoding (only if it has been previously fitted)
-    logger.info('Encoding data ...')
-    X = count.transform(sentences)
+        Args:
+            sentences (df): A Panda's dataframe column holding sentences to be encoded.
 
-    # Apply encoded TFIDF to a numpy array
-    encoded_X = X.toarray()
-    logger.info('Encoding finished.')
+        """
 
-    return encoded_X
+        logger.debug('Running public method: encode().')
+
+        # Checks if enconder actually exists, if not raises a RuntimeError
+        if not self.encoder:
+            e = 'You need to call learn() prior to encode() method.'
+            logger.error(e)
+            raise RuntimeError(e)
+
+        # Logging some important information
+        logger.debug(f'Size: ({sentences.size}, {self.encoder.max_features}).')
+
+        # Transforms sentences into CountVectorizer encoding (only if it has been previously fitted)
+        X = self.encoder.transform(sentences)
+
+        # Applies encoded CountVectorizer to a numpy array
+        self.encoded_data = X.toarray()
