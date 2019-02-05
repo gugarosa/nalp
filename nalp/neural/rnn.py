@@ -9,9 +9,10 @@ class RNN(Neural):
         self.model
         self.loss
         self.optimizer
+        self.prediction
 
     @d.define_scope
-    def model(self, hidden_size=5, n_class=7):
+    def model(self, hidden_size=5, n_class=12):
         self.W = tf.Variable(tf.random_normal([hidden_size, n_class]))
         
         self.b = tf.Variable(tf.random_normal([n_class]))
@@ -38,8 +39,12 @@ class RNN(Neural):
         optimizer = tf.train.AdamOptimizer(0.001)
         return optimizer.minimize(loss)
 
-    def train(self, input_batch, target_batch):
+    @d.define_scope
+    def prediction(self):
+        return tf.cast(tf.argmax(self.model, 1), tf.int32)
 
+    def train(self, input_batch, target_batch):
+        saver = tf.train.Saver()
         init = tf.global_variables_initializer()
         sess = tf.Session()
         sess.run(init)
@@ -48,3 +53,12 @@ class RNN(Neural):
             _, loss = sess.run([self.optimizer, self.loss], feed_dict={self.x: input_batch, self.y: target_batch})
             if (epoch + 1)%1000 == 0:
                 print('Epoch:', '%04d' % (epoch + 1), 'cost =', '{:.6f}'.format(loss))
+
+        saver.save(sess, './model')
+
+    def predict(self, input_batch):
+        saver = tf.train.Saver()
+        sess = tf.Session()
+        saver.restore(sess, './model')
+        predict =  sess.run([self.prediction], feed_dict={self.x: input_batch})
+        print(predict[0])

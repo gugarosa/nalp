@@ -16,7 +16,10 @@ pipe = p.pipeline(
 # Applying pre-processing pipeline to X
 sentences = pipe(sentences)
 
-d = OneHotDataset(sentences, 2)
+d = OneHotDataset(sentences, 3)
+
+print(d.inputs)
+print(d.targets)
 
 
 # tf.reset_default_graph()
@@ -50,5 +53,10 @@ d = OneHotDataset(sentences, 2)
 # input_batch, target_batch = make_batch(sentences)
 
 # print(n_class)
-# rnn = RNN()
-# rnn.train(input_batch, target_batch)
+rnn = RNN()
+rnn.train(d.inputs, d.targets)
+
+print(d.inputs[0:1])
+print(d.targets[0:1])
+
+rnn.predict(d.inputs[0:1])

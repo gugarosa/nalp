@@ -13,7 +13,7 @@ class Neural:
 
     """
 
-    def __init__(self, step_size=2, n_class=7):
+    def __init__(self, step_size=3, n_class=12):
         """Initialization method.
         Note that basic variables shared by all childs should be declared here.
 
