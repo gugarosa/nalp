@@ -8,7 +8,7 @@ csv = l.load_csv('data/16k_twitter_en.csv')
 pipe = p.pipeline(
     p.lower_case,
     p.valid_char,
-    p.tokenize_sentence
+    p.tokenize_to_word
 )
 
 # Transforming dataframe into samples and labels

@@ -33,8 +33,21 @@ def valid_char(s):
 
     return re.sub('[^a-zA-z0-9\s]', '', s)
 
+def tokenize_to_char(s):
+    """Tokenizes a sentence to characters array.
 
-def tokenize_sentence(s):
+    Args:
+        s (str): input string
+
+    Returns:
+        Array of tokenized characters.
+
+    """
+
+    return list(s)
+
+
+def tokenize_to_word(s):
     """Tokenizes a sentence to words array.
 
     Args:

@@ -40,7 +40,7 @@ class Word2Vec(Encoder):
         logger.debug('Running public method: learn().')
 
         # Creates a Word2Vec model
-        self.encoder = W2V(sentences=sentences, size=max_features, window=window_size, min_count=min_count,
+        self._encoder = W2V(sentences=sentences, size=max_features, window=window_size, min_count=min_count,
                            sg=algorithm, alpha=learning_rate, iter=iterations, workers=multiprocessing.cpu_count())
 
     def encode(self, sentences, max_tokens=10):
@@ -55,21 +55,21 @@ class Word2Vec(Encoder):
         logger.debug('Running public method: encode().')
 
         # Checks if enconder actually exists, if not raises a RuntimeError
-        if not self.encoder:
+        if not self._encoder:
             e = 'You need to call learn() prior to encode() method.'
             logger.error(e)
             raise RuntimeError(e)
 
         # Logging some important information
         logger.debug(
-            f'Size: ({sentences.size}, {max_tokens}, {self.encoder.vector_size}).')
+            f'Size: ({sentences.size}, {max_tokens}, {self._encoder.vector_size}).')
 
         # Get actual word vectors from Word2Vec class
-        wv = self.encoder.wv
+        wv = self._encoder.wv
 
         # Creates an encoded_X variable to hold encoded data
-        self.encoded_data = np.zeros(
-            (sentences.size, max_tokens, self.encoder.vector_size))
+        self._encoded_data = np.zeros(
+            (sentences.size, max_tokens, self._encoder.vector_size))
 
         # Iterate through all sentences
         for i in range(0, sentences.size):
@@ -79,4 +79,4 @@ class Word2Vec(Encoder):
                 if t >= max_tokens:
                     break
                 # Else, store its word vector value to a new variable
-                self.encoded_data[i, t, :] = wv[token]
+                self._encoded_data[i, t, :] = wv[token]

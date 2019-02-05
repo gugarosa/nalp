@@ -20,10 +20,26 @@ class Encoder:
         """
 
         # The encoder object will be initialized as None
-        self.encoder = None
+        self._encoder = None
 
         # We also set the encoded data as None
-        self.encoded_data = None
+        self._encoded_data = None
+
+    @property
+    def encoder(self):
+        """An encoder generic object.
+
+        """
+
+        return self._encoder
+
+    @property
+    def encoded_data(self):
+        """A numpy array holding the encoded data.
+
+        """
+
+        return self._encoded_data
 
     def learn(self):
         """This method learns an encoding representation. Note that for each child,

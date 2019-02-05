@@ -32,11 +32,11 @@ class TFIDF(Encoder):
         logger.debug('Running public method: learn().')
 
         # Creates a TfidfVectorizer object
-        self.encoder = TfidfVectorizer(max_features=max_features,
+        self._encoder = TfidfVectorizer(max_features=max_features,
                                        preprocessor=lambda p: p, tokenizer=lambda t: t)
 
         # Fits sentences onto it
-        self.encoder.fit(sentences)
+        self._encoder.fit(sentences)
 
     def encode(self, sentences):
         """Actually encodes the data into a TfidfVectorizer representation.
@@ -49,16 +49,16 @@ class TFIDF(Encoder):
         logger.debug('Running public method: encode().')
 
         # Checks if enconder actually exists, if not raises a RuntimeError
-        if not self.encoder:
+        if not self._encoder:
             e = 'You need to call learn() prior to encode() method.'
             logger.error(e)
             raise RuntimeError(e)
 
         # Logging some important information
-        logger.debug(f'Size: ({sentences.size}, {self.encoder.max_features}).')
+        logger.debug(f'Size: ({sentences.size}, {self._encoder.max_features}).')
 
         # Transforms sentences into TfidfVectorizer encoding (only if it has been previously fitted)
-        X = self.encoder.transform(sentences)
+        X = self._encoder.transform(sentences)
 
         # Applies encoded TfidfVectorizer to a numpy array
-        self.encoded_data = X.toarray()
+        self._encoded_data = X.toarray()
