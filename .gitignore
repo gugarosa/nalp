@@ -1,6 +1,10 @@
 # MacOS
 *.DS_Store
 
+# Tensorflow
+checkpoint
+model.*
+
 # Logs
 nalp.log.*
 

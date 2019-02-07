@@ -88,8 +88,8 @@ class OneHot(Dataset):
             targets.append(tokens_idx[i+max_length])
 
         # Creates empty numpy boolean arrays for holding X and Y
-        X = np.zeros((len(inputs), max_length, vocab_size), dtype=np.bool)
-        Y = np.zeros((len(inputs), vocab_size), dtype=np.bool)
+        X = np.zeros((len(inputs), max_length, vocab_size), dtype=np.int32)
+        Y = np.zeros((len(inputs), vocab_size), dtype=np.int32)
 
         # Iterates through all inputs
         for i, input in enumerate(inputs):

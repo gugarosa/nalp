@@ -12,7 +12,7 @@ class RNN(Neural):
         self.prediction
 
     @d.define_scope
-    def model(self, hidden_size=5, n_class=12):
+    def model(self, hidden_size=24, n_class=12):
         self.W = tf.Variable(tf.random_normal([hidden_size, n_class]))
         
         self.b = tf.Variable(tf.random_normal([n_class]))
@@ -61,4 +61,4 @@ class RNN(Neural):
         sess = tf.Session()
         saver.restore(sess, './model')
         predict =  sess.run([self.prediction], feed_dict={self.x: input_batch})
-        print(predict[0])
+        return predict

@@ -4,7 +4,8 @@ import tensorflow as tf
 from nalp.datasets.one_hot import OneHot
 from nalp.neurals.rnn import RNN
 
-sentences = "i like dog and a cat"
+sentences = "I have a hippo and a cat"
+predict_sentences = "hipp"
 
 # Creates a pre-processing pipeline
 pipe = p.pipeline(
@@ -15,8 +16,12 @@ pipe = p.pipeline(
 
 # Applying pre-processing pipeline to X
 sentences = pipe(sentences)
+predict_sentences = pipe(predict_sentences)
 
 d = OneHot(sentences, 3)
+
+idx_token = d.indexate_tokens(predict_sentences, d.vocab_index)
+x_p, y_p = d.encode_tokens(idx_token, 3, d.vocab_size)
 
 
 tf.reset_default_graph()
@@ -24,7 +29,6 @@ tf.reset_default_graph()
 rnn = RNN()
 rnn.train(d.X, d.Y)
 
-print(d.X[0:1])
-print(d.Y[0:1])
-
-rnn.predict(d.X[0:1])
+predict = rnn.predict(x_p)
+print(predict[0])
+print(predict[0][-1])
