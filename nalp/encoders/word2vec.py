@@ -9,6 +9,14 @@ logger = l.get_logger(__name__)
 
 
 class Word2Vec(Encoder):
+    """A Word2Vec class, responsible for learning a Word2Vec encode and
+    further encoding new data.
+
+    Methods:
+        learn(sentences, max_features, window_size, min_count, algorithm, learning_rate, iterations): Learns a Word2Vec representation.
+        encode(sentences, max_tokens): Encodes the data into a Word2Vec representation.
+
+    """
 
     def __init__(self):
         """Initizaliation method.
@@ -41,7 +49,7 @@ class Word2Vec(Encoder):
 
         # Creates a Word2Vec model
         self._encoder = W2V(sentences=sentences, size=max_features, window=window_size, min_count=min_count,
-                           sg=algorithm, alpha=learning_rate, iter=iterations, workers=multiprocessing.cpu_count())
+                            sg=algorithm, alpha=learning_rate, iter=iterations, workers=multiprocessing.cpu_count())
 
     def encode(self, sentences, max_tokens=10):
         """Actually encodes the data into a Word2Vec representation.
