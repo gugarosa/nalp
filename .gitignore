@@ -5,6 +5,9 @@
 checkpoint
 model.*
 
+# Visual Studio Code
+.vscode
+
 # Logs
 nalp.log.*
 
