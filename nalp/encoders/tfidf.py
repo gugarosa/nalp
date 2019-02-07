@@ -7,6 +7,14 @@ logger = l.get_logger(__name__)
 
 
 class TFIDF(Encoder):
+    """A TFIDF class, responsible for learning a TfidfVectorizer encode and
+    further encoding new data.
+
+    Methods:
+        learn(sentences, max_features): Learns a TfidfVectorizer representation.
+        encode(sentences): Encodes the data into a TfidfVectorizer representation.
+
+    """
 
     def __init__(self):
         """Initizaliation method.
@@ -33,7 +41,7 @@ class TFIDF(Encoder):
 
         # Creates a TfidfVectorizer object
         self._encoder = TfidfVectorizer(max_features=max_features,
-                                       preprocessor=lambda p: p, tokenizer=lambda t: t)
+                                        preprocessor=lambda p: p, tokenizer=lambda t: t)
 
         # Fits sentences onto it
         self._encoder.fit(sentences)
@@ -55,7 +63,8 @@ class TFIDF(Encoder):
             raise RuntimeError(e)
 
         # Logging some important information
-        logger.debug(f'Size: ({sentences.size}, {self._encoder.max_features}).')
+        logger.debug(
+            f'Size: ({sentences.size}, {self._encoder.max_features}).')
 
         # Transforms sentences into TfidfVectorizer encoding (only if it has been previously fitted)
         X = self._encoder.transform(sentences)
