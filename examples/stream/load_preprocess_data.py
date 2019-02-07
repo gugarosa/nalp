@@ -18,5 +18,6 @@ Y = csv['sentiment']
 # Applying pre-processing pipeline to X
 X = X.apply(lambda x: pipe(x))
 
-# # Splitting data into training and testing sets
-# X_train, X_test, Y_train, Y_test = d.split_data(X, Y, 0.5)
+# Acessing and printing samples and labels
+print(X)
+print(Y)

@@ -73,6 +73,10 @@ class OneHot(Dataset):
             tokens_idx (np.array): A numpy array holding the indexed tokens.
             max_length (int): The maximum length of the encoding.
             vocab_size (int): The size of the vocabulary.
+
+        Returns:
+            X and Y one-hot encoded samples.
+
         """
 
         logger.debug('Running public method: encode_tokens().')

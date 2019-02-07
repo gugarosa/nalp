@@ -5,7 +5,7 @@ from nalp.datasets.one_hot import OneHot
 from nalp.neurals.rnn import RNN
 
 sentences = "I have a hippo and a cat"
-predict_sentences = "hipp"
+predict_sentences = "hippo and hippo hippo hippo"
 
 # Creates a pre-processing pipeline
 pipe = p.pipeline(
@@ -31,4 +31,4 @@ rnn.train(d.X, d.Y)
 
 predict = rnn.predict(x_p)
 print(predict[0])
-print(predict[0][-1])
+print(d.index_vocab[predict[0][-1]])
