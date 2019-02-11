@@ -4,8 +4,8 @@ import tensorflow as tf
 from nalp.datasets.one_hot import OneHot
 from nalp.neurals.rnn import RNN
 
-sentences = "I have a hippo and a cat"
-predict_sentences = "hippo and hippo hippo hippo"
+sentences = "I have a hippo and a cat. I have a hippo and a cat. I have a hippo and a cat. I have a hippo and a cat. I have a hippo and a cat."
+pred_input = "hipp"
 
 # Creates a pre-processing pipeline
 pipe = p.pipeline(
@@ -16,19 +16,14 @@ pipe = p.pipeline(
 
 # Applying pre-processing pipeline to X
 sentences = pipe(sentences)
-predict_sentences = pipe(predict_sentences)
+pred_input = pipe(pred_input)
 
 d = OneHot(sentences, max_length=3)
 
-idx_token = d.indexate_tokens(predict_sentences, d.vocab_index)
-x_p, y_p = d.encode_tokens(idx_token, d.max_length, d.vocab_size)
-
-
 tf.reset_default_graph()
 
-rnn = RNN(max_length=d.max_length, hidden_size=24, vocab_size=d.vocab_size)
-rnn.train(d.X, d.Y, epochs=1000, verbose=True, save_model=True)
+rnn = RNN(max_length=d.max_length, hidden_size=128, vocab_size=d.vocab_size)
+rnn.train(d.X, d.Y, epochs=5000, verbose=False, save_model=True)
 
-predict = rnn.predict(x_p)
-print(predict[0])
-print(d.index_vocab[predict[0][-1]])
+pred_text = rnn.predict(pred_input, d, length=100) 
+print(pred_text)

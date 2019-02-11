@@ -211,7 +211,7 @@ class RNN(Neural):
             # Saving the model
             saver.save(sess, './models/' + self._output_name)
 
-    def predict(self, input_batch):
+    def predict(self, start_text, d, length=1):
         """Predicts a new input batch using the same trained model.
 
         Returns:
@@ -228,7 +228,18 @@ class RNN(Neural):
         # Restoring the model, should use the same name as the one it was saved
         saver.restore(sess, './models/' + self._output_name)
 
-        # Runs the model and calculates a prediction
-        predict = sess.run([self.predictor], feed_dict={self.x: input_batch})
+        # Runs the model and calculates the prediction 'length' times
+        text = ''
+        tokens = list(start_text)
+        for _ in range(length):
+            idx_token = d.indexate_tokens(tokens, d.vocab_index)
+            x_p, _ = d.encode_tokens(idx_token, d.max_length, d.vocab_size)
 
-        return predict
+            predict = sess.run([self.predictor], feed_dict={self.x: x_p})
+
+            del tokens[0]
+            tokens.append(d.index_vocab[predict[0][-1]])
+
+            text += d.index_vocab[predict[0][-1]]
+
+        return text
