@@ -27,7 +27,7 @@ x_p, y_p = d.encode_tokens(idx_token, d.max_length, d.vocab_size)
 tf.reset_default_graph()
 
 rnn = RNN(max_length=d.max_length, hidden_size=24, vocab_size=d.vocab_size)
-rnn.train(d.X, d.Y)
+rnn.train(d.X, d.Y, epochs=1000, verbose=True, save_model=True)
 
 predict = rnn.predict(x_p)
 print(predict[0])

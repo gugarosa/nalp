@@ -95,7 +95,7 @@ class RNN(Neural):
 
         """
 
-        logger.info(f'Constructing model: ({self.hidden_size}, {self.vocab_size})')
+        logger.debug(f'Constructing model with shape: ({self.hidden_size}, {self.vocab_size}).')
 
         # W will be the weight matrix
         self.W = tf.Variable(tf.random_normal([self.hidden_size, self.vocab_size]))
@@ -134,6 +134,8 @@ class RNN(Neural):
         # Applying an extra operation on defined loss
         loss = tf.reduce_mean(cross_entropy)
 
+        logger.debug(f'Loss function: {loss}.')
+
         return loss
 
     @d.define_scope
@@ -149,6 +151,8 @@ class RNN(Neural):
         # Creates an optimizer object
         optimizer = tf.train.AdamOptimizer(self.learning_rate)
 
+        logger.debug(f'Optimizer: {optimizer} | Learning rate: {self.learning_rate}.')
+
         return optimizer.minimize(self.loss)
 
     @d.define_scope
@@ -162,26 +166,45 @@ class RNN(Neural):
 
         return tf.cast(tf.argmax(self.model, 1), tf.int32)
 
-    def train(self, input_batch, target_batch):
-        """
+    def train(self, input_batch, target_batch, epochs=1, verbose=0, save_model=0):
+        """Trains a model.
+
+        Args:
+            input_batch (): Input data tensor [None, max_length, vocab_size].
+            target_batch (): Input labels tensor [None, vocab_size].
+            epochs (int): The maximum number of training epochs.
+            verbose (boolean): If verbose is true, additional printing will be done.
 
         Returns:
         
         """
 
-        saver = tf.train.Saver()
+        logger.info(f'Model ready to be trained for: {epochs} epochs.')
+
+        
         init = tf.global_variables_initializer()
         sess = tf.Session()
         sess.run(init)
 
-        for epoch in range(5000):
+        # Iterate through all epochs
+        for epoch in range(epochs):
+            # We run the session by feeding inputs to it (X and Y)
             _, loss = sess.run([self.optimizer, self.loss], feed_dict={
                                self.x: input_batch, self.y: target_batch})
-            if (epoch + 1) % 1000 == 0:
-                print('Epoch:', '%04d' % (epoch + 1),
-                      'cost =', '{:.6f}'.format(loss))
 
-        saver.save(sess, './model')
+            # If verbose is True, additional printing will be made
+            if (verbose):
+                logger.debug(f'Epoch: {epoch}/{epochs} | Loss: {loss}')
+
+        # If save model is True, we will save it for further restoring
+        if (save_model):
+            # Declaring a saver object for saving the model
+            saver = tf.train.Saver()
+
+            # Creating a custom string to be its output name
+            output_name = f'rnn-hid{self.hidden_size}-lr{self.learning_rate}-e{epochs}-loss{loss:.4f}'
+
+            saver.save(sess, './models/' + output_name)
 
     def predict(self, input_batch):
         """
