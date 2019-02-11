@@ -1,64 +1,197 @@
+import nalp.utils.decorators as d
+import nalp.utils.logging as l
 import tensorflow as tf
 from nalp.core.neural import Neural
-import nalp.utils.decorators as d
+
+logger = l.get_logger(__name__)
+
 
 class RNN(Neural):
+    """A RNN class is the one in charge of Recurrent Neural Networks vanilla implementation.
+    They were implemented from this paper:
 
-    def __init__(self):
-        super(RNN, self).__init__()
+    Methods:
+        model(): tf.nn.dynamic_rnn with tf.nn.rnn_cell.BasicRNNCell
+        loss(): tf.nn.softmax_cross_entropy_with_logits_v2
+        optimizer(): tf.train.AdamOptimizer
+        predictor(): tf.argmax
+
+    """
+
+    def __init__(self, max_length=1, vocab_size=1, hidden_size=2, learning_rate=0.001):
+        """Initialization method.
+
+        Args:
+            max_length (int): The maximum length of the encoding.
+            vocab_size (int): The size of the vocabulary.
+            hidden_size (int): The amount of hidden neurons.
+            learning_rate (float): A big or small addition on the optimizer steps.
+
+        """
+
+        logger.info('Overriding class: Neural -> RNN.')
+
+        # Overrides its parent class with any custom arguments if needed
+        super(RNN, self).__init__(max_length=max_length, vocab_size=vocab_size)
+
+        # We need to create a property holding the max length of the encoding
+        self._max_length = max_length
+        # One for vocab size
+        self._vocab_size = vocab_size
+        # One for the amount of hidden neurons
+        self._hidden_size = hidden_size
+        # And the last for the learning rate
+        self._learning_rate = learning_rate
+
+        # The implemented methods should also be instanciated
+        # Defines the model
         self.model
+        # Calculates the loss function
         self.loss
+        # Creates the optimization task
         self.optimizer
-        self.prediction
+        # If you wish, predict new inputs
+        self.predictor
+
+    @property
+    def max_length(self):
+        """The maximum length of the encoding.
+
+        """
+
+        return self._max_length
+
+    @property
+    def vocab_size(self):
+        """The size of the vocabulary.
+
+        """
+
+        return self._vocab_size
+
+    @property
+    def hidden_size(self):
+        """The amount of hidden neurons.
+
+        """
+
+        return self._hidden_size
+
+    @property
+    def learning_rate(self):
+        """A big or small addition on the optimizer steps.
+
+        """
+
+        return self._learning_rate
 
     @d.define_scope
-    def model(self, hidden_size=24, n_class=12):
-        self.W = tf.Variable(tf.random_normal([hidden_size, n_class]))
-        
-        self.b = tf.Variable(tf.random_normal([n_class]))
+    def model(self):
+        """ The model should be constructed here. You can use whatever tensorflow
+        operations you need.
 
-        self.cell = tf.nn.rnn_cell.BasicRNNCell(hidden_size)
+        Returns:
+            The model for further optimization and learning.
 
-        outputs, states = tf.nn.dynamic_rnn(self.cell, self.x, dtype=tf.float32)
+        """
 
-        outputs = tf.transpose(outputs, [1, 0, 2])
-        
-        outputs = outputs[-1]
-        
-        return tf.matmul(outputs, self.W) + self.b
+        logger.info(f'Constructing model: ({self.hidden_size}, {self.vocab_size})')
+
+        # W will be the weight matrix
+        self.W = tf.Variable(tf.random_normal([self.hidden_size, self.vocab_size]))
+
+        # b will the bias vector
+        self.b = tf.Variable(tf.random_normal([self.vocab_size]))
+
+        # For vanilla RNN, we will use a basic RNN cell
+        self.cell = tf.nn.rnn_cell.BasicRNNCell(self.hidden_size)
+
+        # We do also need to create the RNN object itself
+        self.o, self.h = tf.nn.dynamic_rnn(
+            self.cell, self.x, dtype=tf.float32)
+
+        # Transposing the vector dimensions
+        self.o = tf.transpose(self.o, [1, 0, 2])
+
+        # Gathering the reserve array
+        self.o = self.o[-1]
+
+        return tf.matmul(self.o, self.W) + self.b
 
     @d.define_scope
     def loss(self):
-        cross_entropy = tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.model, labels=self.y)
+        """The loss function should be defined according your knowlodge.
+        
+        Returns:
+            The loss function itself.
+        
+        """
+
+        # Defining the loss function
+        cross_entropy = tf.nn.softmax_cross_entropy_with_logits_v2(
+            logits=self.model, labels=self.y)
+
+        # Applying an extra operation on defined loss
         loss = tf.reduce_mean(cross_entropy)
+
         return loss
-    
-    @d.define_scope
-    def optimizer(self):
-        loss = self.loss
-        optimizer = tf.train.AdamOptimizer(0.001)
-        return optimizer.minimize(loss)
 
     @d.define_scope
-    def prediction(self):
+    def optimizer(self):
+        """An optimizer is the key of the learning task. Define your own
+        as you may please.
+
+        Returns:
+            An optimizer object that minimizes the loss function.
+        
+        """
+
+        # Creates an optimizer object
+        optimizer = tf.train.AdamOptimizer(self.learning_rate)
+
+        return optimizer.minimize(self.loss)
+
+    @d.define_scope
+    def predictor(self):
+        """A predictor is responsible for returning an understable output.
+
+        Returns:
+            The index of the character with the highest probability of being the target.
+        
+        """
+
         return tf.cast(tf.argmax(self.model, 1), tf.int32)
 
     def train(self, input_batch, target_batch):
+        """
+
+        Returns:
+        
+        """
+
         saver = tf.train.Saver()
         init = tf.global_variables_initializer()
         sess = tf.Session()
         sess.run(init)
 
         for epoch in range(5000):
-            _, loss = sess.run([self.optimizer, self.loss], feed_dict={self.x: input_batch, self.y: target_batch})
-            if (epoch + 1)%1000 == 0:
-                print('Epoch:', '%04d' % (epoch + 1), 'cost =', '{:.6f}'.format(loss))
+            _, loss = sess.run([self.optimizer, self.loss], feed_dict={
+                               self.x: input_batch, self.y: target_batch})
+            if (epoch + 1) % 1000 == 0:
+                print('Epoch:', '%04d' % (epoch + 1),
+                      'cost =', '{:.6f}'.format(loss))
 
         saver.save(sess, './model')
 
     def predict(self, input_batch):
+        """
+
+        Returns:
+        
+        """
+
         saver = tf.train.Saver()
         sess = tf.Session()
         saver.restore(sess, './model')
-        predict =  sess.run([self.prediction], feed_dict={self.x: input_batch})
+        predict = sess.run([self.predictor], feed_dict={self.x: input_batch})
         return predict

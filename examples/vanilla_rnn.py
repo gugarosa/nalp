@@ -18,15 +18,15 @@ pipe = p.pipeline(
 sentences = pipe(sentences)
 predict_sentences = pipe(predict_sentences)
 
-d = OneHot(sentences, 3)
+d = OneHot(sentences, max_length=3)
 
 idx_token = d.indexate_tokens(predict_sentences, d.vocab_index)
-x_p, y_p = d.encode_tokens(idx_token, 3, d.vocab_size)
+x_p, y_p = d.encode_tokens(idx_token, d.max_length, d.vocab_size)
 
 
 tf.reset_default_graph()
 
-rnn = RNN()
+rnn = RNN(max_length=d.max_length, hidden_size=24, vocab_size=d.vocab_size)
 rnn.train(d.X, d.Y)
 
 predict = rnn.predict(x_p)

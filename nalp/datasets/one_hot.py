@@ -19,7 +19,7 @@ class OneHot(Dataset):
 
     """
 
-    def __init__(self, tokens, max_length):
+    def __init__(self, tokens, max_length=1):
         """Initizaliation method.
 
         Args:

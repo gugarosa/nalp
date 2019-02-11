@@ -88,15 +88,15 @@ Note that sometimes, there is a need for an additional implementation. If needed
 
 ### Ubuntu
 
-No specific additional commandad needed.
+No specific additional commands needed.
 
 ### Windows
 
-No specific additional commandad needed.
+No specific additional commands needed.
 
 ### MacOS
 
-No specific additional commandad needed.
+No specific additional commands needed.
 
 ---
 
