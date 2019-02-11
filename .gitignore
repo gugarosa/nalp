@@ -3,7 +3,7 @@
 
 # Tensorflow
 checkpoint
-
+models/*
 
 # Visual Studio Code
 .vscode
