@@ -166,7 +166,7 @@ class RNN(Neural):
 
         return tf.cast(tf.argmax(self.model, 1), tf.int32)
 
-    def train(self, input_batch, target_batch, epochs=1, verbose=0, save_model=0):
+    def train(self, input_batch, target_batch, epochs=1, verbose=0, save_model=1):
         """Trains a model.
 
         Args:
@@ -181,9 +181,13 @@ class RNN(Neural):
 
         logger.info(f'Model ready to be trained for: {epochs} epochs.')
 
-        
+        # Initializing all tensorflow variables
         init = tf.global_variables_initializer()
+
+        # Instanciating a new tensorflow session
         sess = tf.Session()
+
+        # Running the first session's step
         sess.run(init)
 
         # Iterate through all epochs
@@ -202,19 +206,29 @@ class RNN(Neural):
             saver = tf.train.Saver()
 
             # Creating a custom string to be its output name
-            output_name = f'rnn-hid{self.hidden_size}-lr{self.learning_rate}-e{epochs}-loss{loss:.4f}'
+            self._output_name = f'rnn-hid{self.hidden_size}-lr{self.learning_rate}-e{epochs}-loss{loss:.4f}'
 
-            saver.save(sess, './models/' + output_name)
+            # Saving the model
+            saver.save(sess, './models/' + self._output_name)
 
     def predict(self, input_batch):
-        """
+        """Predicts a new input batch using the same trained model.
 
         Returns:
+            The predicted array.
         
         """
 
+        # Declaring a saver object for saving the model
         saver = tf.train.Saver()
+
+        # Instanciating a new tensorflow session
         sess = tf.Session()
-        saver.restore(sess, './model')
+
+        # Restoring the model, should use the same name as the one it was saved
+        saver.restore(sess, './models/' + self._output_name)
+
+        # Runs the model and calculates a prediction
         predict = sess.run([self.predictor], feed_dict={self.x: input_batch})
+
         return predict
