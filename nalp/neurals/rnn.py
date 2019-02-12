@@ -48,10 +48,14 @@ class RNN(Neural):
         self.model
         # Calculates the loss function
         self.loss
+        # Defines the accuracy function
+        self.accuracy
         # Creates the optimization task
         self.optimizer
-        # If you wish, predict new inputs
+        # If you wish, predict new inputs based on indexes
         self.predictor
+        # Or probabilities
+        self.predictor_prob
 
     @property
     def max_length(self):
@@ -139,6 +143,21 @@ class RNN(Neural):
         return loss
 
     @d.define_scope
+    def accuracy(self):
+        """Calculates the accuracy between predicted and true labels
+
+        Returns:
+            The accuracy value itself.
+        """
+
+        # Defining the accuracy function
+        accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(self.model, 1), tf.argmax(self.y, 1)), tf.float32))
+
+        logger.debug(f'Accuracy function: {accuracy}.')
+
+        return accuracy
+
+    @d.define_scope
     def optimizer(self):
         """An optimizer is the key of the learning task. Define your own
         as you may please.
@@ -166,16 +185,25 @@ class RNN(Neural):
 
         return tf.cast(tf.argmax(self.model, 1), tf.int32)
 
-    def train(self, input_batch, target_batch, epochs=1, verbose=0, save_model=1):
+    @d.define_scope
+    def predictor_prob(self):
+        """A predictor is responsible for returning an understable output.
+
+        Returns:
+            The probability array of an index being the target.
+        """
+
+        return tf.nn.softmax(self.model)
+
+    def train(self, input_batch, target_batch, epochs=100, verbose=0, save_model=1):
         """Trains a model.
 
         Args:
-            input_batch (): Input data tensor [None, max_length, vocab_size].
-            target_batch (): Input labels tensor [None, vocab_size].
+            input_batch (tensor): Input data tensor [None, max_length, vocab_size].
+            target_batch (tensor): Input labels tensor [None, vocab_size].
             epochs (int): The maximum number of training epochs.
             verbose (boolean): If verbose is true, additional printing will be done.
-
-        Returns:
+            save_model (boolean): If save_model is true, model will be saved into models/.
         
         """
 
@@ -193,12 +221,12 @@ class RNN(Neural):
         # Iterate through all epochs
         for epoch in range(epochs):
             # We run the session by feeding inputs to it (X and Y)
-            _, loss = sess.run([self.optimizer, self.loss], feed_dict={
+            _, loss, acc = sess.run([self.optimizer, self.loss, self.accuracy], feed_dict={
                                self.x: input_batch, self.y: target_batch})
 
             # If verbose is True, additional printing will be made
             if (verbose):
-                logger.debug(f'Epoch: {epoch}/{epochs} | Loss: {loss}')
+                logger.debug(f'Epoch: {epoch}/{epochs} | Loss: {loss:.4f} | Accuracy: {acc:.4f}')
 
         # If save model is True, we will save it for further restoring
         if (save_model):
@@ -206,16 +234,60 @@ class RNN(Neural):
             saver = tf.train.Saver()
 
             # Creating a custom string to be its output name
-            self._output_name = f'rnn-hid{self.hidden_size}-lr{self.learning_rate}-e{epochs}-loss{loss:.4f}'
+            self._model_path = f'models/rnn-hid{self.hidden_size}-lr{self.learning_rate}-e{epochs}-loss{loss:.4f}'
 
             # Saving the model
-            saver.save(sess, './models/' + self._output_name)
+            saver.save(sess, self._model_path)
 
-    def predict(self, start_text, d, length=1):
-        """Predicts a new input batch using the same trained model.
+            logger.info(f'Model saved: {self._model_path}.')
+
+    def predict(self, input_batch, model_path=None, probability=1):
+        """Predicts a new input based on a pre-trained network.
+
+        Args:
+            input_batch (tensor): An input batch to be predicted.
+            model_path (str): A string holding the path to the desired model.
+            probability (boolean): If true, will return a probability insteaf of a label.
 
         Returns:
-            The predicted array.
+            The index of the prediction.
+
+        """
+
+        # Declaring a saver object for saving the model
+        saver = tf.train.Saver()
+
+        # Instanciating a new tensorflow session
+        sess = tf.Session()
+
+        # Restoring the model, should use the same name as the one it was saved
+        if (self._model_path):
+            saver.restore(sess, self._model_path)
+        else:
+            saver.restore(sess, model_path)
+
+        # Running the predictor method according to argument
+        if (probability):
+            predict = sess.run([self.predictor_prob], feed_dict={self.x: input_batch})
+        else:
+            predict = sess.run([self.predictor], feed_dict={self.x: input_batch})
+
+        return predict
+
+
+
+    def generate_text(self, dataset, start_text='', max_length=1, model_path=None):
+        """Generates a maximum length of new text based on the probability of next char
+        ocurring.
+
+        Args:
+            dataset (OneHot): A OneHot object.
+            start_text (str): The initial text for generating new text.
+            max_length (int): Maximum amount of generated text.
+            model_path (str): If needed, will load a different model from the previously trained.
+
+        Returns:
+            A custom generated text.
         
         """
 
@@ -226,20 +298,23 @@ class RNN(Neural):
         sess = tf.Session()
 
         # Restoring the model, should use the same name as the one it was saved
-        saver.restore(sess, './models/' + self._output_name)
+        if (self._model_path):
+            saver.restore(sess, self._model_path)
+        else:
+            saver.restore(sess, model_path)
 
         # Runs the model and calculates the prediction 'length' times
         text = ''
         tokens = list(start_text)
-        for _ in range(length):
-            idx_token = d.indexate_tokens(tokens, d.vocab_index)
-            x_p, _ = d.encode_tokens(idx_token, d.max_length, d.vocab_size)
+        for _ in range(max_length):
+            idx_token = dataset.indexate_tokens(tokens, dataset.vocab_index)
+            x_p, _ = dataset.encode_tokens(idx_token, dataset.max_length, dataset.vocab_size)
 
             predict = sess.run([self.predictor], feed_dict={self.x: x_p})
 
             del tokens[0]
-            tokens.append(d.index_vocab[predict[0][-1]])
+            tokens.append(dataset.index_vocab[predict[0][-1]])
 
-            text += d.index_vocab[predict[0][-1]]
+            text += dataset.index_vocab[predict[0][-1]]
 
         return text

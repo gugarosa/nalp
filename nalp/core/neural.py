@@ -51,6 +51,15 @@ class Neural:
         raise NotImplementedError
 
     @d.define_scope
+    def accuracy(self):
+        """Each child of Neural object has the possibility of defining its custom accuracy function.
+        Please check the vanilla RNN class in order to implement your own.
+
+        """
+
+        raise NotImplementedError
+
+    @d.define_scope
     def optimizer(self):
         """Each child of Neural object has the possibility of defining its custom optimizer.
         Please check the vanilla RNN class in order to implement your own.
@@ -70,14 +79,14 @@ class Neural:
 
     def train(self):
         """You should implement your own training step in order to work with this class.
-        
+
         """
 
         raise NotImplementedError
 
     def predict(self):
         """If needed, you can implement what happens later, if you wish to restore your model and
-        predict something new.
+        predict something new and return its label.
 
         """
 
