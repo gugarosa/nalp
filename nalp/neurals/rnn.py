@@ -1,6 +1,7 @@
 import nalp.utils.decorators as d
 import nalp.utils.logging as l
 import tensorflow as tf
+import numpy as np
 from nalp.core.neural import Neural
 
 logger = l.get_logger(__name__)
@@ -264,7 +265,11 @@ class RNN(Neural):
         if (self._model_path):
             saver.restore(sess, self._model_path)
         else:
+            self._model_path = model_path
             saver.restore(sess, model_path)
+
+        logger.info(f'Model restored from: {self._model_path}.')
+        logger.info(f'Predicting with probability={probability}.')
 
         # Running the predictor method according to argument
         if (probability):
@@ -273,8 +278,6 @@ class RNN(Neural):
             predict = sess.run([self.predictor], feed_dict={self.x: input_batch})
 
         return predict
-
-
 
     def generate_text(self, dataset, start_text='', max_length=1, model_path=None):
         """Generates a maximum length of new text based on the probability of next char
@@ -291,6 +294,8 @@ class RNN(Neural):
         
         """
 
+        logger.info(f'Generating new text with length: {max_length}.')
+
         # Declaring a saver object for saving the model
         saver = tf.train.Saver()
 
@@ -303,18 +308,36 @@ class RNN(Neural):
         else:
             saver.restore(sess, model_path)
 
-        # Runs the model and calculates the prediction 'length' times
-        text = ''
+        # Defining variable to hold decoded generation
+        output_text = ''.join(start_text)
+
+        # Creating tokens from starting text
         tokens = list(start_text)
+
+        # Iterate through maximum desired length
         for _ in range(max_length):
+            # Indexate tokens
             idx_token = dataset.indexate_tokens(tokens, dataset.vocab_index)
+            
+            # Creates the input batch
             x_p, _ = dataset.encode_tokens(idx_token, dataset.max_length, dataset.vocab_size)
 
-            predict = sess.run([self.predictor], feed_dict={self.x: x_p})
+            # Calculates the prediction
+            predict = sess.run([self.predictor_prob], feed_dict={self.x: x_p})
 
+            # Chooses a index based on the predictions probability distribution
+            idx = np.random.choice(
+                range(dataset.vocab_size),
+                p=predict[0][-1]
+            )
+
+            # Removing first token
             del tokens[0]
-            tokens.append(dataset.index_vocab[predict[0][-1]])
 
-            text += dataset.index_vocab[predict[0][-1]]
+            # Appending newest character as last token
+            tokens.append(dataset.index_vocab[idx])
+        
+            # Outputting generated characters to start text
+            output_text += dataset.index_vocab[idx]
 
-        return text
+        return output_text
