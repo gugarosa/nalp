@@ -11,8 +11,6 @@ class OneHot(Dataset):
 
     Properties:
         max_length (int): The maximum length of the encoding.
-        X (np.array): Input samples already in one-hot encoding format.
-        Y (np.array): Target samples already in one-hot encoding format.
 
     Methods:
         encode_tokens(tokens_idx, max_length, vocab_size): Encodes indexed tokens into one-hot format.
@@ -53,22 +51,6 @@ class OneHot(Dataset):
         """
 
         return self._max_length
-
-    @property
-    def X(self):
-        """Input samples already in one-hot encoding format.
-
-        """
-
-        return self._X
-
-    @property
-    def Y(self):
-        """Target samples already in one-hot encoding format.
-
-        """
-
-        return self._Y
 
     def encode_tokens(self, tokens_idx, max_length, vocab_size):
         """Encodes indexed tokens into one-hot format.

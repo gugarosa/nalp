@@ -33,7 +33,7 @@ rnn = RNN(max_length=d.max_length, hidden_size=64,
           shape=[X_SHAPE, Y_SHAPE])
 
 # Training the network
-rnn.train(d.X, d.Y, epochs=200, verbose=True, save_model=True)
+rnn.train(dataset=d, epochs=100, batch_size=128, verbose=True, save_model=True)
 
 # Predicting using the same input (just for checking what is has learnt)
 pred = rnn.predict(d.X, probability=False)

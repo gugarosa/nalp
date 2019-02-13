@@ -11,11 +11,14 @@ class Dataset:
         vocab_index (dict): A dictionary mapping vocabulary to indexes.
         index_vocab (dict): A dictionary mapping indexes to vocabulary.
         tokens_idx (np.array): A numpy array holding the indexed tokens.
+        X (np.array): Input samples.
+        Y (np.array): Target samples.
 
     Methods:
         vocab_to_index(vocab): Maps a vocabulary to integer indexes.
         index_to_vocab(vocab): Maps integer indexes to a vocabulary.
         indexate_tokens(tokens, vocab_index): Indexates tokens based on a previous defined vocabulary.
+        create_batches(X, Y, batch_size): Creates an iterator for feeding (X, Y) batches to the network.
 
     """
 
@@ -44,6 +47,12 @@ class Dataset:
 
         # Indexate tokens based on a vocabulary-index dictionary
         self._tokens_idx = self.indexate_tokens(tokens, self._vocab_index)
+
+        # Defining inputs placeholder for further filling
+        self._X = None
+
+        # We also need to define the labels placeholder
+        self._Y = None
 
     @property
     def tokens(self):
@@ -85,6 +94,22 @@ class Dataset:
 
         return self._tokens_idx
 
+    @property
+    def X(self):
+        """Input samples.
+
+        """
+
+        return self._X
+
+    @property
+    def Y(self):
+        """Target samples.
+
+        """
+
+        return self._Y
+
     def vocab_to_index(self, vocab):
         """Maps a vocabulary to integer indexes.
 
@@ -118,3 +143,48 @@ class Dataset:
 
         tokens_idx = np.array([vocab_index[c] for c in tokens])
         return tokens_idx
+
+    def create_batches(self, X, Y, batch_size):
+        """Creates an interator to feed (X, Y) batches to the network.
+
+        Args:
+            X (np.array): An array of inputs.
+            Y (np.array): An array of labels.
+            batch_size (int): The size of each batch.
+
+        Yields:
+            An iterator containing (X, Y) batches.
+
+        """
+
+        # Getting the number of avaliable samples
+        n_samples = X.shape[0]
+
+        # Calculating the number of batches
+        n_batches = n_samples // batch_size
+
+        # Creating an index vector for shuffling the data
+        idx = np.arange(n_samples)
+        np.random.shuffle(idx)
+
+        # The first step should be declared as 0
+        i = 0
+
+        # Iterate through all possible batches
+        for _ in range(n_batches):
+            # Pre-allocate x and y batches with current batch_size
+            x_batch = [None] * batch_size
+            y_batch = [None] * batch_size
+
+            # Iterate through the batch size
+            for j in range(batch_size):
+                # Gathers a random sample based on pre-defined index
+                x_batch[j] = X[idx[i]]
+                y_batch[j] = Y[idx[i]]
+
+                # Increases to next step
+                i += 1
+                
+            yield x_batch, y_batch
+
+

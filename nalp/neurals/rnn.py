@@ -9,7 +9,7 @@ logger = l.get_logger(__name__)
 
 class RNN(Neural):
     """A RNN class is the one in charge of Recurrent Neural Networks vanilla implementation.
-    They were implemented using this paper:
+    They were implemented using this paper: http://psych.colorado.edu/~kimlab/Elman1990.pdf
 
     Properties:
         max_length (int): The maximum length of the encoding.
@@ -135,7 +135,7 @@ class RNN(Neural):
         # Transposing the vector dimensions
         self.o = tf.transpose(self.o, [1, 0, 2])
 
-        # Gathering the reserve array
+        # Gathering the re array
         self.o = self.o[-1]
 
         return tf.matmul(self.o, self.W) + self.b
@@ -225,19 +225,20 @@ class RNN(Neural):
 
         return predictor_prob
 
-    def train(self, input_batch, target_batch, epochs=100, verbose=0, save_model=1):
+    def train(self, dataset, epochs=100, batch_size=1, verbose=0, save_model=1):
         """Trains a model.
 
         Args:
-            input_batch (tensor): Input data tensor [None, max_length, vocab_size].
-            target_batch (tensor): Input labels tensor [None, vocab_size].
+            dataset (Dataset): A Dataset object containing already encoded data (X, Y).
             epochs (int): The maximum number of training epochs.
+            batch_size (int): The maximum size for each training batch.
             verbose (boolean): If verbose is true, additional printing will be done.
             save_model (boolean): If save_model is true, model will be saved into models/.
 
         """
 
         logger.info(f'Model ready to be trained for: {epochs} epochs.')
+        logger.info(f'Batch size: {batch_size}.')
 
         # Initializing all tensorflow variables
         init = tf.global_variables_initializer()
@@ -250,9 +251,22 @@ class RNN(Neural):
 
         # Iterate through all epochs
         for epoch in range(epochs):
-            # We run the session by feeding inputs to it (X and Y)
-            _, loss, acc = sess.run([self.optimizer, self.loss, self.accuracy], feed_dict={
-                self.x: input_batch, self.y: target_batch})
+            # Creating lists to append losses and accuracies
+            loss = []
+            acc = []
+
+            # Iterate through all possible batches, dependending on batch size
+            for input_batch, target_batch in dataset.create_batches(dataset.X, dataset.Y, batch_size):
+                # We run the session by feeding batches to it
+                _, batch_loss, batch_acc = sess.run([self.optimizer, self.loss, self.accuracy], feed_dict={
+                    self.x: input_batch, self.y: target_batch})
+                # Appending losses and accuracies
+                loss.append(batch_loss)
+                acc.append(batch_acc)
+
+            # For each epoch, we need to calculate the mean of losses and accuracies (sum over batches)
+            loss = np.mean(loss)
+            acc = np.mean(acc)
 
             # If verbose is True, additional printing will be made
             if (verbose):
