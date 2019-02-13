@@ -23,9 +23,14 @@ pred_input = pipe(pred_input)
 # Creating a OneHot dataset
 d = OneHot(sentences, max_length=10)
 
+# Creating tensor shapes
+X_SHAPE = [None, d.max_length, d.vocab_size]
+Y_SHAPE = [None, d.vocab_size]
+
 # Defining a neural network based on vanilla RNN
 rnn = RNN(max_length=d.max_length, hidden_size=64,
-          vocab_size=d.vocab_size, learning_rate=0.01)
+          vocab_size=d.vocab_size, learning_rate=0.01,
+          shape=[X_SHAPE, Y_SHAPE])
 
 # Training the network
 rnn.train(d.X, d.Y, epochs=200, verbose=True, save_model=True)
@@ -41,5 +46,5 @@ for p in pred:
 print(pred_text)
 
 # Generating new text
-gen_text = rnn.generate_text(dataset=d, start_text=pred_input, max_length=100)
+gen_text = rnn.generate_text(dataset=d, start_text=pred_input, length=100)
 print(gen_text)

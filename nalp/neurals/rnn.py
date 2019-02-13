@@ -9,17 +9,28 @@ logger = l.get_logger(__name__)
 
 class RNN(Neural):
     """A RNN class is the one in charge of Recurrent Neural Networks vanilla implementation.
-    They were implemented from this paper:
+    They were implemented using this paper:
+
+    Properties:
+        max_length (int): The maximum length of the encoding.
+        vocab_size (int): The size of the vocabulary.
+        hidden_size (int): The amount of hidden neurons.
+        learning_rate (float): A big or small addition on the optimizer steps.
 
     Methods:
         model(): tf.nn.dynamic_rnn with tf.nn.rnn_cell.BasicRNNCell
         loss(): tf.nn.softmax_cross_entropy_with_logits_v2
+        accuracy(): tf.equal(tf.argmax)
         optimizer(): tf.train.AdamOptimizer
         predictor(): tf.argmax
+        predictor_prob(): tf.nn.softmax
+        train(input_batch, target_batch, epochs, verbose, save_model): Trains the network.
+        predict(input_batch, model_path, probability): Predicts a new input.
+        generate_text(dataset, start_text, length, model_path): Generates text beginning with a custom text seed.
 
     """
 
-    def __init__(self, max_length=1, vocab_size=1, hidden_size=2, learning_rate=0.001):
+    def __init__(self, max_length=1, vocab_size=1, hidden_size=2, learning_rate=0.001, shape=None):
         """Initialization method.
 
         Args:
@@ -27,13 +38,15 @@ class RNN(Neural):
             vocab_size (int): The size of the vocabulary.
             hidden_size (int): The amount of hidden neurons.
             learning_rate (float): A big or small addition on the optimizer steps.
+            shape (list): A list containing in its first position the shape of the inputs (x)
+            and on the second position, the shape of the labels (y).
 
         """
 
         logger.info('Overriding class: Neural -> RNN.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(RNN, self).__init__(max_length=max_length, vocab_size=vocab_size)
+        super(RNN, self).__init__(shape=shape)
 
         # We need to create a property holding the max length of the encoding
         self._max_length = max_length
@@ -57,6 +70,8 @@ class RNN(Neural):
         self.predictor
         # Or probabilities
         self.predictor_prob
+
+        logger.info('Class overrided.')
 
     @property
     def max_length(self):
@@ -100,16 +115,18 @@ class RNN(Neural):
 
         """
 
-        logger.debug(f'Constructing model with shape: ({self.hidden_size}, {self.vocab_size}).')
+        logger.debug(
+            f'Constructing model with shape: ({self.hidden_size}, {self.vocab_size}).')
 
         # W will be the weight matrix
-        self.W = tf.Variable(tf.random_normal([self.hidden_size, self.vocab_size]))
+        self.W = tf.Variable(tf.random_normal(
+            [self.hidden_size, self.vocab_size]))
 
         # b will the bias vector
         self.b = tf.Variable(tf.random_normal([self.vocab_size]))
 
         # For vanilla RNN, we will use a basic RNN cell
-        self.cell = tf.nn.rnn_cell.BasicRNNCell(self.hidden_size)
+        self.cell = tf.keras.layers.SimpleRNNCell(self.hidden_size)
 
         # We do also need to create the RNN object itself
         self.o, self.h = tf.nn.dynamic_rnn(
@@ -126,10 +143,10 @@ class RNN(Neural):
     @d.define_scope
     def loss(self):
         """The loss function should be defined according your knowlodge.
-        
+
         Returns:
             The loss function itself.
-        
+
         """
 
         # Defining the loss function
@@ -139,7 +156,7 @@ class RNN(Neural):
         # Applying an extra operation on defined loss
         loss = tf.reduce_mean(cross_entropy)
 
-        logger.debug(f'Loss function: {loss}.')
+        logger.debug(f'Loss: {loss}.')
 
         return loss
 
@@ -152,9 +169,10 @@ class RNN(Neural):
         """
 
         # Defining the accuracy function
-        accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(self.model, 1), tf.argmax(self.y, 1)), tf.float32))
+        accuracy = tf.reduce_mean(
+            tf.cast(tf.equal(tf.argmax(self.model, 1), tf.argmax(self.y, 1)), tf.float32))
 
-        logger.debug(f'Accuracy function: {accuracy}.')
+        logger.debug(f'Accuracy: {accuracy}.')
 
         return accuracy
 
@@ -165,13 +183,14 @@ class RNN(Neural):
 
         Returns:
             An optimizer object that minimizes the loss function.
-        
+
         """
 
         # Creates an optimizer object
         optimizer = tf.train.AdamOptimizer(self.learning_rate)
 
-        logger.debug(f'Optimizer: {optimizer} | Learning rate: {self.learning_rate}.')
+        logger.debug(
+            f'Optimizer: {optimizer} | Learning rate: {self.learning_rate}.')
 
         return optimizer.minimize(self.loss)
 
@@ -181,10 +200,15 @@ class RNN(Neural):
 
         Returns:
             The index of the character with the highest probability of being the target.
-        
+
         """
 
-        return tf.cast(tf.argmax(self.model, 1), tf.int32)
+        # Creates a predictor object
+        predictor = tf.cast(tf.argmax(self.model, 1), tf.int32)
+
+        logger.debug(f'Predictor: {predictor}.')
+
+        return predictor
 
     @d.define_scope
     def predictor_prob(self):
@@ -194,7 +218,12 @@ class RNN(Neural):
             The probability array of an index being the target.
         """
 
-        return tf.nn.softmax(self.model)
+        # Creates a probability predictor object
+        predictor_prob = tf.nn.softmax(self.model)
+
+        logger.debug(f'Predictor (prob): {predictor_prob}.')
+
+        return predictor_prob
 
     def train(self, input_batch, target_batch, epochs=100, verbose=0, save_model=1):
         """Trains a model.
@@ -205,7 +234,7 @@ class RNN(Neural):
             epochs (int): The maximum number of training epochs.
             verbose (boolean): If verbose is true, additional printing will be done.
             save_model (boolean): If save_model is true, model will be saved into models/.
-        
+
         """
 
         logger.info(f'Model ready to be trained for: {epochs} epochs.')
@@ -223,11 +252,12 @@ class RNN(Neural):
         for epoch in range(epochs):
             # We run the session by feeding inputs to it (X and Y)
             _, loss, acc = sess.run([self.optimizer, self.loss, self.accuracy], feed_dict={
-                               self.x: input_batch, self.y: target_batch})
+                self.x: input_batch, self.y: target_batch})
 
             # If verbose is True, additional printing will be made
             if (verbose):
-                logger.debug(f'Epoch: {epoch}/{epochs} | Loss: {loss:.4f} | Accuracy: {acc:.4f}')
+                logger.debug(
+                    f'Epoch: {epoch}/{epochs} | Loss: {loss:.4f} | Accuracy: {acc:.4f}')
 
         # If save model is True, we will save it for further restoring
         if (save_model):
@@ -235,7 +265,7 @@ class RNN(Neural):
             saver = tf.train.Saver()
 
             # Creating a custom string to be its output name
-            self._model_path = f'models/rnn-hid{self.hidden_size}-lr{self.learning_rate}-e{epochs}-loss{loss:.4f}'
+            self._model_path = f'models/rnn-hid{self.hidden_size}-lr{self.learning_rate}-e{epochs}-loss{loss:.4f}-acc{acc:.4f}'
 
             # Saving the model
             saver.save(sess, self._model_path)
@@ -273,28 +303,30 @@ class RNN(Neural):
 
         # Running the predictor method according to argument
         if (probability):
-            predict = sess.run([self.predictor_prob], feed_dict={self.x: input_batch})
+            predict = sess.run([self.predictor_prob],
+                               feed_dict={self.x: input_batch})
         else:
-            predict = sess.run([self.predictor], feed_dict={self.x: input_batch})
+            predict = sess.run([self.predictor], feed_dict={
+                               self.x: input_batch})
 
         return predict
 
-    def generate_text(self, dataset, start_text='', max_length=1, model_path=None):
+    def generate_text(self, dataset, start_text='', length=1, model_path=None):
         """Generates a maximum length of new text based on the probability of next char
         ocurring.
 
         Args:
             dataset (OneHot): A OneHot object.
             start_text (str): The initial text for generating new text.
-            max_length (int): Maximum amount of generated text.
+            length (int): Maximum amount of generated text.
             model_path (str): If needed, will load a different model from the previously trained.
 
         Returns:
             A custom generated text.
-        
+
         """
 
-        logger.info(f'Generating new text with length: {max_length}.')
+        logger.info(f'Generating new text with length: {length}.')
 
         # Declaring a saver object for saving the model
         saver = tf.train.Saver()
@@ -315,12 +347,13 @@ class RNN(Neural):
         tokens = list(start_text)
 
         # Iterate through maximum desired length
-        for _ in range(max_length):
+        for _ in range(length):
             # Indexate tokens
             idx_token = dataset.indexate_tokens(tokens, dataset.vocab_index)
-            
+
             # Creates the input batch
-            x_p, _ = dataset.encode_tokens(idx_token, dataset.max_length, dataset.vocab_size)
+            x_p, _ = dataset.encode_tokens(
+                idx_token, dataset.max_length, dataset.vocab_size)
 
             # Calculates the prediction
             predict = sess.run([self.predictor_prob], feed_dict={self.x: x_p})
@@ -336,7 +369,7 @@ class RNN(Neural):
 
             # Appending newest character as last token
             tokens.append(dataset.index_vocab[idx])
-        
+
             # Outputting generated characters to start text
             output_text += dataset.index_vocab[idx]
 

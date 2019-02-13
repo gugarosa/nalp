@@ -40,6 +40,10 @@ class OneHot(Dataset):
         self._X, self._Y = self.encode_tokens(
             self._tokens_idx, max_length, self._vocab_size)
 
+        # Logging some important information
+        logger.debug(
+            f'X: {self._X.shape} | Y: {self._Y.shape}.')
+
         logger.info('Class overrided.')
 
     @property
@@ -79,8 +83,6 @@ class OneHot(Dataset):
 
         """
 
-        logger.debug('Running public method: encode_tokens().')
-
         # Creates empty lists for further appending
         inputs = []
         targets = []
@@ -103,9 +105,5 @@ class OneHot(Dataset):
                 X[i, t, token] = 1
             # If there is a token on Y, mark as true
             Y[i, targets[i]] = 1
-
-        # Logging some important information
-        logger.debug(
-            f'X: {X.shape} | Y: {Y.shape}.')
 
         return X, Y
