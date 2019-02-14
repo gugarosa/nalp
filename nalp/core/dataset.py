@@ -144,13 +144,14 @@ class Dataset:
         tokens_idx = np.array([vocab_index[c] for c in tokens])
         return tokens_idx
 
-    def create_batches(self, X, Y, batch_size):
+    def create_batches(self, X, Y, batch_size, shuffle=True):
         """Creates an interator to feed (X, Y) batches to the network.
 
         Args:
             X (np.array): An array of inputs.
             Y (np.array): An array of labels.
             batch_size (int): The size of each batch.
+            shuffle (boolean): If yes, shuffles the data.
 
         Yields:
             An iterator containing (X, Y) batches.
@@ -165,7 +166,11 @@ class Dataset:
 
         # Creating an index vector for shuffling the data
         idx = np.arange(n_samples)
-        np.random.shuffle(idx)
+
+        # Checking if shuffle argument is true
+        if shuffle:
+            # If yes, shuffles the data
+            np.random.shuffle(idx)
 
         # The first step should be declared as 0
         i = 0
@@ -184,7 +189,5 @@ class Dataset:
 
                 # Increases to next step
                 i += 1
-                
+
             yield x_batch, y_batch
-
-

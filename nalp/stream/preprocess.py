@@ -33,6 +33,7 @@ def valid_char(s):
 
     return re.sub('[^a-zA-z0-9\s]', '', s)
 
+
 def tokenize_to_char(s):
     """Tokenizes a sentence to characters array.
 
@@ -80,4 +81,5 @@ def pipeline(*func):
         return x
 
     logger.info('Pipeline created with ' + str(func) + '.')
+
     return process

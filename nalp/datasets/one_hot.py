@@ -13,7 +13,9 @@ class OneHot(Dataset):
         max_length (int): The maximum length of the encoding.
 
     Methods:
-        encode_tokens(tokens_idx, max_length, vocab_size): Encodes indexed tokens into one-hot format.
+        encode(token_idx, vocab_size): Encodes an indexated token into an one-hot encoding.
+        decode(encoded_data, probability): Decodes an one-hot encoding into raw text.
+        create_samples(tokens_idx, max_length, vocab_size): Encodes indexed tokens into one-hot format.
 
     """
 
@@ -34,8 +36,8 @@ class OneHot(Dataset):
         # We need to create a property holding the max length of the encoding
         self._max_length = max_length
 
-        # Calls encode function and creates a (X, Y) for further using
-        self._X, self._Y = self.encode_tokens(
+        # Calls creating samples method to populate (X, Y) for further using
+        self._X, self._Y = self.create_samples(
             self._tokens_idx, max_length, self._vocab_size)
 
         # Logging some important information
@@ -52,8 +54,58 @@ class OneHot(Dataset):
 
         return self._max_length
 
-    def encode_tokens(self, tokens_idx, max_length, vocab_size):
-        """Encodes indexed tokens into one-hot format.
+
+    def encode(self, token_idx, vocab_size):
+        """Encodes an indexated token into an one-hot encoding.
+
+        Args:
+            token_idx (int): The index of the token to be encoded.
+            vocab_size (int): The size of the vocabulary.
+
+        Returns:
+            A one-hot encoded array.
+
+        """
+
+        # Creating array to hold encoded data
+        encoded_data = np.zeros((vocab_size), dtype=np.int32)
+
+        # Marking as true where tokens exists
+        encoded_data[token_idx] = 1
+
+        return encoded_data
+
+    def decode(self, encoded_data, probability=1):
+        """Decodes an one-hot encoding into raw text.
+
+        Args:
+            encoded_data (np.array): An array holding the encoded data.
+            probability (boolean): Whether the encoded data is an array of probabilities
+            or integers.
+
+        Returns:
+            A one-hot decoded text.
+
+        """
+
+        # Declaring a null string to hold the decoded data
+        decoded_text = ''
+
+        # Iterating through all encoded data
+        for e in encoded_data:
+            # For each encode, decoded it and add to decoded_text
+            if probability:
+                # If probability is true, we need to recover the argmax of 'e'
+                decoded_text += self.index_vocab[np.argmax(e)]
+            else:
+                # If not, we can just access 'e' position in the vocab
+                decoded_text += self.index_vocab[e]
+
+        return decoded_text
+
+    def create_samples(self, tokens_idx, max_length, vocab_size):
+        """Creates inputs and targets samples based in a one-hot encoding.
+        We are predicting t+1 timesteps for each char or word.
 
         Args:
             tokens_idx (np.array): A numpy array holding the indexed tokens.
@@ -83,9 +135,9 @@ class OneHot(Dataset):
         for i, input in enumerate(inputs):
             # For each input, iterate through all tokens
             for t, token in enumerate(input):
-                # If there is a token on X, mark as true
-                X[i, t, token] = 1
-            # If there is a token on Y, mark as true
-            Y[i, targets[i]] = 1
+                # If there is a token on X, encode it
+                X[i, t] = self.encode(token, vocab_size)
+            # If there is a token on Y, encode it
+            Y[i] = self.encode(targets[i], vocab_size)
 
         return X, Y

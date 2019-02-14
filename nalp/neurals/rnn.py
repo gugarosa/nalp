@@ -357,34 +357,35 @@ class RNN(Neural):
         # Defining variable to hold decoded generation
         output_text = ''.join(start_text)
 
-        # Creating tokens from starting text
-        tokens = list(start_text)
+        # Creating indexated tokens from starting text
+        tokens_idx = dataset.indexate_tokens(list(start_text), dataset.vocab_index)
+
+        # Creating seed to be inputed to the predictor
+        seed = np.zeros((1, len(tokens_idx), dataset.vocab_size), dtype=np.int32)
 
         # Iterate through maximum desired length
         for _ in range(length):
-            # Indexate tokens
-            idx_token = dataset.indexate_tokens(tokens, dataset.vocab_index)
-
-            # Creates the input batch
-            x_p, _ = dataset.encode_tokens(
-                idx_token, dataset.max_length, dataset.vocab_size)
+            # Iterate through all indexated tokens
+            for i, idx in enumerate(tokens_idx):
+                # Encodes each token into dataset's encoding
+                seed[0, i] = dataset.encode(idx, dataset.vocab_size)
 
             # Calculates the prediction
-            predict = sess.run([self.predictor_prob], feed_dict={self.x: x_p})
+            predict = sess.run([self.predictor_prob], feed_dict={self.x: seed})
 
             # Chooses a index based on the predictions probability distribution
-            idx = np.random.choice(
+            pred_idx = np.random.choice(
                 range(dataset.vocab_size),
                 p=predict[0][-1]
             )
 
-            # Removing first token
-            del tokens[0]
+            # Removing first indexated token
+            tokens_idx = np.delete(tokens_idx, 0, 0)
 
-            # Appending newest character as last token
-            tokens.append(dataset.index_vocab[idx])
+            # Appending predicted index to the end of indexated tokens
+            tokens_idx = np.append(tokens_idx, pred_idx)
 
             # Outputting generated characters to start text
-            output_text += dataset.index_vocab[idx]
+            output_text += dataset.index_vocab[pred_idx]
 
         return output_text

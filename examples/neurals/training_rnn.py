@@ -9,7 +9,7 @@ from nalp.neurals.rnn import RNN
 sentences = l.load_txt('data/chapter1_harry.txt')
 
 # Defining a predition input
-pred_input = "Mr. Dursley was the director of a firm called Grunnings"
+pred_input = "Mr. Dursley"
 
 # Creates a pre-processing pipeline
 pipe = p.pipeline(
@@ -24,7 +24,7 @@ pred_input = pipe(pred_input)
 d = OneHot(sentences, max_length=10)
 
 # Creating tensor shapes
-X_SHAPE = [None, d.max_length, d.vocab_size]
+X_SHAPE = [None, None, d.vocab_size]
 Y_SHAPE = [None, d.vocab_size]
 
 # Defining a neural network based on vanilla RNN
@@ -38,11 +38,9 @@ rnn.train(dataset=d, epochs=100, batch_size=128, verbose=True, save_model=True)
 # Predicting using the same input (just for checking what is has learnt)
 pred = rnn.predict(d.X, probability=False)
 
-# Iterating through prediction and creating a string to check predictions
-pred_text = ''
-for p in pred:
-    for t in p:
-        pred_text += d.index_vocab[t]
+# Calling decoding function to check the predictions
+# Note that if the network was predicted without probability, the decoder is also without
+pred_text = d.decode(pred[0], probability=False)
 print(pred_text)
 
 # Generating new text
