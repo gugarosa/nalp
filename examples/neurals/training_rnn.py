@@ -41,8 +41,8 @@ pred = rnn.predict(d.X, probability=False)
 # Calling decoding function to check the predictions
 # Note that if the network was predicted without probability, the decoder is also without
 pred_text = d.decode(pred[0], probability=False)
-print(pred_text)
+print(''.join(pred_text))
 
 # Generating new text
 gen_text = rnn.generate_text(dataset=d, start_text=pred_input, length=100)
-print(gen_text)
+print(''.join(gen_text))

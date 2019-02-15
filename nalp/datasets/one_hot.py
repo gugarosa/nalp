@@ -84,22 +84,22 @@ class OneHot(Dataset):
             or integers.
 
         Returns:
-            A one-hot decoded text.
+            A one-hot decoded list (can be characters or words).
 
         """
 
         # Declaring a null string to hold the decoded data
-        decoded_text = ''
+        decoded_text = []
 
         # Iterating through all encoded data
         for e in encoded_data:
             # For each encode, decoded it and add to decoded_text
             if probability:
                 # If probability is true, we need to recover the argmax of 'e'
-                decoded_text += self.index_vocab[np.argmax(e)]
+                decoded_text.append(self.index_vocab[np.argmax(e)])
             else:
                 # If not, we can just access 'e' position in the vocab
-                decoded_text += self.index_vocab[e]
+                decoded_text.append(self.index_vocab[e])
 
         return decoded_text
 

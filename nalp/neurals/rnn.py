@@ -336,7 +336,7 @@ class RNN(Neural):
             model_path (str): If needed, will load a different model from the previously trained.
 
         Returns:
-            A custom generated text.
+            A list containing a custom generated text (can be characters or words).
 
         """
 
@@ -355,7 +355,7 @@ class RNN(Neural):
             saver.restore(sess, model_path)
 
         # Defining variable to hold decoded generation
-        output_text = ''.join(start_text)
+        output_text = start_text
 
         # Creating indexated tokens from starting text
         tokens_idx = dataset.indexate_tokens(list(start_text), dataset.vocab_index)
@@ -386,6 +386,6 @@ class RNN(Neural):
             tokens_idx = np.append(tokens_idx, pred_idx)
 
             # Outputting generated characters to start text
-            output_text += dataset.index_vocab[pred_idx]
+            output_text.append(dataset.index_vocab[pred_idx])
 
         return output_text
