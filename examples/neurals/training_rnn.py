@@ -44,5 +44,5 @@ pred_text = d.decode(pred[0], probability=False)
 print(''.join(pred_text))
 
 # Generating new text
-gen_text = rnn.generate_text(dataset=d, start_text=pred_input, length=100)
+gen_text = rnn.generate_text(dataset=d, start_text=pred_input, length=100, temperature=0.2)
 print(''.join(gen_text))
