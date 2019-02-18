@@ -15,6 +15,7 @@ class Dataset:
         Y (np.array): Target samples.
 
     Methods:
+        _build_properties(tokens): Builds all properties if there are any tokens.
         vocab_to_index(vocab): Maps a vocabulary to integer indexes.
         index_to_vocab(vocab): Maps integer indexes to a vocabulary.
         indexate_tokens(tokens, vocab_index): Indexates tokens based on a previous defined vocabulary.
@@ -22,7 +23,7 @@ class Dataset:
 
     """
 
-    def __init__(self, tokens):
+    def __init__(self, tokens=None):
         """Initialization method.
         Some basic shared variables and methods between Datasets's childs
         should be declared here.
@@ -32,27 +33,31 @@ class Dataset:
 
         """
 
-        # Firstly, we need to define a tokens property
-        self._tokens = tokens
+        # List of tokens
+        self._tokens = None
 
-        # Calculates the vocabulary and its size from tokens
-        vocab = list(set(tokens))
-        self._vocab_size = len(vocab)
+        # The size of the vocabulary
+        self._vocab_size = None
 
-        # Creates a dictionary mapping vocabulary to indexes
-        self._vocab_index = self.vocab_to_index(vocab)
+        # A dictionary mapping vocabulary to indexes
+        self._vocab_index = None
 
-        # Creates a dictionary mapping indexes to vocabulary
-        self._index_vocab = self.index_to_vocab(vocab)
+        # A dictionary mapping indexes to vocabulary
+        self._index_vocab = None
 
-        # Indexate tokens based on a vocabulary-index dictionary
-        self._tokens_idx = self.indexate_tokens(tokens, self._vocab_index)
-
+        # The indexated tokens
+        self._tokens_idx = None
+        
         # Defining inputs placeholder for further filling
         self._X = None
 
         # We also need to define the labels placeholder
         self._Y = None
+
+        # Checking if there are any tokens
+        if tokens:
+            # If yes, build class properties
+            self._build_properties(tokens)
 
     @property
     def tokens(self):
@@ -109,6 +114,30 @@ class Dataset:
         """
 
         return self._Y
+
+    def _build_properties(self, tokens):
+        """Builds all properties if there are any tokens.
+
+        Args:
+            tokens (list): A list holding tokenized words or characters.
+
+        """
+
+        # Firstly, we need to define a tokens property
+        self._tokens = tokens
+
+        # Calculates the vocabulary and its size from tokens
+        vocab = list(set(tokens))
+        self._vocab_size = len(vocab)
+
+        # Creates a dictionary mapping vocabulary to indexes
+        self._vocab_index = self.vocab_to_index(vocab)
+
+        # Creates a dictionary mapping indexes to vocabulary
+        self._index_vocab = self.index_to_vocab(vocab)
+
+        # Indexate tokens based on a vocabulary-index dictionary
+        self._tokens_idx = self.indexate_tokens(tokens, self._vocab_index)
 
     def vocab_to_index(self, vocab):
         """Maps a vocabulary to integer indexes.
