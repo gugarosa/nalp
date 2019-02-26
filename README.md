@@ -1,5 +1,9 @@
 # NALP: Natural Adversarial Language Processing
 
+[![Latest release](https://img.shields.io/github/release/gugarosa/nalp.svg)](https://github.com/gugarosa/nalp/releases)
+[![Open issues](https://img.shields.io/github/issues/gugarosa/nalp.svg)](https://github.com/gugarosa/nalp/issues)
+[![License](https://img.shields.io/github/license/gugarosa/nalp.svg)](https://github.com/gugarosa/nalp/blob/master/LICENSE)
+
 ## Welcome to NALP.
 Have you ever wanted to created natural text from raw sources? If yes, NALP is for you! This package is an innovative way of dealing with natural language processing and adversarial learning. From bottom to top, from embeddings to neural networks, we will foster all research related to this newly trend.
 
@@ -22,8 +26,6 @@ NALP is compatible with: **Python 2.7-3.6**.
 3. Note that there might be some **additional** steps in order to use our solutions.
 4. If there is a problem, please do not **hesitate**, call us.
 
-
-
 ---
 
 ## Getting started: 60 seconds with NALP
@@ -41,10 +43,21 @@ NALP is based on the following structure, and you should pay attention to its tr
         - encoder
         - neural
     - datasets
+        - one_hot
+        - vanilla
     - encoders
+        - count
+        - tfidf
+        - word2vec
     - neurals
+        - rnn
     - stream
+        - loader
+        - preprocess
     - utils
+        - decorators
+        - logging
+        - splitters
     - visualization
 ```
 
@@ -52,23 +65,57 @@ NALP is based on the following structure, and you should pay attention to its tr
 
 Core is the core. Essentially, it is the parent of everything. You should find parent classes defining the basic of our structure. They should provide variables and methods that will help to construct other modules. It is composed by the following classes:
 
-1. Dataset (used to handle receiving (can be raw of pre-processed) data and preparing it for further neural package methods)
+```dataset```: Used to handle receiving (can be raw of pre-processed) data and preparing it for further neural package methods.
 
-2. Encoder (You can use different pre-stablished encoders as well. They should provide that matrix you were wanting all the time. For example: CountVectorizer, TF-IDF and Word2Vec.)
+```encoder```: You can use different pre-stablished encoders as well. They should provide that matrix you were wanting all the time. For example: CountVectorizer, TF-IDF and Word2Vec.
 
-3. Neural (This is the brain of the system. It will hold all the high-level methods in order to interact directly from tensorflow. That is it. No Keras. We use tensorflow. RAW. We like to learn and believe that machine learning is mathematics. TF proved to be great for us.)
+```neural```: This is the brain of the system. It will hold all the high-level methods in order to interact directly from tensorflow. That is it. No Keras. We use tensorflow. RAW. We like to learn and believe that machine learning is mathematics. TF proved to be great for us.
 
 ### Datasets
 
+Because we need data, right? Datasets are composed by classes and methods that allow to prepare data for further neural networks.
+
+```one_hot```: An one hot encoding for dataset. This serves as a basis for predicting next characters or words.
+
+```vanilla```: A vanilla dataset, used to load (X, Y) sample pairs. One can see as a basic structure for common datasets, where each sample is composed by features and labels.
+
 ### Encoders
+
+Text or Numbers? Encodings are used to make embeddings. Embeddings are used to feed into neural networks. Remember that networks cannot read raw data, therefore you might want to pre-encode your data using well-known encoders.
+
+```count```: CountVectorizer encoding.
+
+```tfidf```: TF-IDF encoding.
+
+```word2vec```: Word2Vec encoding.
 
 ### Neurals
 
+A neural networks package. In this package you can find all neural-related implementations. From naïve RNNs to BiLSTMs, you can use whatever suits your needs. All implementations were done using raw Tensorflow, mainly to better understand and control the whole training and inference process.
+
+```rnn```: A naïve Recurrent Neural Network implementation.
+
 ### Stream
+
+A stream package is used to manipulate data. From loading to processing, here you can find all classes and methods defined in order to help you achieve these tasks.
+
+```loader```: Loading module, used to load external text data.
+
+```preprocess```: Pre-processing module, used to pre-process, tokenize and many other methods.
 
 ### Utils
 
+This is an utilities package. Common things shared across the application should be implemented here. It is better to implement once and use as you wish than re-implementing the same thing over and over again.
+
+```decorators```: Decorators used to facilitate repetitive declarations.
+
+```logging```: Logging tools to track the progress of a NALP task.
+
+```splitters```: A data splitter tool. It might be removed in the future.
+
 ### Visualization
+
+A visualization package in order to better illustrate what is happening with your data. Use classes and methods to help you decide if your data is well enough to fulfill your desires.
 
 ---
 
@@ -102,6 +149,6 @@ No specific additional commands needed.
 
 ## Support
 
-We know that we do our best, but it's inevitable to acknowlodge that we make mistakes. If you every need to report a bug, report a problem, talk to us, please do so! We will be avaliable at our bests at this repository or recogna@fc.unesp.br.
+We know that we do our best, but it's inevitable to acknowlodge that we make mistakes. If you every need to report a bug, report a problem, talk to us, please do so! We will be avaliable at our bests at this repository or recogna@unesp.br.
 
 ---
