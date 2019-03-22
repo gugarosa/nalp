@@ -1,3 +1,4 @@
+coverage>=4.5.2
 gensim>=3.5.0
 matplotlib>=3.0.0
 nltk>=3.2.5
@@ -7,3 +8,5 @@ pylint>=1.7.4
 pytest>=3.2.3
 scikit-learn>=0.19.2
 scipy>=1.1.0
+sphinx>=1.8.5
+sphinx-rtd-theme>=0.4.3
