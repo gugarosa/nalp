@@ -1,7 +1,7 @@
 import nalp.utils.decorators as d
 import nalp.utils.logging as l
-import tensorflow as tf
 import numpy as np
+import tensorflow as tf
 from nalp.core.neural import Neural
 
 logger = l.get_logger(__name__)
@@ -9,24 +9,9 @@ logger = l.get_logger(__name__)
 
 class RNN(Neural):
     """A RNN class is the one in charge of Recurrent Neural Networks vanilla implementation.
-    They were implemented using this paper: http://psych.colorado.edu/~kimlab/Elman1990.pdf
-
-    Properties:
-        max_length (int): The maximum length of the encoding.
-        vocab_size (int): The size of the vocabulary.
-        hidden_size (int): The amount of hidden neurons.
-        learning_rate (float): A big or small addition on the optimizer steps.
-
-    Methods:
-        model(): tf.nn.dynamic_rnn with tf.nn.rnn_cell.BasicRNNCell
-        loss(): tf.nn.softmax_cross_entropy_with_logits_v2
-        accuracy(): tf.equal(tf.argmax)
-        optimizer(): tf.train.AdamOptimizer
-        predictor(): tf.argmax
-        predictor_prob(): tf.nn.softmax
-        train(input_batch, target_batch, epochs, verbose, save_model): Trains the network.
-        predict(input_batch, model_path, probability): Predicts a new input.
-        generate_text(dataset, start_text, length, model_path): Generates text beginning with a custom text seed.
+    
+    References:
+        http://psych.colorado.edu/~kimlab/Elman1990.pdf
 
     """
 
@@ -39,7 +24,7 @@ class RNN(Neural):
             hidden_size (int): The amount of hidden neurons.
             learning_rate (float): A big or small addition on the optimizer steps.
             shape (list): A list containing in its first position the shape of the inputs (x)
-            and on the second position, the shape of the labels (y).
+                and on the second position, the shape of the labels (y).
 
         """
 
@@ -50,24 +35,35 @@ class RNN(Neural):
 
         # We need to create a property holding the max length of the encoding
         self._max_length = max_length
+
         # One for vocab size
         self._vocab_size = vocab_size
+
         # One for the amount of hidden neurons
         self._hidden_size = hidden_size
+
         # And the last for the learning rate
         self._learning_rate = learning_rate
+
+        # Defining initial model path as none
+        self._model_path = None
 
         # The implemented methods should also be instanciated
         # Defines the model
         self.model
+
         # Calculates the loss function
         self.loss
+
         # Defines the accuracy function
         self.accuracy
+
         # Creates the optimization task
         self.optimizer
+
         # If you wish, predict new inputs based on indexes
         self.predictor
+
         # Or probabilities
         self.predictor_prob
 
@@ -75,7 +71,7 @@ class RNN(Neural):
 
     @property
     def max_length(self):
-        """The maximum length of the encoding.
+        """int: The maximum length of the encoding.
 
         """
 
@@ -83,7 +79,7 @@ class RNN(Neural):
 
     @property
     def vocab_size(self):
-        """The size of the vocabulary.
+        """int: The size of the vocabulary.
 
         """
 
@@ -91,7 +87,7 @@ class RNN(Neural):
 
     @property
     def hidden_size(self):
-        """The amount of hidden neurons.
+        """int: The amount of hidden neurons.
 
         """
 
@@ -99,15 +95,27 @@ class RNN(Neural):
 
     @property
     def learning_rate(self):
-        """A big or small addition on the optimizer steps.
+        """float: A big or small addition on the optimizer steps.
 
         """
 
         return self._learning_rate
 
+    @property
+    def model_path(self):
+        """str: A string containing the pre-trained model's path.
+
+        """
+
+        return self._model_path
+
+    @model_path.setter
+    def model_path(self, model_path):
+        self._model_path = model_path
+
     @d.define_scope
     def model(self):
-        """ The model should be constructed here. You can use whatever tensorflow
+        """The model should be constructed here. You can use whatever tensorflow
         operations you need.
 
         Returns:
@@ -166,6 +174,7 @@ class RNN(Neural):
 
         Returns:
             The accuracy value itself.
+
         """
 
         # Defining the accuracy function
@@ -216,6 +225,7 @@ class RNN(Neural):
 
         Returns:
             The probability array of an index being the target.
+
         """
 
         # Creates a probability predictor object
@@ -232,8 +242,8 @@ class RNN(Neural):
             dataset (Dataset): A Dataset object containing already encoded data (X, Y).
             epochs (int): The maximum number of training epochs.
             batch_size (int): The maximum size for each training batch.
-            verbose (boolean): If verbose is true, additional printing will be done.
-            save_model (boolean): If save_model is true, model will be saved into models/.
+            verbose (bool): If verbose is true, additional printing will be done.
+            save_model (bool): If save_model is true, model will be saved into models' folder.
 
         """
 
@@ -279,12 +289,12 @@ class RNN(Neural):
             saver = tf.train.Saver()
 
             # Creating a custom string to be its output name
-            self._model_path = f'models/rnn-hid{self.hidden_size}-lr{self.learning_rate}-e{epochs}-loss{loss:.4f}-acc{acc:.4f}'
+            self.model_path = f'models/rnn-hid{self.hidden_size}-lr{self.learning_rate}-e{epochs}-loss{loss:.4f}-acc{acc:.4f}'
 
             # Saving the model
-            saver.save(sess, self._model_path)
+            saver.save(sess, self.model_path)
 
-            logger.info(f'Model saved: {self._model_path}.')
+            logger.info(f'Model saved: {self.model_path}.')
 
     def predict(self, input_batch, model_path=None, probability=1):
         """Predicts a new input based on a pre-trained network.
@@ -292,7 +302,7 @@ class RNN(Neural):
         Args:
             input_batch (tensor): An input batch to be predicted.
             model_path (str): A string holding the path to the desired model.
-            probability (boolean): If true, will return a probability insteaf of a label.
+            probability (bool): If true, will return a probability insteaf of a label.
 
         Returns:
             The index of the prediction.
@@ -306,13 +316,13 @@ class RNN(Neural):
         sess = tf.Session()
 
         # Restoring the model, should use the same name as the one it was saved
-        if (self._model_path):
-            saver.restore(sess, self._model_path)
+        if (self.model_path):
+            saver.restore(sess, self.model_path)
         else:
-            self._model_path = model_path
+            self.model_path = model_path
             saver.restore(sess, model_path)
 
-        logger.info(f'Model restored from: {self._model_path}.')
+        logger.info(f'Model restored from: {self.model_path}.')
         logger.info(f'Predicting with probability={probability}.')
 
         # Running the predictor method according to argument
@@ -326,7 +336,7 @@ class RNN(Neural):
         return predict
 
     def _sample_from_multinomial(self, probs, temperature):
-        """ Samples an vocabulary index from a multinomial distribution.
+        """Samples an vocabulary index from a multinomial distribution.
 
         Args:
             probs (np.array): An array of probabilites from 'tf.nn.softmax'.
@@ -343,7 +353,7 @@ class RNN(Neural):
         # Then, we calculate the log of probs, divide by temperature and apply
         # exponential
         exp_probs = np.exp(np.log(probs) / temperature)
-        
+
         # Finally, we normalize it
         norm_probs = exp_probs / np.sum(exp_probs)
 
@@ -380,8 +390,8 @@ class RNN(Neural):
         sess = tf.Session()
 
         # Restoring the model, should use the same name as the one it was saved
-        if (self._model_path):
-            saver.restore(sess, self._model_path)
+        if (self.model_path):
+            saver.restore(sess, self.model_path)
         else:
             saver.restore(sess, model_path)
 
@@ -389,10 +399,12 @@ class RNN(Neural):
         output_text = start_text
 
         # Creating indexated tokens from starting text
-        tokens_idx = dataset.indexate_tokens(list(start_text), dataset.vocab_index)
+        tokens_idx = dataset.indexate_tokens(
+            list(start_text), dataset.vocab_index)
 
         # Creating seed to be inputed to the predictor
-        seed = np.zeros((1, len(tokens_idx), dataset.vocab_size), dtype=np.int32)
+        seed = np.zeros(
+            (1, len(tokens_idx), dataset.vocab_size), dtype=np.int32)
 
         # Iterate through maximum desired length
         for _ in range(length):
@@ -405,7 +417,8 @@ class RNN(Neural):
             predict = sess.run([self.predictor_prob], feed_dict={self.x: seed})
 
             # Chooses a index based on the predictions probability distribution
-            pred_idx = self._sample_from_multinomial(predict[0][-1], temperature)
+            pred_idx = self._sample_from_multinomial(
+                predict[0][-1], temperature)
 
             # Removing first indexated token
             tokens_idx = np.delete(tokens_idx, 0, 0)

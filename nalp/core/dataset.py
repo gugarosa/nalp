@@ -5,22 +5,6 @@ class Dataset:
     """A Dataset class is responsible for receiving raw tokens (words or chars) and
     creating properties that will be feed as an input to the networks (i.e., vocabulary and indexes).
 
-    Properties:
-        tokens (list): A list holding tokenized words or characters.
-        vocab_size (int): The size of the vocabulary.
-        vocab_index (dict): A dictionary mapping vocabulary to indexes.
-        index_vocab (dict): A dictionary mapping indexes to vocabulary.
-        tokens_idx (np.array): A numpy array holding the indexed tokens.
-        X (np.array): Input samples.
-        Y (np.array): Target samples.
-
-    Methods:
-        _build_properties(tokens): Builds all properties if there are any tokens.
-        vocab_to_index(vocab): Maps a vocabulary to integer indexes.
-        index_to_vocab(vocab): Maps integer indexes to a vocabulary.
-        indexate_tokens(tokens, vocab_index): Indexates tokens based on a previous defined vocabulary.
-        create_batches(X, Y, batch_size): Creates an iterator for feeding (X, Y) batches to the network.
-
     """
 
     def __init__(self, tokens=None):
@@ -61,59 +45,87 @@ class Dataset:
 
     @property
     def tokens(self):
-        """A list holding tokenized words or characters.
+        """list: A list holding tokenized words or characters.
 
         """
 
         return self._tokens
 
+    @tokens.setter
+    def tokens(self, tokens):
+        self._tokens = tokens
+
     @property
     def vocab_size(self):
-        """The size of the vocabulary.
+        """int: The size of the vocabulary.
 
         """
 
         return self._vocab_size
 
+    @vocab_size.setter
+    def vocab_size(self, vocab_size):
+        self._vocab_size = vocab_size
+
     @property
     def vocab_index(self):
-        """A dictionary mapping vocabulary to indexes.
+        """dict: A dictionary mapping vocabulary to indexes.
 
         """
 
         return self._vocab_index
 
+    @vocab_index.setter
+    def vocab_index(self, vocab_index):
+        self._vocab_index = vocab_index
+
     @property
     def index_vocab(self):
-        """A dictionary mapping indexes to vocabulary.
+        """dict: A dictionary mapping indexes to vocabulary.
 
         """
 
         return self._index_vocab
 
+    @index_vocab.setter
+    def index_vocab(self, index_vocab):
+        self._index_vocab = index_vocab
+
     @property
     def tokens_idx(self):
-        """A numpy array holding the indexed tokens.
+        """np.array: A numpy array holding the indexed tokens.
 
         """
 
         return self._tokens_idx
 
+    @tokens_idx.setter
+    def tokens_idx(self, tokens_idx):
+        self._tokens_idx = tokens_idx
+
     @property
     def X(self):
-        """Input samples.
+        """np.array: Input samples.
 
         """
 
         return self._X
 
+    @X.setter
+    def X(self, X):
+        self._X = X
+
     @property
     def Y(self):
-        """Target samples.
+        """np.array: Target samples.
 
         """
 
         return self._Y
+
+    @Y.setter
+    def Y(self, Y):
+        self._Y = Y
 
     def _build_properties(self, tokens):
         """Builds all properties if there are any tokens.
@@ -124,20 +136,20 @@ class Dataset:
         """
 
         # Firstly, we need to define a tokens property
-        self._tokens = tokens
+        self.tokens = tokens
 
         # Calculates the vocabulary and its size from tokens
         vocab = list(set(tokens))
-        self._vocab_size = len(vocab)
+        self.vocab_size = len(vocab)
 
         # Creates a dictionary mapping vocabulary to indexes
-        self._vocab_index = self.vocab_to_index(vocab)
+        self.vocab_index = self.vocab_to_index(vocab)
 
         # Creates a dictionary mapping indexes to vocabulary
-        self._index_vocab = self.index_to_vocab(vocab)
+        self.index_vocab = self.index_to_vocab(vocab)
 
         # Indexate tokens based on a vocabulary-index dictionary
-        self._tokens_idx = self.indexate_tokens(tokens, self._vocab_index)
+        self.tokens_idx = self.indexate_tokens(tokens, self.vocab_index)
 
     def vocab_to_index(self, vocab):
         """Maps a vocabulary to integer indexes.
@@ -148,6 +160,7 @@ class Dataset:
         """
 
         vocab_to_index = {c: i for i, c in enumerate(vocab)}
+
         return vocab_to_index
 
     def index_to_vocab(self, vocab):
@@ -159,6 +172,7 @@ class Dataset:
         """
 
         index_to_vocab = {i: c for i, c in enumerate(vocab)}
+
         return index_to_vocab
 
     def indexate_tokens(self, tokens, vocab_index):
@@ -171,6 +185,7 @@ class Dataset:
         """
 
         tokens_idx = np.array([vocab_index[c] for c in tokens])
+
         return tokens_idx
 
     def create_batches(self, X, Y, batch_size, shuffle=True):
@@ -180,7 +195,7 @@ class Dataset:
             X (np.array): An array of inputs.
             Y (np.array): An array of labels.
             batch_size (int): The size of each batch.
-            shuffle (boolean): If yes, shuffles the data.
+            shuffle (bool): If yes, shuffles the data.
 
         Yields:
             An iterator containing (X, Y) batches.

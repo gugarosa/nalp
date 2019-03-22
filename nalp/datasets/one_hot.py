@@ -9,14 +9,6 @@ class OneHot(Dataset):
     """An OneHot encoding Dataset child. It is responsible for receiving and preparing data
     in a one-hot format. This data serves as a basis for predicting t+1 timesteps.
 
-    Properties:
-        max_length (int): The maximum length of the encoding.
-
-    Methods:
-        encode(token_idx, vocab_size): Encodes an indexated token into an one-hot encoding.
-        decode(encoded_data, probability): Decodes an one-hot encoding into raw text.
-        create_samples(tokens_idx, max_length, vocab_size): Encodes indexed tokens into one-hot format.
-
     """
 
     def __init__(self, tokens, max_length=1):
@@ -37,23 +29,22 @@ class OneHot(Dataset):
         self._max_length = max_length
 
         # Calls creating samples method to populate (X, Y) for further using
-        self._X, self._Y = self.create_samples(
-            self._tokens_idx, max_length, self._vocab_size)
+        self.X, self.Y = self.create_samples(
+            self.tokens_idx, max_length, self.vocab_size)
 
         # Logging some important information
         logger.debug(
-            f'X: {self._X.shape} | Y: {self._Y.shape}.')
+            f'X: {self.X.shape} | Y: {self.Y.shape}.')
 
         logger.info('Class overrided.')
 
     @property
     def max_length(self):
-        """The maximum length of the encoding.
+        """int: The maximum length of the encoding.
 
         """
 
         return self._max_length
-
 
     def encode(self, token_idx, vocab_size):
         """Encodes an indexated token into an one-hot encoding.
@@ -80,7 +71,7 @@ class OneHot(Dataset):
 
         Args:
             encoded_data (np.array): An array holding the encoded data.
-            probability (boolean): Whether the encoded data is an array of probabilities
+            probability (bool): Whether the encoded data is an array of probabilities
             or integers.
 
         Returns:

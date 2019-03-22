@@ -16,6 +16,14 @@ NALP is compatible with: **Python 3.6+** and **PyPy 3.5**.
     :maxdepth: 2
     :caption: Package Reference
 
+    api/nalp.core
+    api/nalp.datasets
+    api/nalp.encoders
+    api/nalp.neurals
+    api/nalp.stream
+    api/nalp.utils
+    api/nalp.visualization
+
 
 Indices and tables
 ==================

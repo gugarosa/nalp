@@ -41,7 +41,7 @@ def get_logger(logger_name):
     """Gets a log and make it avaliable for further use.
 
     Args:
-        logger_name (str): The name of the logger
+        logger_name (str): The name of the logger.
 
     Returns:
         A handler to output information into console's.

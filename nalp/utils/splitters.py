@@ -9,21 +9,25 @@ def split_data(X, Y, split_size=0.5, random_state=42):
     """Splits X, Y (samples, labels) data into training and testing sets.
 
     Args:
-        X (obj): Input samples object.
-        Y (obj): Input labels object.
+        X (np.array): Input samples numpy array.
+        Y (np.array): Input labels numpy array.
         split_size (float): The proportion of test sets.
         random_state (int): Random integer to provide a random state to splitter.
 
     Returns:
-        X and Y training, testing sets.
+        X, Y training and testing sets.
 
     """
 
+    # Try to gather labels from pandas dataframe
     try:
         Y = pd.get_dummies(Y).values
+
+    # If not, logs the exception as a warning
     except Exception as e:
         logger.warn(e)
 
+    # Actually performs the split
     X_train, X_test, Y_train, Y_test = train_test_split(
         X, Y, test_size=split_size, random_state=42)
 

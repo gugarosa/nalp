@@ -8,7 +8,7 @@ def wrapper(function):
     defining a new decorator.
 
     Args:
-        function (func): an arbitrary function.
+        function (callable): An arbitrary function.
 
     """
 
@@ -16,8 +16,10 @@ def wrapper(function):
     def decorator(*args, **kwargs):
         if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
             return function(args[0])
+
         else:
             return lambda wrap: function(wrap, *args, **kwargs)
+
     return decorator
 
 
@@ -27,14 +29,15 @@ def define_scope(function, scope=None, *args, **kwargs):
     It servers as an helper by making them avaliable with tf.variable_scope().
 
     Args:
-        function (func): an arbitrary function.
-        scope (str): a string containing the scope's name.
-        args (*): additional arguments used to declare new scopes.
-        kwargs: (**): keywords arguments.
+        function (callable): An arbitrary function.
+        scope (str): A string containing the scope's name.
 
     """
 
+    # Gathers the attribute as a variable
     attribute = '_cache_' + function.__name__
+
+    # Gathers the name as a variable
     name = scope or function.__name__
 
     @property
@@ -43,5 +46,7 @@ def define_scope(function, scope=None, *args, **kwargs):
         if not hasattr(self, attribute):
             with tf.variable_scope(name, *args, **kwargs):
                 setattr(self, attribute, function(self))
+
         return getattr(self, attribute)
+
     return decorator

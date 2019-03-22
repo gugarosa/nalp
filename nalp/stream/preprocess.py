@@ -10,7 +10,7 @@ def lower_case(s):
     """Transforms an input string into its lower case version.
 
     Args:
-        s (str): input string
+        s (str): Input string.
 
     Returns:
         Lower case of 's'.
@@ -24,7 +24,7 @@ def valid_char(s):
     """Validates the input string characters.
 
     Args:
-        s (str): input string
+        s (str): Input string.
 
     Returns:
         String 's' after validation.
@@ -38,7 +38,7 @@ def tokenize_to_char(s):
     """Tokenizes a sentence to characters array.
 
     Args:
-        s (str): input string
+        s (str): Input string.
 
     Returns:
         Array of tokenized characters.
@@ -52,7 +52,7 @@ def tokenize_to_word(s):
     """Tokenizes a sentence to words array.
 
     Args:
-        s (str): input string
+        s (str): Input string.
 
     Returns:
         Array of tokenized words.
@@ -66,7 +66,7 @@ def pipeline(*func):
     """Creates a pre-processing pipeline.
 
     Args:
-        func (*function): function pointer.
+        *func (callable): Functions pointers.
 
     Returns:
         A created pre-processing pipeline for further use.

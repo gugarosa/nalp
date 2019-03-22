@@ -12,10 +12,6 @@ class Word2Vec(Encoder):
     """A Word2Vec class, responsible for learning a Word2Vec encode and
     further encoding new data.
 
-    Methods:
-        learn(sentences, max_features, window_size, min_count, algorithm, learning_rate, iterations): Learns a Word2Vec representation.
-        encode(sentences, max_tokens): Encodes the data into a Word2Vec representation.
-
     """
 
     def __init__(self):
@@ -48,7 +44,7 @@ class Word2Vec(Encoder):
         logger.debug('Running public method: learn().')
 
         # Creates a Word2Vec model
-        self._encoder = W2V(sentences=sentences, size=max_features, window=window_size, min_count=min_count,
+        self.encoder = W2V(sentences=sentences, size=max_features, window=window_size, min_count=min_count,
                             sg=algorithm, alpha=learning_rate, iter=iterations, workers=multiprocessing.cpu_count())
 
     def encode(self, sentences, max_tokens=10):
@@ -63,21 +59,21 @@ class Word2Vec(Encoder):
         logger.debug('Running public method: encode().')
 
         # Checks if enconder actually exists, if not raises a RuntimeError
-        if not self._encoder:
+        if not self.encoder:
             e = 'You need to call learn() prior to encode() method.'
             logger.error(e)
             raise RuntimeError(e)
 
         # Logging some important information
         logger.debug(
-            f'Size: ({sentences.size}, {max_tokens}, {self._encoder.vector_size}).')
+            f'Size: ({sentences.size}, {max_tokens}, {self.encoder.vector_size}).')
 
         # Get actual word vectors from Word2Vec class
-        wv = self._encoder.wv
+        wv = self.encoder.wv
 
         # Creates an encoded_X variable to hold encoded data
-        self._encoded_data = np.zeros(
-            (sentences.size, max_tokens, self._encoder.vector_size))
+        self.encoded_data = np.zeros(
+            (sentences.size, max_tokens, self.encoder.vector_size))
 
         # Iterate through all sentences
         for i in range(0, sentences.size):
@@ -87,4 +83,4 @@ class Word2Vec(Encoder):
                 if t >= max_tokens:
                     break
                 # Else, store its word vector value to a new variable
-                self._encoded_data[i, t, :] = wv[token]
+                self.encoded_data[i, t, :] = wv[token]
