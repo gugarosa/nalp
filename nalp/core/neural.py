@@ -1,5 +1,6 @@
 import nalp.utils.decorators as d
 import tensorflow as tf
+from tensorflow.keras import Model
 
 
 class Neural:
@@ -8,7 +9,7 @@ class Neural:
 
     """
 
-    def __init__(self, shape=None):
+    def __init__(self, model):
         """Initialization method.
         
         Note that basic variables shared by all childs should be declared here.
@@ -19,118 +20,36 @@ class Neural:
 
         """
 
-        # We need to define a placeholder for the data tensor
-        self._x = tf.placeholder(
-            tf.float32, shape[0], name='inputs')
+        self.model = model
 
-        # And another for the data's labels tensor
-        self._y = tf.placeholder(tf.float32, shape[1], name='labels')
+        self.optimizer = tf.optimizers.Adam(0.01)
 
-    @property
-    def x(self):
-        """tensor: A placeholder of custom shape to hold input data.
+        self.loss = tf.losses.CategoricalCrossentropy()
 
-        """
+        self.train_loss = tf.keras.metrics.Mean(name='train_loss')
 
-        return self._x
+        self.train_accuracy = tf.keras.metrics.CategoricalAccuracy(name='train_accuracy')
 
-    @property
-    def y(self):
-        """tensor: A placeholder of custom shape to hold input data labels.
 
-        """
 
-        return self._y
+    @tf.function
+    def step(self, input_batch, target_batch):
+        with tf.GradientTape() as tape:
+            preds = self.model(input_batch)
+            loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(target_batch, preds))
+            
+        gradients = tape.gradient(loss, self.model.trainable_variables)
+        self.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
 
-    @d.define_scope
-    def model(self):
-        """Each child of Neural object has the possibility of defining its own architecture.
-        Please check the vanilla RNN class in order to implement your own.
+        return self.train_loss(loss), self.train_accuracy(target_batch, preds)
 
-        Raises:
-            NotImplementedError
 
-        """
 
-        raise NotImplementedError
+    def train(self, dataset, epochs=10, batch_size=1):
+        data = dataset.create_batches(dataset.X, dataset.Y, batch_size)
 
-    @d.define_scope
-    def loss(self):
-        """Each child of Neural object has the possibility of defining its custom loss function.
-        Please check the vanilla RNN class in order to implement your own.
-
-        Raises:
-            NotImplementedError
-
-        """
-
-        raise NotImplementedError
-
-    @d.define_scope
-    def accuracy(self):
-        """Each child of Neural object has the possibility of defining its custom accuracy function.
-        Please check the vanilla RNN class in order to implement your own.
-
-        Raises:
-            NotImplementedError
-
-        """
-
-        raise NotImplementedError
-
-    @d.define_scope
-    def optimizer(self):
-        """Each child of Neural object has the possibility of defining its custom optimizer.
-        Please check the vanilla RNN class in order to implement your own.
-
-        Raises:
-            NotImplementedError
-        
-        """
-
-        raise NotImplementedError
-
-    @d.define_scope
-    def predictor(self):
-        """Each child of Neural object has the possibility of defining its custom predictor.
-        Please check the vanilla RNN class in order to implement your own.
-
-        Raises:
-            NotImplementedError
-        
-        """
-
-        raise NotImplementedError
-
-    @d.define_scope
-    def predictor_prob(self):
-        """Each child of Neural object has the possibility of defining its custom predictor (probabilities).
-        Please check the vanilla RNN class in order to implement your own.
-
-        Raises:
-            NotImplementedError
-        
-        """
-
-        raise NotImplementedError
-
-    def train(self):
-        """You should implement your own training step in order to work with this class.
-
-        Raises:
-            NotImplementedError
-
-        """
-
-        raise NotImplementedError
-
-    def predict(self):
-        """If needed, you can implement what happens later, if you wish to restore your model and
-        predict something new and return its label.
-
-        Raises:
-            NotImplementedError
-
-        """
-
-        raise NotImplementedError
+        for _ in range(epochs):
+            for input_batch, target_batch in data:
+                loss, acc = self.step(input_batch, target_batch)
+                print(loss, acc)
+                

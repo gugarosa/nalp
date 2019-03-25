@@ -3,6 +3,7 @@ import nalp.stream.preprocess as p
 import numpy as np
 import tensorflow as tf
 from nalp.datasets.one_hot import OneHot
+from nalp.core.neural import Neural
 from nalp.neurals.rnn import RNN
 
 # Loading a text
@@ -32,17 +33,21 @@ rnn = RNN(max_length=d.max_length, hidden_size=64,
           vocab_size=d.vocab_size, learning_rate=0.01,
           shape=[X_SHAPE, Y_SHAPE])
 
-# Training the network
 rnn.train(dataset=d, epochs=100, batch_size=128, verbose=True, save_model=True)
 
-# Predicting using the same input (just for checking what is has learnt)
-pred = rnn.predict(d.X, probability=False)
+# model = Neural(model=rnn)
 
-# Calling decoding function to check the predictions
-# Note that if the network was predicted without probability, the decoder is also without
-pred_text = d.decode(pred[0], probability=False)
-print(''.join(pred_text))
+# # Training the network
+# model.train(dataset=d, epochs=100, batch_size=128)
 
-# Generating new text
-gen_text = rnn.generate_text(dataset=d, start_text=pred_input, length=100, temperature=0.2)
-print(''.join(gen_text))
+# # Predicting using the same input (just for checking what is has learnt)
+# pred = rnn.predict(d.X, probability=False)
+
+# # Calling decoding function to check the predictions
+# # Note that if the network was predicted without probability, the decoder is also without
+# pred_text = d.decode(pred[0], probability=False)
+# print(''.join(pred_text))
+
+# # Generating new text
+# gen_text = rnn.generate_text(dataset=d, start_text=pred_input, length=100, temperature=0.2)
+# print(''.join(gen_text))

@@ -1,4 +1,5 @@
 import numpy as np
+import tensorflow as tf
 
 
 class Dataset:
@@ -189,49 +190,59 @@ class Dataset:
         return tokens_idx
 
     def create_batches(self, X, Y, batch_size, shuffle=True):
-        """Creates an interator to feed (X, Y) batches to the network.
+        data = tf.data.Dataset.from_tensor_slices((X, Y)).batch(batch_size)
+        return data
+        # x_batch = tf.data.Dataset.from_tensor_slices(X).batch(batch_size)
+        # y_batch = tf.data.Dataset.from_tensor_slices(Y).batch(batch_size)
+        # return x_batch, y_batch
 
-        Args:
-            X (np.array): An array of inputs.
-            Y (np.array): An array of labels.
-            batch_size (int): The size of each batch.
-            shuffle (bool): If yes, shuffles the data.
 
-        Yields:
-            An iterator containing (X, Y) batches.
+    # def create_batches(self, X, Y, batch_size, shuffle=True):
+    #     """Creates an interator to feed (X, Y) batches to the network.
 
-        """
+    #     Args:
+    #         X (np.array): An array of inputs.
+    #         Y (np.array): An array of labels.
+    #         batch_size (int): The size of each batch.
+    #         shuffle (bool): If yes, shuffles the data.
 
-        # Getting the number of avaliable samples
-        n_samples = X.shape[0]
+    #     Yields:
+    #         An iterator containing (X, Y) batches.
 
-        # Calculating the number of batches
-        n_batches = n_samples // batch_size
+    #     """
 
-        # Creating an index vector for shuffling the data
-        idx = np.arange(n_samples)
+    #     # Getting the number of avaliable samples
+    #     n_samples = X.shape[0]
 
-        # Checking if shuffle argument is true
-        if shuffle:
-            # If yes, shuffles the data
-            np.random.shuffle(idx)
+    #     # Calculating the number of batches
+    #     n_batches = n_samples // batch_size
 
-        # The first step should be declared as 0
-        i = 0
+    #     # Creating an index vector for shuffling the data
+    #     idx = np.arange(n_samples)
 
-        # Iterate through all possible batches
-        for _ in range(n_batches):
-            # Pre-allocate x and y batches with current batch_size
-            x_batch = [None] * batch_size
-            y_batch = [None] * batch_size
+    #     # Checking if shuffle argument is true
+    #     if shuffle:
+    #         # If yes, shuffles the data
+    #         np.random.shuffle(idx)
 
-            # Iterate through the batch size
-            for j in range(batch_size):
-                # Gathers a random sample based on pre-defined index
-                x_batch[j] = X[idx[i]]
-                y_batch[j] = Y[idx[i]]
+    #     # The first step should be declared as 0
+    #     i = 0
 
-                # Increases to next step
-                i += 1
+    #     # Iterate through all possible batches
+    #     for _ in range(n_batches):
+    #         # Pre-allocate x and y batches with current batch_size
+    #         x_batch = [None] * batch_size
+    #         y_batch = [None] * batch_size
 
-            yield x_batch, y_batch
+    #         # Iterate through the batch size
+    #         for j in range(batch_size):
+    #             # Gathers a random sample based on pre-defined index
+    #             x_batch[j] = X[idx[i]]
+    #             y_batch[j] = Y[idx[i]]
+
+    #             # Increases to next step
+    #             i += 1
+
+            
+
+    #         yield x_batch, y_batch
