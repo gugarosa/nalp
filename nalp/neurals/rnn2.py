@@ -9,7 +9,7 @@ from nalp.neurals.layers.linear import Linear
 logger = l.get_logger(__name__)
 
 
-class RNN(tf.keras.Model):
+class RNN(Neural):
     """A RNN class is the one in charge of Recurrent Neural Networks vanilla implementation.
     
     References:
@@ -41,7 +41,16 @@ class RNN(tf.keras.Model):
 
         self.o = tf.keras.layers.Dense(vocab_size)
 
+        self.optimizer = tf.optimizers.Adam(0.001)
+
+        self.loss = tf.losses.CategoricalCrossentropy()
+
+        self.train_loss = tf.keras.metrics.Mean(name='train_loss')
+
+        self.train_accuracy = tf.metrics.CategoricalAccuracy(name='train_accuracy')
+        
         logger.info('Class overrided.')
+
 
     def call(self, x):
         x = self.rnn(x)

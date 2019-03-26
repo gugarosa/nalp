@@ -11,7 +11,7 @@ class Linear(layers.Layer):
                              initializer='random_normal',
                              trainable=True)
     self.b = self.add_weight(shape=(self.units,),
-                             initializer='random_normal',
+                             initializer='zeros',
                              trainable=True)
 
   def call(self, inputs):

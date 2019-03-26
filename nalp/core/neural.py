@@ -3,13 +3,13 @@ import tensorflow as tf
 from tensorflow.keras import Model
 
 
-class Neural:
+class Neural(tf.keras.Model):
     """A Neural class is responsible for holding vital information when defining a
     neural network. Note that some methods have to be redefined when using its childs.
 
     """
 
-    def __init__(self, model):
+    def __init__(self):
         """Initialization method.
         
         Note that basic variables shared by all childs should be declared here.
@@ -20,26 +20,17 @@ class Neural:
 
         """
 
-        self.model = model
-
-        self.optimizer = tf.optimizers.Adam(0.001)
-
-        self.loss = tf.losses.CategoricalCrossentropy()
-
-        self.train_loss = tf.keras.metrics.Mean(name='train_loss')
-
-        self.train_accuracy = tf.metrics.CategoricalAccuracy(name='train_accuracy')
-
+        super(Neural, self).__init__()
 
 
     @tf.function
     def step(self, input_batch, target_batch):
         with tf.GradientTape() as tape:
-            preds = self.model(input_batch)
+            preds = self(input_batch)
             loss = tf.reduce_mean(tf.losses.categorical_crossentropy(target_batch, preds, from_logits=True))
             
-        gradients = tape.gradient(loss, self.model.trainable_variables)
-        self.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
+        gradients = tape.gradient(loss, self.trainable_variables)
+        self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
 
         self.train_loss.update_state(loss)
         self.train_accuracy.update_state(target_batch, preds)
