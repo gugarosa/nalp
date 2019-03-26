@@ -1,10 +1,6 @@
-import nalp.utils.decorators as d
 import nalp.utils.logging as l
-import numpy as np
 import tensorflow as tf
 from nalp.core.neural import Neural
-from nalp.neurals.layers.linear import Linear
-
 
 logger = l.get_logger(__name__)
 
@@ -17,16 +13,13 @@ class RNN(Neural):
 
     """
 
-    def __init__(self, max_length=1, vocab_size=1, hidden_size=2, learning_rate=0.001, shape=None):
+    def __init__(self, vocab_size=1, hidden_size=2, learning_rate=0.001):
         """Initialization method.
 
         Args:
-            max_length (int): The maximum length of the encoding.
             vocab_size (int): The size of the vocabulary.
             hidden_size (int): The amount of hidden neurons.
             learning_rate (float): A big or small addition on the optimizer steps.
-            shape (list): A list containing in its first position the shape of the inputs (x)
-                and on the second position, the shape of the labels (y).
 
         """
 
@@ -35,28 +28,122 @@ class RNN(Neural):
         # Overrides its parent class with any custom arguments if needed
         super(RNN, self).__init__()
 
-        self.cell = tf.keras.layers.SimpleRNNCell(hidden_size)
+        # One for vocab size
+        self._vocab_size = vocab_size
 
-        self.rnn = tf.keras.layers.RNN(self.cell)
+        # One for the amount of hidden neurons
+        self._hidden_size = hidden_size
 
-        self.o = tf.keras.layers.Dense(vocab_size)
+        # And the last for the learning rate
+        self._learning_rate = learning_rate
 
-        self.optimizer = tf.optimizers.Adam(0.001)
+        # Actually build the model
+        self._build()
 
-        self.loss = tf.losses.CategoricalCrossentropy()
-
-        self.train_loss = tf.keras.metrics.Mean(name='train_loss')
-
-        self.train_accuracy = tf.metrics.CategoricalAccuracy(name='train_accuracy')
-        
         logger.info('Class overrided.')
 
+    @property
+    def vocab_size(self):
+        """int: The size of the vocabulary.
+
+        """
+
+        return self._vocab_size
+
+    @property
+    def hidden_size(self):
+        """int: The amount of hidden neurons.
+
+        """
+
+        return self._hidden_size
+
+    @property
+    def learning_rate(self):
+        """float: A big or small addition on the optimizer steps.
+
+        """
+
+        return self._learning_rate
+
+    def _build(self):
+        """Main building method.
+
+        """
+
+        logger.info('Running private method: build().')
+
+        # Builds the model layers
+        self._build_layers()
+
+        # Builds the learning objects
+        self._build_learners()
+
+        # Builds the metrics
+        self._build_metrics()
+
+        logger.info('Model ready to be used.')
+
+    def _build_layers(self):
+        """Builds the model layers itself.
+
+        """
+
+        logger.debug(
+            f'Constructing model with shape: ({self.hidden_size}, {self.vocab_size}).')
+
+        # Creates a simple RNN cell
+        self.cell = tf.keras.layers.SimpleRNNCell(self.hidden_size)
+
+        # Creates the RNN loop itself
+        self.rnn = tf.keras.layers.RNN(self.cell)
+
+        # Creates the final linear (Dense) layer
+        self.linear = tf.keras.layers.Dense(self.vocab_size)
+
+    def _build_learners(self):
+        """Builds all learning-related objects (i.e., loss and optimizer).
+
+        """
+
+        # Defining the loss function
+        self.loss = tf.losses.CategoricalCrossentropy(from_logits=True)
+
+        logger.debug(f'Loss: {self.loss}.')
+
+        # Creates an optimizer object
+        self.optimizer = tf.optimizers.Adam(self.learning_rate)
+
+        logger.debug(
+            f'Optimizer: {self.optimizer} | Learning rate: {self.learning_rate}.')
+
+    def _build_metrics(self):
+        """Builds any desired metrics to be used with the model.
+
+        """
+
+        # Defining accuracy metric
+        self.accuracy_metric = tf.metrics.CategoricalAccuracy(
+            name='accuracy_metric')
+
+        # Defining loss metric
+        self.loss_metric = tf.keras.metrics.Mean(name='loss_metric')
+
+        logger.debug(
+            f'Accuracy: {self.loss_metric} | Mean Loss: {self.loss_metric}.')
 
     def call(self, x):
+        """Method that holds vital information whenever this class is called.
+
+        Args:
+            x (tf.Tensor): A tensorflow's tensor holding input data.
+
+        """
+
+        # We need to apply the input into the first recorrent layer
         x = self.rnn(x)
-        x = self.o(x)
+
+        # Finally, the input suffers a linear combination to output correct shape
+        x = self.linear(x)
 
         return x
-
-
-    

@@ -23,17 +23,16 @@ pred_input = pipe(pred_input)
 
 # Creating a OneHot dataset
 d = OneHot(sentences, max_length=10)
+d_batches = d.create_batches(d.X, d.Y, 128)
 
 # Creating tensor shapes
 X_SHAPE = [None, None, d.vocab_size]
 Y_SHAPE = [None, d.vocab_size]
 
 # Defining a neural network based on vanilla RNN
-rnn = RNN(max_length=d.max_length, hidden_size=64,
-          vocab_size=d.vocab_size, learning_rate=0.01,
-          shape=[X_SHAPE, Y_SHAPE])
+rnn = RNN(vocab_size=d.vocab_size, hidden_size=64, learning_rate=0.001)
 
-rnn.train(dataset=d, epochs=100, batch_size=128)
+rnn.train(dataset=d_batches, epochs=100, batch_size=128)
 
 #model = Neural(model=rnn)
 
