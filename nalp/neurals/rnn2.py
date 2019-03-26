@@ -39,7 +39,7 @@ class RNN(tf.keras.Model):
 
         self.rnn = tf.keras.layers.RNN(self.cell)
 
-        self.o = Linear(vocab_size)
+        self.o = tf.keras.layers.Dense(vocab_size)
 
         logger.info('Class overrided.')
 

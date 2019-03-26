@@ -22,13 +22,13 @@ class Neural:
 
         self.model = model
 
-        self.optimizer = tf.optimizers.Adam(0.01)
+        self.optimizer = tf.optimizers.Adam(0.001)
 
         self.loss = tf.losses.CategoricalCrossentropy()
 
         self.train_loss = tf.keras.metrics.Mean(name='train_loss')
 
-        self.train_accuracy = tf.keras.metrics.CategoricalAccuracy(name='train_accuracy')
+        self.train_accuracy = tf.metrics.CategoricalAccuracy(name='train_accuracy')
 
 
 
@@ -36,12 +36,13 @@ class Neural:
     def step(self, input_batch, target_batch):
         with tf.GradientTape() as tape:
             preds = self.model(input_batch)
-            loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(target_batch, preds))
+            loss = tf.reduce_mean(tf.losses.categorical_crossentropy(target_batch, preds, from_logits=True))
             
         gradients = tape.gradient(loss, self.model.trainable_variables)
         self.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
 
-        return self.train_loss(loss), self.train_accuracy(target_batch, preds)
+        self.train_loss.update_state(loss)
+        self.train_accuracy.update_state(target_batch, preds)
 
 
 
@@ -49,7 +50,9 @@ class Neural:
         data = dataset.create_batches(dataset.X, dataset.Y, batch_size)
 
         for _ in range(epochs):
+            self.train_loss.reset_states()  
+            self.train_accuracy.reset_states()
             for input_batch, target_batch in data:
-                loss, acc = self.step(input_batch, target_batch)
-                print(loss, acc)
+                self.step(input_batch, target_batch)
+            print(self.train_loss.result(), self.train_accuracy.result())
                 

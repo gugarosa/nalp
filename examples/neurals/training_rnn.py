@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 from nalp.datasets.one_hot import OneHot
 from nalp.core.neural import Neural
-from nalp.neurals.rnn import RNN
+from nalp.neurals.rnn2 import RNN
 
 # Loading a text
 sentences = l.load_txt('data/chapter1_harry.txt')
@@ -33,12 +33,12 @@ rnn = RNN(max_length=d.max_length, hidden_size=64,
           vocab_size=d.vocab_size, learning_rate=0.01,
           shape=[X_SHAPE, Y_SHAPE])
 
-rnn.train(dataset=d, epochs=100, batch_size=128, verbose=True, save_model=True)
+#rnn.train(dataset=d, epochs=100, batch_size=128, verbose=True, save_model=True)
 
-# model = Neural(model=rnn)
+model = Neural(model=rnn)
 
 # # Training the network
-# model.train(dataset=d, epochs=100, batch_size=128)
+model.train(dataset=d, epochs=100, batch_size=128)
 
 # # Predicting using the same input (just for checking what is has learnt)
 # pred = rnn.predict(d.X, probability=False)
