@@ -28,12 +28,12 @@ rnn = RNN(vocab_size=d.vocab_size, hidden_size=64, learning_rate=0.001)
 rnn.train(dataset=d, batch_size=128, epochs=10)
 
 # # Predicting using the same input (just for checking what is has learnt)
-# pred = rnn.predict(d.X, probability=False)
+preds = rnn.predict(d.X)
 
 # # Calling decoding function to check the predictions
 # # Note that if the network was predicted without probability, the decoder is also without
-# pred_text = d.decode(pred[0], probability=False)
-# print(''.join(pred_text))
+preds_text = d.decode(preds)
+print(''.join(preds_text))
 
 # # Generating new text
 # gen_text = rnn.generate_text(dataset=d, start_text=pred_input, length=100, temperature=0.2)

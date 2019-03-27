@@ -66,13 +66,11 @@ class OneHot(Dataset):
 
         return encoded_data
 
-    def decode(self, encoded_data, probability=1):
+    def decode(self, encoded_data):
         """Decodes an one-hot encoding into raw text.
 
         Args:
             encoded_data (np.array): An array holding the encoded data.
-            probability (bool): Whether the encoded data is an array of probabilities
-            or integers.
 
         Returns:
             A one-hot decoded list (can be characters or words).
@@ -84,13 +82,8 @@ class OneHot(Dataset):
 
         # Iterating through all encoded data
         for e in encoded_data:
-            # For each encode, decoded it and add to decoded_text
-            if probability:
                 # If probability is true, we need to recover the argmax of 'e'
                 decoded_text.append(self.index_vocab[np.argmax(e)])
-            else:
-                # If not, we can just access 'e' position in the vocab
-                decoded_text.append(self.index_vocab[e])
 
         return decoded_text
 

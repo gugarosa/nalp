@@ -53,6 +53,7 @@ class Neural(tf.keras.Model):
 
         raise NotImplementedError
 
+    @tf.function
     def call(self, x):
         """Method that holds vital information whenever this class is called.
 
@@ -96,7 +97,7 @@ class Neural(tf.keras.Model):
 
         # Update the accuracy metric state
         self.accuracy_metric.update_state(Y_batch, preds)
-    
+
     def train(self, dataset, batch_size=1, epochs=100):
         """Trains a model.
 
@@ -126,3 +127,21 @@ class Neural(tf.keras.Model):
 
             logger.debug(
                 f'Epoch: {epoch}/{epochs} | Loss: {self.loss_metric.result().numpy():.4f} | Accuracy: {self.accuracy_metric.result().numpy():.4f}')
+
+    @tf.function
+    def predict(self, X):
+        """Uses the model and makes a forward pass (prediction) in new data.
+
+        Args:
+            X (np.array | tf.Tensor): Can either be a numpy array or a tensorflow tensor.
+
+        Returns:
+            A tensorflow array containing the predictions. Note that if you use a softmax class in your model,
+            these will be probabilities.
+
+        """
+
+        # Performs the forward pass
+        preds = self(X)
+
+        return preds

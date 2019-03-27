@@ -98,8 +98,11 @@ class RNN(Neural):
         # Creates the RNN loop itself
         self.rnn = tf.keras.layers.RNN(self.cell)
 
-        # Creates the final linear (Dense) layer
+        # Creates the linear (Dense) layer
         self.linear = tf.keras.layers.Dense(self.vocab_size)
+
+        # And finally, a softmax activation for life's easing
+        self.softmax = tf.keras.layers.Softmax()
 
     def _build_learners(self):
         """Builds all learning-related objects (i.e., loss and optimizer).
@@ -107,7 +110,7 @@ class RNN(Neural):
         """
 
         # Defining the loss function
-        self.loss = tf.losses.CategoricalCrossentropy(from_logits=True)
+        self.loss = tf.losses.CategoricalCrossentropy()
 
         logger.debug(f'Loss: {self.loss}.')
 
@@ -132,18 +135,25 @@ class RNN(Neural):
         logger.debug(
             f'Accuracy: {self.loss_metric} | Mean Loss: {self.loss_metric}.')
 
+    @tf.function
     def call(self, x):
         """Method that holds vital information whenever this class is called.
 
         Args:
             x (tf.Tensor): A tensorflow's tensor holding input data.
 
+        Returns:
+            The same tensor after passing through each defined layer.
+
         """
 
         # We need to apply the input into the first recorrent layer
         x = self.rnn(x)
 
-        # Finally, the input suffers a linear combination to output correct shape
+        # The input also suffers a linear combination to output correct shape
         x = self.linear(x)
+
+        # Finally, we output its probabilites
+        x = self.softmax(x)
 
         return x
