@@ -1,4 +1,5 @@
 import nalp.utils.logging as l
+import numpy as np
 import tensorflow as tf
 from nalp.core.neural import Neural
 
@@ -157,3 +158,86 @@ class RNN(Neural):
         x = self.softmax(x)
 
         return x
+
+    def _sample_from_multinomial(self, probs, temperature):
+        """Samples an vocabulary index from a multinomial distribution.
+
+        Args:
+            probs (tf.Tensor): An tensor of probabilites.
+            temperature (float): The amount of diversity to include when sampling.
+
+        Returns:
+            The index of sampled character or word.
+
+        """
+
+        # Converting to float64 to avoid multinomial distribution erros
+        probs = np.asarray(probs).astype('float64')
+
+        # Then, we calculate the log of probs, divide by temperature and apply
+        # exponential
+        exp_probs = np.exp(np.log(probs) / temperature)
+
+        # Finally, we normalize it
+        norm_probs = exp_probs / np.sum(exp_probs)
+
+        # Sampling from multinomial distribution
+        dist_probs = np.random.multinomial(1, norm_probs, 1)
+
+        # The predicted index will be the argmax of the distribution
+        pred_idx = np.argmax(dist_probs)
+
+        return pred_idx
+
+    def generate_text(self, dataset, start_text='', length=1, temperature=1.0):
+        """Generates a maximum length of new text based on the probability of next char
+        ocurring.
+
+        Args:
+            dataset (OneHot): A OneHot dataset object.
+            start_text (str): The initial text for generating new text.
+            length (int): Maximum amount of generated text.
+            temperature (float): The amount of diversity to include when sampling.
+
+        Returns:
+            A list containing a custom generated text (can be characters or words).
+
+        """
+
+        logger.info(f'Generating new text with length: {length}.')
+
+        # Defining variable to hold decoded generation
+        output_text = start_text
+
+        # Creating indexated tokens from starting text
+        tokens_idx = dataset.indexate_tokens(
+            list(start_text), dataset.vocab_index)
+
+        # Creating seed to be inputed to the predictor
+        seed = np.zeros(
+            (1, len(tokens_idx), dataset.vocab_size), dtype=np.float32)
+
+        # Iterate through maximum desired length
+        for _ in range(length):
+            # Iterate through all indexated tokens
+            for i, idx in enumerate(tokens_idx):
+                # Encodes each token into dataset's encoding
+                seed[0, i] = dataset.encode(idx, dataset.vocab_size)
+
+            # Calculates the prediction
+            predict = self(seed).numpy()
+
+            # Chooses a index based on the predictions probability distribution
+            pred_idx = self._sample_from_multinomial(
+                predict[-1], temperature)
+
+            # Removing first indexated token
+            tokens_idx = np.delete(tokens_idx, 0, 0)
+
+            # Appending predicted index to the end of indexated tokens
+            tokens_idx = np.append(tokens_idx, pred_idx)
+
+            # Outputting generated characters to start text
+            output_text.append(dataset.index_vocab[pred_idx])
+
+        return output_text
