@@ -46,7 +46,7 @@ class OneHot(Dataset):
 
         return self._max_length
 
-    def encode(self, token_idx, vocab_size):
+    def one_hot_encode(self, token_idx, vocab_size):
         """Encodes an indexated token into an one-hot encoding.
 
         Args:
@@ -66,33 +66,6 @@ class OneHot(Dataset):
 
         return encoded_data
 
-    def decode(self, encoded_data, probability=1):
-        """Decodes an one-hot encoding into raw text.
-
-        Args:
-            encoded_data (np.array): An array holding the encoded data.
-            probability (bool): Whether the encoded data is an array of probabilities
-            or integers.
-
-        Returns:
-            A one-hot decoded list (can be characters or words).
-
-        """
-
-        # Declaring a null string to hold the decoded data
-        decoded_text = []
-
-        # Iterating through all encoded data
-        for e in encoded_data:
-            # For each encode, decoded it and add to decoded_text
-            if probability:
-                # If probability is true, we need to recover the argmax of 'e'
-                decoded_text.append(self.index_vocab[np.argmax(e)])
-            else:
-                # If not, we can just access 'e' position in the vocab
-                decoded_text.append(self.index_vocab[e])
-
-        return decoded_text
 
     def create_samples(self, tokens_idx, max_length, vocab_size):
         """Creates inputs and targets samples based in a one-hot encoding.
@@ -119,16 +92,16 @@ class OneHot(Dataset):
             targets.append(tokens_idx[i+max_length])
 
         # Creates empty numpy boolean arrays for holding X and Y
-        X = np.zeros((len(inputs), max_length, vocab_size), dtype=np.int32)
-        Y = np.zeros((len(inputs), vocab_size), dtype=np.int32)
+        X = np.zeros((len(inputs), max_length, vocab_size), dtype=np.float32)
+        Y = np.zeros((len(inputs), vocab_size), dtype=np.float32)
 
         # Iterates through all inputs
         for i, input in enumerate(inputs):
             # For each input, iterate through all tokens
             for t, token in enumerate(input):
                 # If there is a token on X, encode it
-                X[i, t] = self.encode(token, vocab_size)
+                X[i, t] = self.one_hot_encode(token, vocab_size)
             # If there is a token on Y, encode it
-            Y[i] = self.encode(targets[i], vocab_size)
+            Y[i] = self.one_hot_encode(targets[i], vocab_size)
 
         return X, Y

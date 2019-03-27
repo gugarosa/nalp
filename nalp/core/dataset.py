@@ -1,4 +1,5 @@
 import numpy as np
+import tensorflow as tf
 
 
 class Dataset:
@@ -31,7 +32,7 @@ class Dataset:
 
         # The indexated tokens
         self._tokens_idx = None
-        
+
         # Defining inputs placeholder for further filling
         self._X = None
 
@@ -189,49 +190,48 @@ class Dataset:
         return tokens_idx
 
     def create_batches(self, X, Y, batch_size, shuffle=True):
-        """Creates an interator to feed (X, Y) batches to the network.
-
+        """Creates an iterable to feed (X, Y) batches to the network.
+        
         Args:
             X (np.array): An array of inputs.
             Y (np.array): An array of labels.
             batch_size (int): The size of each batch.
-            shuffle (bool): If yes, shuffles the data.
+            shuffle (bool): If data should be shuffled or not.
 
-        Yields:
-            An iterator containing (X, Y) batches.
+        Returns:
+            A tensorflow dataset iterable.
+
+         """
+
+        # Slicing dataset
+        data = tf.data.Dataset.from_tensor_slices((X, Y))
+
+        # Checking if data should be shuffled
+        if shuffle:
+            data = data.shuffle(len(Y))
+
+        # Applying batches
+        data = data.batch(batch_size)
+
+        return data
+
+    def decode(self, encoded_data):
+        """Decodes array of probabilites into raw text.
+
+        Args:
+            encoded_data (np.array | tf.Tensor): An array holding probabilities.
+
+        Returns:
+            A decoded list (can be characters or words).
 
         """
 
-        # Getting the number of avaliable samples
-        n_samples = X.shape[0]
+        # Declaring a null string to hold the decoded data
+        decoded_text = []
 
-        # Calculating the number of batches
-        n_batches = n_samples // batch_size
+        # Iterating through all encoded data
+        for e in encoded_data:
+                # If probability is true, we need to recover the argmax of 'e'
+                decoded_text.append(self.index_vocab[np.argmax(e)])
 
-        # Creating an index vector for shuffling the data
-        idx = np.arange(n_samples)
-
-        # Checking if shuffle argument is true
-        if shuffle:
-            # If yes, shuffles the data
-            np.random.shuffle(idx)
-
-        # The first step should be declared as 0
-        i = 0
-
-        # Iterate through all possible batches
-        for _ in range(n_batches):
-            # Pre-allocate x and y batches with current batch_size
-            x_batch = [None] * batch_size
-            y_batch = [None] * batch_size
-
-            # Iterate through the batch size
-            for j in range(batch_size):
-                # Gathers a random sample based on pre-defined index
-                x_batch[j] = X[idx[i]]
-                y_batch[j] = Y[idx[i]]
-
-                # Increases to next step
-                i += 1
-
-            yield x_batch, y_batch
+        return decoded_text
