@@ -1,9 +1,6 @@
 import nalp.stream.loader as l
 import nalp.stream.preprocess as p
-import numpy as np
-import tensorflow as tf
 from nalp.datasets.one_hot import OneHot
-from nalp.core.neural import Neural
 from nalp.neurals.rnn2 import RNN
 
 # Loading a text
@@ -23,21 +20,12 @@ pred_input = pipe(pred_input)
 
 # Creating a OneHot dataset
 d = OneHot(sentences, max_length=10)
-d_batches = d.create_batches(d.X, d.Y, 128)
-
-# Creating tensor shapes
-X_SHAPE = [None, None, d.vocab_size]
-Y_SHAPE = [None, d.vocab_size]
 
 # Defining a neural network based on vanilla RNN
 rnn = RNN(vocab_size=d.vocab_size, hidden_size=64, learning_rate=0.001)
 
-rnn.train(dataset=d_batches, epochs=100, batch_size=128)
-
-#model = Neural(model=rnn)
-
-# # Training the network
-#model.train(dataset=d, epochs=100, batch_size=128)
+# Training the network
+rnn.train(dataset=d, batch_size=128, epochs=10)
 
 # # Predicting using the same input (just for checking what is has learnt)
 # pred = rnn.predict(d.X, probability=False)

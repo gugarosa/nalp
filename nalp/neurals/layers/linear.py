@@ -8,7 +8,7 @@ class Linear(layers.Layer):
 
   def build(self, input_shape):
     self.w = self.add_weight(shape=(input_shape[-1], self.units),
-                             initializer='random_normal',
+                             initializer='glorot_uniform',
                              trainable=True)
     self.b = self.add_weight(shape=(self.units,),
                              initializer='zeros',
