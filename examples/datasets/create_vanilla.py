@@ -20,7 +20,7 @@ Y = csv['sentiment'].values
 # Applying pre-processing pipeline to X
 X = X.apply(lambda x: pipe(x)).values
 
-# Creates the dataset (c will be for chars and w for words)
+# Creates the dataset
 d = Vanilla(X, Y, categorical=True)
 
 # Acessing properties from Vanilla class

@@ -6,53 +6,55 @@ logger = l.get_logger(__name__)
 
 
 class Linear(layers.Layer):
-  """A linear layer is an easy-abstraction to show the possibilities of implementing
-  your own layer.
-
-  """
-
-  def __init__(self, hidden_size=32):
-    """Initialization method.
-
-    Args:
-        hidden_size (int): The amount of hidden neurons in the layer.
+    """A linear layer is an easy-abstraction to show the possibilities of implementing
+    your own layer.
 
     """
 
-    # Overrides its parent class with any custom arguments if needed
-    super(Linear, self).__init__()
+    def __init__(self, hidden_size=32):
+        """Initialization method.
 
-    # A property to hold the size of the layer
-    self.hidden_size = hidden_size
+        Args:
+            hidden_size (int): The amount of hidden neurons in the layer.
 
-  def build(self, input_shape):
-    """Builds the layer.
+        """
 
-    Args:
-        input_shape (tuple): A tuple holding the input's shape.
+        # Overrides its parent class with any custom arguments if needed
+        super(Linear, self).__init__()
 
-    """
+        # A property to hold the size of the layer
+        self.hidden_size = hidden_size
 
-    self.w = self.add_weight(shape=(input_shape[-1], self.hidden_size),
-                             initializer='glorot_uniform',
-                             trainable=True)
-    self.b = self.add_weight(shape=(self.hidden_size,),
-                             initializer='zeros',
-                             trainable=True)
+    def build(self, input_shape):
+        """Builds the layer.
 
-  def call(self, x):
-    """Method that holds vital information whenever this class is called.
+        Args:
+            input_shape (tuple): A tuple holding the input's shape.
 
-    Args:
-        x (tf.Tensor): A tensorflow's tensor holding input data.
+        """
 
-    Returns:
-        The layer output after performing its calculations. This layer will
-        produce y = xW + b.
+        self.w = self.add_weight(
+            shape=(input_shape[-1], self.hidden_size),
+            initializer='glorot_uniform',
+            trainable=True)
+        self.b = self.add_weight(
+            shape=(self.hidden_size,),
+            initializer='zeros',
+            trainable=True)
 
-    """
+    def call(self, x):
+        """Method that holds vital information whenever this class is called.
 
-    # Calculating the layer (y = xW + b)
-    y = tf.matmul(x, self.w) + self.b
+        Args:
+            x (tf.Tensor): A tensorflow's tensor holding input data.
 
-    return y
+        Returns:
+            The layer output after performing its calculations. This layer will
+            produce y = xW + b.
+
+        """
+
+        # Calculating the layer (y = xW + b)
+        y = tf.matmul(x, self.w) + self.b
+
+        return y

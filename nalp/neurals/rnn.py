@@ -1,4 +1,3 @@
-import nalp.utils.decorators as d
 import nalp.utils.logging as l
 import numpy as np
 import tensorflow as tf
@@ -15,26 +14,20 @@ class RNN(Neural):
 
     """
 
-    def __init__(self, max_length=1, vocab_size=1, hidden_size=2, learning_rate=0.001, shape=None):
+    def __init__(self, vocab_size=1, hidden_size=2, learning_rate=0.001):
         """Initialization method.
 
         Args:
-            max_length (int): The maximum length of the encoding.
             vocab_size (int): The size of the vocabulary.
             hidden_size (int): The amount of hidden neurons.
             learning_rate (float): A big or small addition on the optimizer steps.
-            shape (list): A list containing in its first position the shape of the inputs (x)
-                and on the second position, the shape of the labels (y).
 
         """
 
         logger.info('Overriding class: Neural -> RNN.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(RNN, self).__init__(shape=shape)
-
-        # We need to create a property holding the max length of the encoding
-        self._max_length = max_length
+        super(RNN, self).__init__()
 
         # One for vocab size
         self._vocab_size = vocab_size
@@ -45,37 +38,10 @@ class RNN(Neural):
         # And the last for the learning rate
         self._learning_rate = learning_rate
 
-        # Defining initial model path as none
-        self._model_path = None
-
-        # The implemented methods should also be instanciated
-        # Defines the model
-        self.model
-
-        # Calculates the loss function
-        self.loss
-
-        # Defines the accuracy function
-        self.accuracy
-
-        # Creates the optimization task
-        self.optimizer
-
-        # If you wish, predict new inputs based on indexes
-        self.predictor
-
-        # Or probabilities
-        self.predictor_prob
+        # Actually build the model
+        self._build()
 
         logger.info('Class overrided.')
-
-    @property
-    def max_length(self):
-        """int: The maximum length of the encoding.
-
-        """
-
-        return self._max_length
 
     @property
     def vocab_size(self):
@@ -101,245 +67,103 @@ class RNN(Neural):
 
         return self._learning_rate
 
-    @property
-    def model_path(self):
-        """str: A string containing the pre-trained model's path.
+    def _build(self):
+        """Main building method.
 
         """
 
-        return self._model_path
+        logger.info('Running private method: build().')
 
-    @model_path.setter
-    def model_path(self, model_path):
-        self._model_path = model_path
+        # Builds the model layers
+        self._build_layers()
 
-    @d.define_scope
-    def model(self):
-        """The model should be constructed here. You can use whatever tensorflow
-        operations you need.
+        # Builds the learning objects
+        self._build_learners()
 
-        Returns:
-            The model for further optimization and learning.
+        # Builds the metrics
+        self._build_metrics()
+
+        logger.info('Model ready to be used.')
+
+    def _build_layers(self):
+        """Builds the model layers itself.
 
         """
 
         logger.debug(
             f'Constructing model with shape: ({self.hidden_size}, {self.vocab_size}).')
 
-        # W will be the weight matrix
-        self.W = tf.Variable(tf.random_normal(
-            [self.hidden_size, self.vocab_size]))
-
-        # b will the bias vector
-        self.b = tf.Variable(tf.random_normal([self.vocab_size]))
-
-        # For vanilla RNN, we will use a basic RNN cell
+        # Creates a simple RNN cell
         self.cell = tf.keras.layers.SimpleRNNCell(self.hidden_size)
 
-        # We do also need to create the RNN object itself
-        self.o, self.h = tf.nn.dynamic_rnn(
-            self.cell, self.x, dtype=tf.float32)
+        # Creates the RNN loop itself
+        self.rnn = tf.keras.layers.RNN(self.cell)
 
-        # Transposing the vector dimensions
-        self.o = tf.transpose(self.o, [1, 0, 2])
+        # Creates the linear (Dense) layer
+        self.linear = tf.keras.layers.Dense(self.vocab_size)
 
-        # Gathering the re array
-        self.o = self.o[-1]
+        # And finally, a softmax activation for life's easing
+        self.softmax = tf.keras.layers.Softmax()
 
-        return tf.matmul(self.o, self.W) + self.b
-
-    @d.define_scope
-    def loss(self):
-        """The loss function should be defined according your knowlodge.
-
-        Returns:
-            The loss function itself.
+    def _build_learners(self):
+        """Builds all learning-related objects (i.e., loss and optimizer).
 
         """
 
         # Defining the loss function
-        cross_entropy = tf.nn.softmax_cross_entropy_with_logits_v2(
-            logits=self.model, labels=self.y)
+        self.loss = tf.losses.CategoricalCrossentropy()
 
-        # Applying an extra operation on defined loss
-        loss = tf.reduce_mean(cross_entropy)
-
-        logger.debug(f'Loss: {loss}.')
-
-        return loss
-
-    @d.define_scope
-    def accuracy(self):
-        """Calculates the accuracy between predicted and true labels
-
-        Returns:
-            The accuracy value itself.
-
-        """
-
-        # Defining the accuracy function
-        accuracy = tf.reduce_mean(
-            tf.cast(tf.equal(tf.argmax(self.model, 1), tf.argmax(self.y, 1)), tf.float32))
-
-        logger.debug(f'Accuracy: {accuracy}.')
-
-        return accuracy
-
-    @d.define_scope
-    def optimizer(self):
-        """An optimizer is the key of the learning task. Define your own
-        as you may please.
-
-        Returns:
-            An optimizer object that minimizes the loss function.
-
-        """
+        logger.debug(f'Loss: {self.loss}.')
 
         # Creates an optimizer object
-        optimizer = tf.train.AdamOptimizer(self.learning_rate)
+        self.optimizer = tf.optimizers.Adam(self.learning_rate)
 
         logger.debug(
-            f'Optimizer: {optimizer} | Learning rate: {self.learning_rate}.')
+            f'Optimizer: {self.optimizer} | Learning rate: {self.learning_rate}.')
 
-        return optimizer.minimize(self.loss)
-
-    @d.define_scope
-    def predictor(self):
-        """A predictor is responsible for returning an understable output.
-
-        Returns:
-            The index of the character with the highest probability of being the target.
+    def _build_metrics(self):
+        """Builds any desired metrics to be used with the model.
 
         """
 
-        # Creates a predictor object
-        predictor = tf.cast(tf.argmax(self.model, 1), tf.int32)
+        # Defining accuracy metric
+        self.accuracy_metric = tf.metrics.CategoricalAccuracy(
+            name='accuracy_metric')
 
-        logger.debug(f'Predictor: {predictor}.')
+        # Defining loss metric
+        self.loss_metric = tf.keras.metrics.Mean(name='loss_metric')
 
-        return predictor
+        logger.debug(
+            f'Accuracy: {self.loss_metric} | Mean Loss: {self.loss_metric}.')
 
-    @d.define_scope
-    def predictor_prob(self):
-        """A predictor is responsible for returning an understable output.
-
-        Returns:
-            The probability array of an index being the target.
-
-        """
-
-        # Creates a probability predictor object
-        predictor_prob = tf.nn.softmax(self.model)
-
-        logger.debug(f'Predictor (prob): {predictor_prob}.')
-
-        return predictor_prob
-
-    def train(self, dataset, epochs=100, batch_size=1, verbose=0, save_model=1):
-        """Trains a model.
+    @tf.function
+    def call(self, x):
+        """Method that holds vital information whenever this class is called.
 
         Args:
-            dataset (Dataset): A Dataset object containing already encoded data (X, Y).
-            epochs (int): The maximum number of training epochs.
-            batch_size (int): The maximum size for each training batch.
-            verbose (bool): If verbose is true, additional printing will be done.
-            save_model (bool): If save_model is true, model will be saved into models' folder.
-
-        """
-
-        logger.info(f'Model ready to be trained for: {epochs} epochs.')
-        logger.info(f'Batch size: {batch_size}.')
-
-        # Initializing all tensorflow variables
-        init = tf.global_variables_initializer()
-
-        # Instanciating a new tensorflow session
-        sess = tf.Session()
-
-        # Running the first session's step
-        sess.run(init)
-
-        # Iterate through all epochs
-        for epoch in range(epochs):
-            # Creating lists to append losses and accuracies
-            loss = []
-            acc = []
-
-            # Iterate through all possible batches, dependending on batch size
-            for input_batch, target_batch in dataset.create_batches(dataset.X, dataset.Y, batch_size):
-                # We run the session by feeding batches to it
-                _, batch_loss, batch_acc = sess.run([self.optimizer, self.loss, self.accuracy], feed_dict={
-                    self.x: input_batch, self.y: target_batch})
-                # Appending losses and accuracies
-                loss.append(batch_loss)
-                acc.append(batch_acc)
-
-            # For each epoch, we need to calculate the mean of losses and accuracies (sum over batches)
-            loss = np.mean(loss)
-            acc = np.mean(acc)
-
-            # If verbose is True, additional printing will be made
-            if (verbose):
-                logger.debug(
-                    f'Epoch: {epoch}/{epochs} | Loss: {loss:.4f} | Accuracy: {acc:.4f}')
-
-        # If save model is True, we will save it for further restoring
-        if (save_model):
-            # Declaring a saver object for saving the model
-            saver = tf.train.Saver()
-
-            # Creating a custom string to be its output name
-            self.model_path = f'models/rnn-hid{self.hidden_size}-lr{self.learning_rate}-e{epochs}-loss{loss:.4f}-acc{acc:.4f}'
-
-            # Saving the model
-            saver.save(sess, self.model_path)
-
-            logger.info(f'Model saved: {self.model_path}.')
-
-    def predict(self, input_batch, model_path=None, probability=1):
-        """Predicts a new input based on a pre-trained network.
-
-        Args:
-            input_batch (tensor): An input batch to be predicted.
-            model_path (str): A string holding the path to the desired model.
-            probability (bool): If true, will return a probability insteaf of a label.
+            x (tf.Tensor): A tensorflow's tensor holding input data.
 
         Returns:
-            The index of the prediction.
+            The same tensor after passing through each defined layer.
 
         """
 
-        # Declaring a saver object for saving the model
-        saver = tf.train.Saver()
+        # We need to apply the input into the first recorrent layer
+        x = self.rnn(x)
 
-        # Instanciating a new tensorflow session
-        sess = tf.Session()
+        # The input also suffers a linear combination to output correct shape
+        x = self.linear(x)
 
-        # Restoring the model, should use the same name as the one it was saved
-        if (self.model_path):
-            saver.restore(sess, self.model_path)
-        else:
-            self.model_path = model_path
-            saver.restore(sess, model_path)
+        # Finally, we output its probabilites
+        x = self.softmax(x)
 
-        logger.info(f'Model restored from: {self.model_path}.')
-        logger.info(f'Predicting with probability={probability}.')
-
-        # Running the predictor method according to argument
-        if (probability):
-            predict = sess.run([self.predictor_prob],
-                               feed_dict={self.x: input_batch})
-        else:
-            predict = sess.run([self.predictor], feed_dict={
-                               self.x: input_batch})
-
-        return predict
+        return x
 
     def _sample_from_multinomial(self, probs, temperature):
         """Samples an vocabulary index from a multinomial distribution.
 
         Args:
-            probs (np.array): An array of probabilites from 'tf.nn.softmax'.
+            probs (tf.Tensor): An tensor of probabilites.
             temperature (float): The amount of diversity to include when sampling.
 
         Returns:
@@ -365,16 +189,15 @@ class RNN(Neural):
 
         return pred_idx
 
-    def generate_text(self, dataset, start_text='', length=1, temperature=1.0, model_path=None):
+    def generate_text(self, dataset, start_text='', length=1, temperature=1.0):
         """Generates a maximum length of new text based on the probability of next char
         ocurring.
 
         Args:
-            dataset (OneHot): A OneHot object.
+            dataset (OneHot): A OneHot dataset object.
             start_text (str): The initial text for generating new text.
             length (int): Maximum amount of generated text.
             temperature (float): The amount of diversity to include when sampling.
-            model_path (str): If needed, will load a different model from the previously trained.
 
         Returns:
             A list containing a custom generated text (can be characters or words).
@@ -382,18 +205,6 @@ class RNN(Neural):
         """
 
         logger.info(f'Generating new text with length: {length}.')
-
-        # Declaring a saver object for saving the model
-        saver = tf.train.Saver()
-
-        # Instanciating a new tensorflow session
-        sess = tf.Session()
-
-        # Restoring the model, should use the same name as the one it was saved
-        if (self.model_path):
-            saver.restore(sess, self.model_path)
-        else:
-            saver.restore(sess, model_path)
 
         # Defining variable to hold decoded generation
         output_text = start_text
@@ -404,21 +215,21 @@ class RNN(Neural):
 
         # Creating seed to be inputed to the predictor
         seed = np.zeros(
-            (1, len(tokens_idx), dataset.vocab_size), dtype=np.int32)
+            (1, len(tokens_idx), dataset.vocab_size), dtype=np.float32)
 
         # Iterate through maximum desired length
         for _ in range(length):
             # Iterate through all indexated tokens
             for i, idx in enumerate(tokens_idx):
                 # Encodes each token into dataset's encoding
-                seed[0, i] = dataset.encode(idx, dataset.vocab_size)
+                seed[0, i] = dataset.one_hot_encode(idx, dataset.vocab_size)
 
             # Calculates the prediction
-            predict = sess.run([self.predictor_prob], feed_dict={self.x: seed})
+            predict = self(seed).numpy()
 
             # Chooses a index based on the predictions probability distribution
             pred_idx = self._sample_from_multinomial(
-                predict[0][-1], temperature)
+                predict[-1], temperature)
 
             # Removing first indexated token
             tokens_idx = np.delete(tokens_idx, 0, 0)

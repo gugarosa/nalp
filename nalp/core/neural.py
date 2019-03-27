@@ -28,12 +28,18 @@ class Neural(tf.keras.Model):
         Note we need to build the model itself (layers), its learning objects (learners)
         and finally, its metrics.
 
+        Raises:
+            NotImplementedError
+
         """
 
         raise NotImplementedError
 
     def _build_layers(self):
         """Builds the model layers itself.
+
+        Raises:
+            NotImplementedError
 
         """
 
@@ -42,12 +48,18 @@ class Neural(tf.keras.Model):
     def _build_learners(self):
         """Builds all learning-related objects (i.e., loss and optimizer).
 
+        Raises:
+            NotImplementedError
+
         """
 
         raise NotImplementedError
 
     def _build_metrics(self):
         """Builds any desired metrics to be used with the model.
+
+        Raises:
+            NotImplementedError
 
         """
 
@@ -62,6 +74,9 @@ class Neural(tf.keras.Model):
 
         Args:
             x (tf.Tensor): A tensorflow's tensor holding input data.
+
+        Raises:
+            NotImplementedError
 
         """
 
