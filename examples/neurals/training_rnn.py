@@ -25,7 +25,7 @@ d = OneHot(tokens, max_length=10)
 rnn = RNN(vocab_size=d.vocab_size, hidden_size=64, learning_rate=0.001)
 
 # Training the network
-rnn.train(dataset=d, batch_size=128, epochs=10)
+rnn.train(dataset=d, batch_size=128, epochs=100)
 
 # # Predicting using the same input (just for checking what is has learnt)
 preds = rnn.predict(d.X)

@@ -58,6 +58,7 @@ NALP is based on the following structure, and you should pay attention to its tr
     - utils
         - decorators
         - logging
+        - math
         - splitters
     - visualization
 ```

@@ -2,6 +2,7 @@ import nalp.utils.logging as l
 import numpy as np
 import tensorflow as tf
 from nalp.core.neural import Neural
+from nalp.utils import math
 
 logger = l.get_logger(__name__)
 
@@ -131,7 +132,7 @@ class RNN(Neural):
             name='accuracy_metric')
 
         # Defining loss metric
-        self.loss_metric = tf.keras.metrics.Mean(name='loss_metric')
+        self.loss_metric = tf.metrics.Mean(name='loss_metric')
 
         logger.debug(
             f'Accuracy: {self.loss_metric} | Mean Loss: {self.loss_metric}.')
@@ -158,36 +159,6 @@ class RNN(Neural):
         x = self.softmax(x)
 
         return x
-
-    def _sample_from_multinomial(self, probs, temperature):
-        """Samples an vocabulary index from a multinomial distribution.
-
-        Args:
-            probs (tf.Tensor): An tensor of probabilites.
-            temperature (float): The amount of diversity to include when sampling.
-
-        Returns:
-            The index of sampled character or word.
-
-        """
-
-        # Converting to float64 to avoid multinomial distribution erros
-        probs = np.asarray(probs).astype('float64')
-
-        # Then, we calculate the log of probs, divide by temperature and apply
-        # exponential
-        exp_probs = np.exp(np.log(probs) / temperature)
-
-        # Finally, we normalize it
-        norm_probs = exp_probs / np.sum(exp_probs)
-
-        # Sampling from multinomial distribution
-        dist_probs = np.random.multinomial(1, norm_probs, 1)
-
-        # The predicted index will be the argmax of the distribution
-        pred_idx = np.argmax(dist_probs)
-
-        return pred_idx
 
     def generate_text(self, dataset, start_text='', length=1, temperature=1.0):
         """Generates a maximum length of new text based on the probability of next char
@@ -228,7 +199,7 @@ class RNN(Neural):
             predict = self(seed).numpy()
 
             # Chooses a index based on the predictions probability distribution
-            pred_idx = self._sample_from_multinomial(
+            pred_idx = math.sample_from_multinomial(
                 predict[-1], temperature)
 
             # Removing first indexated token
