@@ -141,7 +141,7 @@ class Neural(tf.keras.Model):
                 self.step(X_batch, Y_batch)
 
             logger.debug(
-                f'Epoch: {epoch}/{epochs} | Loss: {self.loss_metric.result().numpy():.4f} | Accuracy: {self.accuracy_metric.result().numpy():.4f}')
+                f'Epoch: {epoch+1}/{epochs} | Loss: {self.loss_metric.result().numpy():.4f} | Accuracy: {self.accuracy_metric.result().numpy():.4f}')
 
     @tf.function
     def predict(self, X):
