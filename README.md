@@ -98,8 +98,13 @@ A visualization package in order to better illustrate what is happening with you
 We belive that everything have to be easy. Not diffucult or daunting, NALP will be the one-to-go package that you will need, from the very first instalattion to the daily-tasks implementing needs. If you may, just run the following under your most preferende Python environment (raw, conda, virtualenv, whatever)!:
 
 ```Python
-pip install .
+pip install nalp
 ```
+
+Or, if you prefer to install the bleeding-edge version, please clone this repository and use:
+
+```Python
+pip install .
 
 ---
 
@@ -123,6 +128,6 @@ No specific additional commands needed.
 
 ## Support
 
-We know that we do our best, but it's inevitable to acknowlodge that we make mistakes. If you every need to report a bug, report a problem, talk to us, please do so! We will be avaliable at our bests at this repository or gustavo.rosa@unesp.br.
+We know that we do our best, but it is inevitable to acknowlodge that we make mistakes. If you every need to report a bug, report a problem, talk to us, please do so! We will be avaliable at our bests at this repository or gustavo.rosa@unesp.br.
 
 ---

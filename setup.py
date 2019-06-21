@@ -1,9 +1,13 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
+with open('README.md', 'r') as f:
+    long_description = f.read()
 
 setup(name='nalp',
       version='1.0.1',
       description='Natural Adversarial Language Processing',
+      long_description=long_description,
+      long_description_content_type='text/markdown',
       author='Gustavo Rosa',
       author_email='gth.rosa@uol.com.br',
       url='https://github.com/gugarosa/nalp',
@@ -33,7 +37,7 @@ setup(name='nalp',
           'Intended Audience :: Science/Research',
           'License :: OSI Approved :: MIT License',
           'Programming Language :: Python :: 3.6',
-          'Programming Language :: PyPy :: 3.5',
+          'Programming Language :: Python :: Implementation :: PyPy',
           'Topic :: Software Development :: Libraries',
           'Topic :: Software Development :: Libraries :: Python Modules'
       ],
