@@ -105,6 +105,7 @@ Or, if you prefer to install the bleeding-edge version, please clone this reposi
 
 ```Python
 pip install .
+```
 
 ---
 
