@@ -22,7 +22,7 @@ setup(name='nalp',
                         'pytest>=3.2.3',
                         'scikit-learn>=0.19.2',
                         'scipy>=1.1.0',
-                        'tensorflow>=2.0.0-alpha0'
+                        'tensorflow>=2.0.0-beta1'
                         ],
       extras_require={
           'tests': ['coverage',
