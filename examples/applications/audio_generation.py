@@ -30,7 +30,7 @@ d = OneHot(notes, max_length=250)
 rnn = RNN(vocab_size=d.vocab_size, hidden_size=128, learning_rate=0.001)
 
 # Training the network
-rnn.train(dataset=d, batch_size=128, epochs=5)
+rnn.train(train=d, batch_size=128, epochs=5)
 
 # Generating new notes
 gen_notes = rnn.generate_text(

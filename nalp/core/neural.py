@@ -7,14 +7,14 @@ logger = l.get_logger(__name__)
 class Neural(tf.keras.Model):
     """A Neural class is responsible for holding vital information when defining a
     neural network.
-    
+
     Note that some methods have to be redefined when using its childs.
 
     """
 
     def __init__(self):
         """Initialization method.
-        
+
         Note that basic variables shared by all childs should be declared here.
 
         """
@@ -108,16 +108,17 @@ class Neural(tf.keras.Model):
             zip(gradients, self.trainable_variables))
 
         # Update the loss metric state
-        self.loss_metric.update_state(loss)
+        self.train_loss.update_state(loss)
 
         # Update the accuracy metric state
-        self.accuracy_metric.update_state(Y_batch, preds)
+        self.train_accuracy.update_state(Y_batch, preds)
 
-    def train(self, dataset, batch_size=1, epochs=100):
+    def train(self, train, validation=None, batch_size=1, epochs=100):
         """Trains a model.
 
         Args:
-            dataset (Dataset): A Dataset object containing already encoded data (X, Y).
+            train (Dataset): A training Dataset object containing already encoded data (X, Y).
+            validation (Dataset): A validation Dataset object containing already encoded data (X, Y).
             batch_size (int): The maximum size for each training batch.
             epochs (int): The maximum number of training epochs.
 
@@ -126,22 +127,62 @@ class Neural(tf.keras.Model):
         logger.info(f'Model ready to be trained for: {epochs} epochs.')
         logger.info(f'Batch size: {batch_size}.')
 
-        # Creating batches to further feed the network
-        batches = dataset.create_batches(dataset.X, dataset.Y, batch_size)
+        # Creating training batches to further feed the network
+        train_batches = train.create_batches(train.X, train.Y, batch_size)
+
+        # Checks if there is a validation set
+        if validation:
+            # Creating validation batches to further feed the network
+            val_batches = validation.create_batches(
+                validation.X, validation.Y, batch_size)
 
         # Iterate through all epochs
         for epoch in range(epochs):
             # Resetting states to further append losses and accuracies
-            self.loss_metric.reset_states()
-            self.accuracy_metric.reset_states()
+            self.train_loss.reset_states()
+            self.train_accuracy.reset_states()
+            self.val_loss.reset_states()
+            self.val_accuracy.reset_states()
 
-            # Iterate through all possible batches, dependending on batch size
-            for X_batch, Y_batch in batches:
+            # Iterate through all possible training batches, dependending on batch size
+            for X_train, Y_train in train_batches:
                 # Performs the optimization step
-                self.step(X_batch, Y_batch)
+                self.step(X_train, Y_train)
 
             logger.debug(
-                f'Epoch: {epoch+1}/{epochs} | Loss: {self.loss_metric.result().numpy():.4f} | Accuracy: {self.accuracy_metric.result().numpy():.4f}')
+                f'Epoch: {epoch+1}/{epochs} | Loss: {self.train_loss.result().numpy():.4f} | Accuracy: {self.train_accuracy.result().numpy():.4f}')
+
+            # Checks if there is a validation set
+            if validation:
+                # Iterate through all possible batches, dependending on batch size
+                for X_val, Y_val in val_batches:
+                    # Tests the network
+                    self.test(X_val, Y_val)
+
+                logger.debug(
+                    f'Val Loss: {self.val_loss.result().numpy():.4f} | Val Accuracy: {self.val_accuracy.result().numpy():.4f}\n')
+
+    @tf.function
+    def test(self, X_batch, Y_batch):
+        """Performs a single batch testing.
+
+        Args:
+            X_batch (tf.Tensor): A tensor containing the inputs batch.
+            Y_batch (tf.Tensor): A tensor containing the inputs' labels batch.
+
+        """
+
+        # Calculate the predictions based on inputs
+        preds = self(X_batch)
+
+        # Calculate the loss
+        loss = self.loss(Y_batch, preds)
+
+        # Update the testing loss metric state
+        self.val_loss.update_state(loss)
+
+        # Update the testing accuracy metric state
+        self.val_accuracy.update_state(Y_batch, preds)
 
     @tf.function
     def predict(self, X):

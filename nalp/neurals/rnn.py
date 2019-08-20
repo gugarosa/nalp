@@ -127,15 +127,22 @@ class RNN(Neural):
 
         """
 
-        # Defining accuracy metric
-        self.accuracy_metric = tf.metrics.CategoricalAccuracy(
-            name='accuracy_metric')
+        # Defining training accuracy metric
+        self.train_accuracy = tf.metrics.CategoricalAccuracy(
+            name='train_accuracy')
 
-        # Defining loss metric
-        self.loss_metric = tf.metrics.Mean(name='loss_metric')
+        # Defining training loss metric
+        self.train_loss = tf.metrics.Mean(name='train_loss')
+
+        # Defining validation accuracy metric
+        self.val_accuracy = tf.metrics.CategoricalAccuracy(
+            name='val_accuracy')
+
+        # Defining validation loss metric
+        self.val_loss = tf.metrics.Mean(name='val_loss')
 
         logger.debug(
-            f'Accuracy: {self.loss_metric} | Mean Loss: {self.loss_metric}.')
+            f'Train Accuracy: {self.train_accuracy} | Train Loss: {self.train_loss} | Val Accuracy: {self.val_accuracy} | Val Loss: {self.val_loss}.')
 
     @tf.function
     def call(self, x):
