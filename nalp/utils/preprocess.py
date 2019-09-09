@@ -82,6 +82,6 @@ def pipeline(*func):
 
         return x
 
-    logger.info('Pipeline created with ' + str(func) + '.')
+    logger.debug('Pipeline created with ' + str(func) + '.')
 
     return process

@@ -16,7 +16,22 @@ def load_txt(file_name):
 
     logger.debug(f'Loading {file_name} ...')
 
-    # Opens the .txt file and tries to read the text
-    text = open(file_name, 'rb').read().decode(encoding='utf-8')
+    # Tries to load the file
+    try:
+        # Opens the .txt file
+        file = open(file_name, 'rb')
 
-    return text
+        # Reads the text
+        text = file.read().decode(encoding='utf-8')
+
+        return text
+
+    # If file can not be loaded
+    except FileNotFoundError:
+        # Creates an error
+        error = f'File not found: {file_name}.'
+
+        # Logs the error
+        logger.error(error)
+
+        raise
