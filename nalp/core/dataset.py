@@ -216,7 +216,7 @@ class Dataset:
         return data
 
     def decode(self, encoded_data):
-        """Decodes array of probabilites into raw text.
+        """Decodes an array of probabilites into raw text.
 
         Args:
             encoded_data (np.array | tf.Tensor): An array holding probabilities.
@@ -231,7 +231,7 @@ class Dataset:
 
         # Iterating through all encoded data
         for e in encoded_data:
-                # If probability is true, we need to recover the argmax of 'e'
+                # Recovering the argmax of 'e'
                 decoded_text.append(self.index_vocab[np.argmax(e)])
 
         return decoded_text
