@@ -4,37 +4,50 @@ import nalp.utils.preprocess as p
 
 logger = log.get_logger(__name__)
 
-class Dictionary():
+
+class Corpus():
     """
     """
 
     def __init__(self, tokens=None, from_file=None, type='char'):
-        """
+        """Initialization method.
+        
         """
 
-        logger.info('Creating Dictionary ...')
+        logger.info('Creating Corpus.')
 
-        #
+        # Checks if there are not pre-loaded tokens
         if not tokens:
-            #
+            # Loads the text from file
             text = l.load_txt(from_file)
 
-            #
+            # Creates a pipeline based on desired type
             pipe = self._create_pipeline(type)
 
-            #
+            # Retrieve the tokens
             self.tokens = pipe(text)
-        
-        #
+
+        # If there are tokens
         else:
-            #
+            # Gathers them to the property
             self.tokens = tokens
 
-        #
+        # Builds the vocabulary based on the tokens
         self._build_vocabulary(self.tokens)
 
-        logger.info('Dictionary created.')
+        logger.info('Corpus created.')
 
+    @property
+    def tokens(self):
+        """list: A list of tokens.
+
+        """
+
+        return self._tokens
+
+    @tokens.setter
+    def tokens(self, tokens):
+        self._tokens = tokens
 
     def _create_pipeline(self, type):
         """
@@ -53,7 +66,7 @@ class Dictionary():
         #
         if type == 'char':
             return p.pipeline(p.lower_case, p.valid_char, p.tokenize_to_char)
-        
+
         #
         elif type == 'word':
             return p.pipeline(p.lower_case, p.valid_char, p.tokenize_to_word)
