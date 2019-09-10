@@ -1,23 +1,24 @@
 import nalp.utils.preprocess as p
-from nalp.core.corpus import Corpus
+from nalp.corpus.document import DocumentCorpus
 from nalp.encoders.tfidf import TfidfEncoder
 
-# Creating a character Corpus from file
-corpus = Corpus(from_file='data/text/chapter1_harry.txt', type='sent')
-
-print(corpus.vocab_index)
+# Creating a DocumentCorpus from file
+corpus = DocumentCorpus(from_file='data/document/chapter1_harry.txt')
 
 # Creating an TfidfEncoder
 encoder = TfidfEncoder()
 
-# Learns the encoding based on the Corpus tokens
-encoder.learn(corpus.tokens, top_tokens=100)
+# Learns the encoding based on the DocumentCorpus tokens
+encoder.learn(corpus.tokens, top_tokens=10)
+
+# Accessing encoder vocabulary
+print(encoder.encoder.vocabulary_)
 
 # Applies the encoding on same or new data
 encoded_tokens = encoder.encode(corpus.tokens)
 
 # Printing encoded tokens
-print(encoded_tokens[0])
+print(encoded_tokens)
 
 # Decoding the encoded tokens
 decoded_tokens = encoder.decode(encoded_tokens)

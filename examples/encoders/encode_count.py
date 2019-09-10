@@ -9,7 +9,10 @@ corpus = DocumentCorpus(from_file='data/document/chapter1_harry.txt')
 encoder = CountEncoder()
 
 # Learns the encoding based on the DocumentCorpus tokens
-encoder.learn(corpus.tokens, top_tokens=100)
+encoder.learn(corpus.tokens, top_tokens=10)
+
+# Accessing encoder vocabulary
+print(encoder.encoder.vocabulary_)
 
 # Applies the encoding on same or new data
 encoded_tokens = encoder.encode(corpus.tokens)
