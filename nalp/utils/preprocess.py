@@ -36,7 +36,7 @@ def valid_char(s):
 
 
 def tokenize_to_char(s):
-    """Tokenizes a sentence to characters array.
+    """Tokenizes a text to characters array.
 
     Args:
         s (str): Input string.
@@ -50,7 +50,7 @@ def tokenize_to_char(s):
 
 
 def tokenize_to_word(s):
-    """Tokenizes a sentence to words array.
+    """Tokenizes a text to words array.
 
     Args:
         s (str): Input string.
@@ -61,7 +61,6 @@ def tokenize_to_word(s):
     """
 
     return nltk.word_tokenize(s)
-
 
 def pipeline(*func):
     """Creates a pre-processing pipeline.

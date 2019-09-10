@@ -75,7 +75,7 @@ class IntegerEncoder(Encoder):
 
             # Logs the error
             logger.error(e)
-            
+
             raise RuntimeError(e)
 
         # Applies the encoding to the new tokens
