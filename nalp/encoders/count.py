@@ -37,8 +37,7 @@ class CountEncoder(Encoder):
         logger.debug('Learning how to encode ...')
 
         # Creates a CountVectorizer object
-        self.encoder = CountVectorizer(max_features=top_tokens,
-                                       preprocessor=lambda p: p, tokenizer=lambda t: t)
+        self.encoder = CountVectorizer(max_features=top_tokens)
 
         # Fits the tokens
         self.encoder.fit(tokens)
@@ -97,7 +96,7 @@ class CountEncoder(Encoder):
         # Decoding the tokens
         decoded_tokens = self.encoder.inverse_transform(encoded_tokens)
 
-        # Concatening the arrays output and transforming into a list
-        decoded_tokens = (np.concatenate(decoded_tokens)).tolist()
+        # Joining every list of decoded tokens into a sentence
+        decoded_tokens = [' '.join(list(d)) for d in decoded_tokens]
 
         return decoded_tokens

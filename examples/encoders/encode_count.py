@@ -1,14 +1,14 @@
 import nalp.utils.preprocess as p
-from nalp.core.corpus import Corpus
+from nalp.corpus.document import DocumentCorpus
 from nalp.encoders.count import CountEncoder
 
-# Creating a character Corpus from file
-corpus = Corpus(from_file='data/text/chapter1_harry.txt', type='char')
+# Creating a DocumentCorpus from file
+corpus = DocumentCorpus(from_file='data/document/chapter1_harry.txt')
 
 # Creating an CountEncoder
 encoder = CountEncoder()
 
-# Learns the encoding based on the Corpus tokens
+# Learns the encoding based on the DocumentCorpus tokens
 encoder.learn(corpus.tokens, top_tokens=100)
 
 # Applies the encoding on same or new data
