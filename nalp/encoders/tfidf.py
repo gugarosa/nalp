@@ -8,7 +8,7 @@ logger = l.get_logger(__name__)
 
 
 class TfidfEncoder(Encoder):
-    """A TfidfEncoder class, responsible for learning a TfidfVectorizer encoding and
+    """A TfidfEncoder class is responsible for learning a TfidfVectorizer encoding and
     further encoding new data.
 
     """
@@ -26,7 +26,7 @@ class TfidfEncoder(Encoder):
         logger.info('Class overrided.')
 
     def learn(self, tokens, top_tokens=100):
-        """Learns a TfidfVectorizer representation based on the tokens' frrquency
+        """Learns a TfidfVectorizer representation based on the tokens' frequency.
 
         Args:
             tokens (list): A list of tokens.

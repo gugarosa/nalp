@@ -8,7 +8,7 @@ logger = l.get_logger(__name__)
 
 
 class CountEncoder(Encoder):
-    """A CountEncoder class, responsible for learning a CountVectorizer encoding and
+    """A CountEncoder class is responsible for learning a CountVectorizer encoding and
     further encoding new data.
 
     """

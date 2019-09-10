@@ -7,7 +7,7 @@ logger = l.get_logger(__name__)
 
 
 class IntegerEncoder(Encoder):
-    """An Integer class, responsible for encoding text into integers.
+    """An Integer class is responsible for encoding text into integers.
 
     """
 
