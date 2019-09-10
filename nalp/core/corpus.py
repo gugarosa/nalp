@@ -150,7 +150,7 @@ class Corpus():
         self.vocab_size = len(self.vocab)
 
         # Creates a property mapping vocabulary to indexes
-        self.vocab_index = {c: i for i, c in enumerate(self.vocab)}
+        self.vocab_index = {t: i for i, t in enumerate(self.vocab)}
 
         # Creates a property mapping indexes to vocabulary
-        self.index_vocab = {i: c for i, c in enumerate(self.vocab)}
+        self.index_vocab = {i: t for i, t in enumerate(self.vocab)}

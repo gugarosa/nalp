@@ -1,34 +1,24 @@
-import nalp.stream.loader as l
-import nalp.stream.preprocess as p
-from nalp.encoders.count import Count
+import nalp.utils.preprocess as p
+from nalp.core.corpus import Corpus
+from nalp.encoders.count import CountEncoder
 
-# Loads an input .csv
-csv = l.load_csv('data/16k_twitter_en.csv')
+# Creating a character Corpus from file
+corpus = Corpus(from_file='data/text/chapter1_harry.txt', type='char')
 
-# Creates a pre-processing pipeline
-pipe = p.pipeline(
-    p.lower_case,
-    p.valid_char,
-    p.tokenize_to_word
-)
+# Creating an CountEncoder
+encoder = CountEncoder()
 
-# Transforming dataframe into samples and labels
-X = csv['text']
-Y = csv['sentiment']
+# Learns the encoding based on the Corpus tokens
+encoder.learn(corpus.tokens, top_tokens=100)
 
-# Applying pre-processing pipeline to X
-X = X.apply(lambda x: pipe(x))
+# Applies the encoding on same or new data
+encoded_tokens = encoder.encode(corpus.tokens)
 
-# Creating a Count (Enconder's child) class
-e = Count()
+# Printing encoded tokens
+print(encoded_tokens)
 
-# Calling its internal method to learn an encoding representation
-e.learn(X)
+# Decoding the encoded tokens
+decoded_tokens = encoder.decode(encoded_tokens)
 
-# Calling its internal method to actually encoded the desired data
-# Does not necessarily needs to be the same X from e.learn()
-e.encode(X)
-
-# Acessing encoder object and encoded data
-print(e.encoder)
-print(e.encoded_data)
+# Printing decoded tokens
+print(decoded_tokens)

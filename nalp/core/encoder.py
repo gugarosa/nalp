@@ -45,3 +45,14 @@ class Encoder:
         """
 
         raise NotImplementedError
+
+    def decode(self):
+        """This method decodes the encoded representation. Also, note that you
+        need to define your own encoding algorithm when using its childs.
+
+        Raises:
+            NotImplementedError
+
+        """
+
+        raise NotImplementedError
