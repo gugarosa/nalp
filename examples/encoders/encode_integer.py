@@ -8,8 +8,8 @@ corpus = Corpus(from_file='data/text/chapter1_harry.txt', type='char')
 # Creating an IntegerEncoder
 encoder = IntegerEncoder()
 
-# Learns the encoding
-encoder.learn(corpus)
+# Learns the encoding based on the Corpus dictionary
+encoder.learn(corpus.vocab_index)
 
 # Applies the encoding on new data
 encoded_tokens = encoder.encode(corpus.tokens)

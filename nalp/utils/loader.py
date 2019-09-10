@@ -29,9 +29,9 @@ def load_txt(file_name):
     # If file can not be loaded
     except FileNotFoundError:
         # Creates an error
-        error = f'File not found: {file_name}.'
+        e = f'File not found: {file_name}.'
 
         # Logs the error
-        logger.error(error)
+        logger.error(e)
 
         raise
