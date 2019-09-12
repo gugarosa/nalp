@@ -4,7 +4,7 @@ with open('README.md', 'r') as f:
     long_description = f.read()
 
 setup(name='nalp',
-      version='1.0.2',
+      version='1.1.0',
       description='Natural Adversarial Language Processing',
       long_description=long_description,
       long_description_content_type='text/markdown',
@@ -37,6 +37,8 @@ setup(name='nalp',
           'Intended Audience :: Science/Research',
           'License :: OSI Approved :: MIT License',
           'Programming Language :: Python :: 3.6',
+          'Programming Language :: Python :: 3.7',
+          'Programming Language :: Python :: 3.8',
           'Programming Language :: Python :: Implementation :: PyPy',
           'Topic :: Software Development :: Libraries',
           'Topic :: Software Development :: Libraries :: Python Modules'
