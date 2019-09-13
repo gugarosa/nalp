@@ -136,7 +136,7 @@ class TextCorpus(Corpus):
         """
 
         # Creates the vocabulary
-        self.vocab = list(set(tokens))
+        self.vocab = sorted(set(tokens))
 
         # Also, gathers the vocabulary size
         self.vocab_size = len(self.vocab)
