@@ -7,7 +7,7 @@ logger = l.get_logger(__name__)
 
 
 class OnehotEncoder(Encoder):
-    """An Onehot class is responsible for encoding text into one-hot encodings.
+    """An OnehotEncoder class is responsible for encoding text into one-hot encodings.
 
     """
 
