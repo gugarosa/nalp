@@ -27,12 +27,14 @@ optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
 
 rnn.compile(optimizer, loss=tf.losses.CategoricalCrossentropy(), metrics=['accuracy'])
 
-# rnn.fit(dataset.batches, epochs=100)
+rnn.fit(dataset.batches, epochs=100)
 
 # rnn.save_weights('out', save_format='tf')
 
 # rnn.train_on_batch(dataset.batches.take(1))
 
-rnn.load_weights('out')
+# rnn.summary()
+
+# rnn.load_weights('out')
 
 rnn.evaluate(dataset.batches)

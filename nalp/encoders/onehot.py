@@ -131,6 +131,7 @@ class OnehotEncoder(Encoder):
             raise RuntimeError(e)
 
         # Decoding the tokens
-        decoded_tokens = [self.decoder[np.where(encoded_token == 1)[0][0]] for encoded_token in encoded_tokens]
+        decoded_tokens = [self.decoder[np.where(encoded_token == 1)[
+            0][0]] for encoded_token in encoded_tokens]
 
         return decoded_tokens
