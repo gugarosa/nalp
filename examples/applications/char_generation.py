@@ -19,23 +19,18 @@ encoder.learn(corpus.vocab_index, corpus.index_vocab)
 encoded_tokens = encoder.encode(corpus.tokens)
 
 # Creating next target Dataset
-dataset = NextDataset(encoded_tokens, max_length=10, batch_size=16)
+dataset = NextDataset(encoded_tokens, max_length=10, batch_size=64)
 
 # Creating the RNN
 rnn = RNN(vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
 
-def accuracy(labels, logits):
-    return tf.keras.metrics.sparse_categorical_accuracy(labels, logits)
-
-def loss(labels, logits):
-    return tf.keras.losses.sparse_categorical_crossentropy(labels, logits, from_logits=True)
-
 # Compiling the RNN
 rnn.compile(optimize=tf.optimizers.Adam(learning_rate=0.001),
-            loss=loss, metrics=[accuracy])
+            loss=tf.losses.SparseCategoricalCrossentropy(from_logits=True),
+            metrics=[tf.metrics.SparseCategoricalAccuracy(name='accuracy')])
 
 # Fitting the RNN
-rnn.fit(dataset.batches, epochs=100)
+rnn.fit(dataset.batches, epochs=250)
 
 # Defining an start string to generate the text
 start_string = 'Mr.'

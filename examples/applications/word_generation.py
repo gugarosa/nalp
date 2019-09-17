@@ -7,7 +7,7 @@ from nalp.encoders.integer import IntegerEncoder
 from nalp.models.rnn import RNN
 
 # Creating a character TextCorpus from file
-corpus = TextCorpus(from_file='data/text/chapter1_harry.txt', type='char')
+corpus = TextCorpus(from_file='data/text/chapter1_harry.txt', type='word')
 
 # Creating an IntegerEncoder
 encoder = IntegerEncoder()
@@ -24,15 +24,10 @@ dataset = NextDataset(encoded_tokens, max_length=10, batch_size=16)
 # Creating the RNN
 rnn = RNN(vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
 
-def accuracy(labels, logits):
-    return tf.keras.metrics.sparse_categorical_accuracy(labels, logits)
-
-def loss(labels, logits):
-    return tf.keras.losses.sparse_categorical_crossentropy(labels, logits, from_logits=True)
-
 # Compiling the RNN
 rnn.compile(optimize=tf.optimizers.Adam(learning_rate=0.001),
-            loss=loss, metrics=[accuracy])
+            loss=tf.losses.SparseCategoricalCrossentropy(from_logits=True),
+            metrics=[tf.metrics.SparseCategoricalAccuracy(name='accuracy')])
 
 # Fitting the RNN
 rnn.fit(dataset.batches, epochs=100)
@@ -41,7 +36,7 @@ rnn.fit(dataset.batches, epochs=100)
 start_string = 'Mr.'
 
 # Generating artificial text
-text = rnn.generate_text(encoder, start=start_string, length=1000, temperature=0.5)
+text = rnn.generate_text(encoder, start=[start_string], length=1000, temperature=0.5)
 
 # Outputting the text
-print(start_string + ''.join(text))
+print(start_string + ' '.join(text))
