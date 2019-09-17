@@ -121,11 +121,11 @@ class TextCorpus(Corpus):
 
         # If the type is char
         if type == 'char':
-            return p.pipeline(p.lower_case, p.valid_char, p.tokenize_to_char)
+            return p.pipeline(p.tokenize_to_char)
 
         # If the type is word
         elif type == 'word':
-            return p.pipeline(p.lower_case, p.valid_char, p.tokenize_to_word)
+            return p.pipeline(p.tokenize_to_word)
 
     def _build(self, tokens):
         """Builds the vocabulary based on the tokens.

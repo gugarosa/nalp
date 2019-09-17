@@ -55,6 +55,6 @@ class NextDataset(Dataset):
         input = sequence[:-1]
 
         # Maps the sequence to the target
-        target = sequence[1]
+        target = sequence[1:]
 
         return input, target

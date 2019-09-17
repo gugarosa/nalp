@@ -6,38 +6,34 @@ from nalp.neurals.simple import SimpleNeural
 logger = l.get_logger(__name__)
 
 
-class EmbeddedRNN(SimpleNeural):
-    """An EmbeddedRNN class is the one in charge of Recurrent Neural Networks vanilla implementation.
-
+class RNN(SimpleNeural):
+    """A RNN class is the one in charge of Recurrent Neural Networks vanilla implementation.
+    
     References:
         http://psych.colorado.edu/~kimlab/Elman1990.pdf
 
     """
 
-    def __init__(self, vocab_size=1, embedding_size=100, hidden_size=1):
+    def __init__(self, vocab_size=1, hidden_size=1):
         """Initialization method.
 
         Args:
             vocab_size (int): The size of the vocabulary.
-            embedding_size (int): The size of the embedding layer.
             hidden_size (int): The amount of hidden neurons.
+            learning_rate (float): A big or small addition on the optimizer steps.
 
         """
 
-        logger.info('Overriding class: Neural -> EmbeddedRNN.')
+        logger.info('Overriding class: Neural -> RNN.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(EmbeddedRNN, self).__init__(name='embedded_rnn')
-
-        # Creates an embedding layer
-        self.embedding = layers.Embedding(
-            vocab_size, embedding_size, name='embedding')
+        super(RNN, self).__init__(name='rnn')
 
         # Creates a simple RNN cell
         self.cell = layers.SimpleRNNCell(hidden_size, name='rnn_cell')
 
         # Creates the RNN loop itself
-        self.rnn = layers.RNN(self.cell, name='rnn_layer')
+        self.rnn = layers.RNN(self.cell, name='rnn_layer', return_sequences=True)
 
         # Creates the linear (Dense) layer
         self.linear = layers.Dense(vocab_size, name='dense')
@@ -55,9 +51,6 @@ class EmbeddedRNN(SimpleNeural):
             The same tensor after passing through each defined layer.
 
         """
-
-        # Firstly, we apply the embedding layer
-        x = self.embedding(x)
 
         # We need to apply the input into the first recorrent layer
         x = self.rnn(x)
