@@ -1,27 +1,28 @@
-import tensorflow as tf
+from tensorflow.keras import Model
 
 import nalp.utils.logging as l
 
 logger = l.get_logger(__name__)
 
 
-class Neural(tf.keras.Model):
-    """A Neural class is responsible for holding vital information when defining a
-    neural network.
-
-    Note that some methods have to be redefined when using its childs.
+class SimpleNeural(Model):
+    """A SimpleNeural class is responsible for easily-implementing a neural network, when
+    custom training or additional sets are not needed.
 
     """
 
-    def __init__(self):
+    def __init__(self, name):
         """Initialization method.
 
-        Note that basic variables shared by all childs should be declared here.
+        Note that basic variables shared by all childs should be declared here, e.g., layers.
+
+        Args:
+            name (str): The model's identifier string.
 
         """
 
         # Overrides its parent class with any custom arguments if needed
-        super(Neural, self).__init__()
+        super(SimpleNeural, self).__init__(name=name)
 
     def call(self, x):
         """Method that holds vital information whenever this class is called.

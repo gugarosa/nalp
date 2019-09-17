@@ -1,2 +1,2 @@
-"""A data package for all common nalp modules.
+"""A dataset package to transform encoded data into real datasets.
 """

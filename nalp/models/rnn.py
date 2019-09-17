@@ -1,11 +1,12 @@
+from tensorflow.keras import layers
+
 import nalp.utils.logging as l
-from nalp.core.neural import Neural
-import tensorflow as tf
+from nalp.neurals.simple import SimpleNeural
 
 logger = l.get_logger(__name__)
 
 
-class EmbeddedRNN(tf.keras.Model):
+class RNN(SimpleNeural):
     """A RNN class is the one in charge of Recurrent Neural Networks vanilla implementation.
     
     References:
@@ -13,7 +14,7 @@ class EmbeddedRNN(tf.keras.Model):
 
     """
 
-    def __init__(self, vocab_size=1, hidden_size=2):
+    def __init__(self, vocab_size=1, hidden_size=1):
         """Initialization method.
 
         Args:
@@ -28,19 +29,17 @@ class EmbeddedRNN(tf.keras.Model):
         # Overrides its parent class with any custom arguments if needed
         super(RNN, self).__init__(name='rnn')
 
-        self.embedding = tf.keras.layers.Embedding(vocab_size, 100)
-
         # Creates a simple RNN cell
-        self.cell = tf.keras.layers.SimpleRNNCell(hidden_size, name='rnn_cell')
+        self.cell = layers.SimpleRNNCell(hidden_size, name='rnn_cell')
 
         # Creates the RNN loop itself
-        self.rnn = tf.keras.layers.RNN(self.cell, name='rnn_layer')
+        self.rnn = layers.RNN(self.cell, name='rnn_layer')
 
         # Creates the linear (Dense) layer
-        self.linear = tf.keras.layers.Dense(vocab_size, name='dense')
+        self.linear = layers.Dense(vocab_size, name='dense')
 
         # And finally, a softmax activation for life's easing
-        self.softmax = tf.keras.layers.Softmax(name='softmax')
+        self.softmax = layers.Softmax(name='softmax')
 
     def call(self, x):
         """Method that holds vital information whenever this class is called.
@@ -52,8 +51,6 @@ class EmbeddedRNN(tf.keras.Model):
             The same tensor after passing through each defined layer.
 
         """
-
-        x = self.embedding(x)
 
         # We need to apply the input into the first recorrent layer
         x = self.rnn(x)

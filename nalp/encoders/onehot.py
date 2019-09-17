@@ -98,7 +98,7 @@ class OnehotEncoder(Encoder):
             raise RuntimeError(e)
 
         # Creating an array to hold the one-hot encoded tokens
-        encoded_tokens = np.zeros((len(tokens), self.vocab_size))
+        encoded_tokens = np.zeros((len(tokens), self.vocab_size), dtype='float32')
 
         # Iterates through all tokens
         for i, idx in enumerate(tokens):

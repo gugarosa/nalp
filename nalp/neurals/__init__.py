@@ -1,3 +1,3 @@
-"""A machine learning related package for all common nalp modules. It will
-offer basic definitions to easily build a machine learning model.
+"""The base of machine learning models. One can use it to easily or hardly
+    define how the model is built.
 """

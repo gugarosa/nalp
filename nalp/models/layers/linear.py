@@ -1,17 +1,14 @@
-import nalp.utils.logging as l
 import tensorflow as tf
-from tensorflow.keras import layers
-
-logger = l.get_logger(__name__)
+from tensorflow.keras.layers import Layer
 
 
-class Linear(layers.Layer):
+class Linear(Layer):
     """A linear layer is an easy-abstraction to show the possibilities of implementing
     your own layer.
 
     """
 
-    def __init__(self, hidden_size=32):
+    def __init__(self, name='linear', hidden_size=32):
         """Initialization method.
 
         Args:
@@ -20,7 +17,7 @@ class Linear(layers.Layer):
         """
 
         # Overrides its parent class with any custom arguments if needed
-        super(Linear, self).__init__()
+        super(Linear, self).__init__(name=name)
 
         # A property to hold the size of the layer
         self.hidden_size = hidden_size
@@ -37,6 +34,7 @@ class Linear(layers.Layer):
             shape=(input_shape[-1], self.hidden_size),
             initializer='glorot_uniform',
             trainable=True)
+
         self.b = self.add_weight(
             shape=(self.hidden_size,),
             initializer='zeros',

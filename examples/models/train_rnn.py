@@ -1,9 +1,10 @@
+import tensorflow as tf
+
 import nalp.utils.preprocess as p
 from nalp.corpus.text import TextCorpus
-from nalp.encoders.onehot import OnehotEncoder
 from nalp.datasets.next import NextDataset
-from nalp.neurals.rnn import RNN
-import tensorflow as tf
+from nalp.encoders.onehot import OnehotEncoder
+from nalp.models.rnn import RNN
 
 # Creating a character TextCorpus from file
 corpus = TextCorpus(from_file='data/text/chapter1_harry.txt', type='char')
@@ -11,7 +12,7 @@ corpus = TextCorpus(from_file='data/text/chapter1_harry.txt', type='char')
 # Creating an OnehotEncoder
 encoder = OnehotEncoder()
 
-# Learns the encoding based on the TextCorpus dictionary and reverse dictionary
+# Learns the encoding based on the TextCorpus dictionary, reverse dictionary and vocabulary size
 encoder.learn(corpus.vocab_index, corpus.index_vocab, corpus.vocab_size)
 
 # Applies the encoding on new data
@@ -23,18 +24,18 @@ dataset = NextDataset(encoded_tokens, max_length=10, batch_size=128)
 # Creating the RNN
 rnn = RNN(vocab_size=corpus.vocab_size, hidden_size=64)
 
-optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
+# Compiling the RNN
+rnn.compile(optimize=tf.optimizers.Adam(learning_rate=0.001),
+            loss=tf.losses.CategoricalCrossentropy(), metrics=['accuracy'])
 
-rnn.compile(optimizer, loss=tf.losses.CategoricalCrossentropy(), metrics=['accuracy'])
-
+# Fitting the RNN
 rnn.fit(dataset.batches, epochs=100)
 
-# rnn.save_weights('out', save_format='tf')
+# Evaluating the RNN
+# rnn.evaluate(dataset.batches)
 
-# rnn.train_on_batch(dataset.batches.take(1))
+# Saving RNN weights
+# rnn.save_weights('models/rnn', save_format='tf')
 
-# rnn.summary()
-
-# rnn.load_weights('out')
-
-rnn.evaluate(dataset.batches)
+# Loading RNN weights
+# rnn.load_weights('models/rnn')
