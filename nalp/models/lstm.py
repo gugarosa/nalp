@@ -6,11 +6,11 @@ from nalp.neurals.simple import SimpleNeural
 logger = l.get_logger(__name__)
 
 
-class RNN(SimpleNeural):
-    """An RNN class is the one in charge of Recurrent Neural Networks vanilla implementation.
+class LSTM(SimpleNeural):
+    """A LSTM class is the one in charge of Long Short-Term Memory implementation.
 
     References:
-        http://psych.colorado.edu/~kimlab/Elman1990.pdf
+        https://www.bioinf.jku.at/publications/older/2604.pdf
 
     """
 
@@ -24,17 +24,17 @@ class RNN(SimpleNeural):
 
         """
 
-        logger.info('Overriding class: Neural -> RNN.')
+        logger.info('Overriding class: Neural -> LSTM.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(RNN, self).__init__(name='rnn')
+        super(LSTM, self).__init__(name='lstm')
 
         # Creates an embedding layer
         self.embedding = layers.Embedding(
             vocab_size, embedding_size, name='embedding')
 
-        # Creates a simple RNN cell
-        self.cell = layers.SimpleRNNCell(hidden_size, name='rnn_cell')
+        # Creates a LSTM cell
+        self.cell = layers.LSTMCell(hidden_size, name='lstm_cell')
 
         # Creates the RNN loop itself
         self.rnn = layers.RNN(self.cell, name='rnn_layer',

@@ -6,11 +6,11 @@ from nalp.neurals.simple import SimpleNeural
 logger = l.get_logger(__name__)
 
 
-class RNN(SimpleNeural):
-    """An RNN class is the one in charge of Recurrent Neural Networks vanilla implementation.
+class GRU(SimpleNeural):
+    """A GRU class is the one in charge of Gated Recurrent Unit implementation.
 
     References:
-        http://psych.colorado.edu/~kimlab/Elman1990.pdf
+        https://www.aclweb.org/anthology/D14-1179
 
     """
 
@@ -24,17 +24,17 @@ class RNN(SimpleNeural):
 
         """
 
-        logger.info('Overriding class: Neural -> RNN.')
+        logger.info('Overriding class: Neural -> GRU.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(RNN, self).__init__(name='rnn')
+        super(GRU, self).__init__(name='gru')
 
         # Creates an embedding layer
         self.embedding = layers.Embedding(
             vocab_size, embedding_size, name='embedding')
 
-        # Creates a simple RNN cell
-        self.cell = layers.SimpleRNNCell(hidden_size, name='rnn_cell')
+        # Creates a GRU cell
+        self.cell = layers.GRUCell(hidden_size, name='gru')
 
         # Creates the RNN loop itself
         self.rnn = layers.RNN(self.cell, name='rnn_layer',
