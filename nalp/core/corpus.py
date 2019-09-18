@@ -1,7 +1,7 @@
 class Corpus():
     """A Corpus class is used to defined the first step of the workflow.
 
-    It serves as a basis class to load raw text or documents (list of sentences).
+    It serves as a basis class to load raw text, documents (list of sentences) and audio.
 
     """
 

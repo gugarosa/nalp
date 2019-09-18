@@ -1,7 +1,7 @@
 nalp.models
 ==============
 
-To write
+Each neural network architecture is defined in this package. From naïve RNNs to BiLSTMs, you can use whatever suits your needs.
 
 .. toctree::
     nalp.models.gru

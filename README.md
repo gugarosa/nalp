@@ -69,11 +69,11 @@ NALP is based on the following structure, and you should pay attention to its tr
 
 ### Core
 
-Core is the core. Essentially, it is the parent of everything. You should find parent classes defining the basis of our structure. They should provide variables and methods that will help to construct other modules.
+The core is the core. Essentially, it is the parent of everything. You should find parent classes defining the basis of our structure. They should provide variables and methods that will help to construct other modules.
 
 ### Corpus
 
-Corpus
+Every pipeline has its first step, right? The corpus package serves as a basic class to load raw text, documents (list of sentences), and audio.
 
 ### Datasets
 
@@ -85,11 +85,11 @@ Text or Numbers? Encodings are used to make embeddings. Embeddings are used to f
 
 ### Models
 
-Models
+Each neural network architecture is defined in this package. From naïve RNNs to BiLSTMs, you can use whatever suits your needs.
 
 ### Neurals
 
-A neural networks package. In this package, you can find all neural-related implementations. From naïve RNNs to BiLSTMs, you can use whatever suits your needs. All implementations were done using raw Tensorflow, mainly to understand better and control the whole training and inference process.
+The neurals package provides simple or complex implementations using Tensorflow. You can choose straightforward examples using the Simple class or more advanced customization methods using the Complex class.
 
 ### Utils
 
