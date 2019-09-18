@@ -1,50 +1,51 @@
-import mido
 import numpy as np
+import tensorflow as tf
 from mido import Message, MidiFile, MidiTrack
 
-import nalp.stream.loader as l
-import nalp.stream.preprocess as p
-from nalp.datasets.one_hot import OneHot
-from nalp.neurals.rnn import RNN
+import nalp.utils.preprocess as p
+from nalp.corpus.audio import AudioCorpus
+from nalp.datasets.next import NextDataset
+from nalp.encoders.integer import IntegerEncoder
+from nalp.models.rnn import RNN
 
-# Loading .midi file
-audio = MidiFile('data/audio/sample.mid')
+# Creating an AudioCorpus from file
+corpus = AudioCorpus(from_file='data/audio/sample.mid')
 
-# Declaring an empty list to hold audio notes
-notes = []
+# Creating an IntegerEncoder
+encoder = IntegerEncoder()
 
-# Gathering notes
-for step in audio:
-    # Checking for real note
-    if not step.is_meta and step.channel == 0 and step.type == 'note_on':
-        # Gathering note
-        note = step.bytes()
+# Learns the encoding based on the AudioCorpus dictionary and reverse dictionary
+encoder.learn(corpus.vocab_index, corpus.index_vocab)
 
-        # Saving to string
-        notes.append(note[1])
+# Applies the encoding on new data
+encoded_tokens = encoder.encode(corpus.tokens)
 
-# Creating a OneHot dataset
-d = OneHot(notes, max_length=250)
+# Creating next target Dataset
+dataset = NextDataset(encoded_tokens, max_length=100, batch_size=64)
 
-# Defining a neural network based on vanilla RNN
-rnn = RNN(vocab_size=d.vocab_size, hidden_size=128, learning_rate=0.001)
+# Creating the RNN
+rnn = RNN(vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
 
-# Training the network
-rnn.train(train=d, batch_size=128, epochs=5)
+# Compiling the RNN
+rnn.compile(optimize=tf.optimizers.Adam(learning_rate=0.001),
+            loss=tf.losses.SparseCategoricalCrossentropy(from_logits=True),
+            metrics=[tf.metrics.SparseCategoricalAccuracy(name='accuracy')])
 
-# Generating new notes
-gen_notes = rnn.generate_text(
-    dataset=d, start_text=[55], length=1000, temperature=0.2)
+# Fitting the RNN
+rnn.fit(dataset.batches, epochs=25)
+
+# Generating artificial notes
+notes = rnn.generate_text(encoder, start=[55], length=1000, temperature=0.2)
 
 # Creating midi classes to hold generated audio and further music track
-new_audio = MidiFile()
+audio = MidiFile()
 track = MidiTrack()
 
 # Creating a time counter
 t = 0
 
 # Iterating through generated notes
-for note in gen_notes:
+for note in notes:
     # Creating a note array
     note = np.asarray([147, note, 67])
 
@@ -64,7 +65,7 @@ for note in gen_notes:
     track.append(step)
 
 # Appending track to file
-new_audio.tracks.append(track)
+audio.tracks.append(track)
 
 # Outputting generated .midi file
-new_audio.save('generated_sample.mid')
+audio.save('generated_sample.mid')
