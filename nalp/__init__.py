@@ -1,5 +1,5 @@
-"""This is nalp main library. Note that this library consists
+"""This is NALP main library. Note that this library consists
     of several modules and sub-modules.
 """
 
-__version__ = '1.0.2'
+__version__ = '1.1.0'

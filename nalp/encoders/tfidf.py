@@ -1,13 +1,14 @@
-import nalp.utils.logging as l
 import numpy as np
-from nalp.core.encoder import Encoder
 from sklearn.feature_extraction.text import TfidfVectorizer
+
+import nalp.utils.logging as l
+from nalp.core.encoder import Encoder
 
 logger = l.get_logger(__name__)
 
 
-class TFIDF(Encoder):
-    """A TFIDF class, responsible for learning a TfidfVectorizer encode and
+class TfidfEncoder(Encoder):
+    """A TfidfEncoder class is responsible for learning a TfidfVectorizer encoding and
     further encoding new data.
 
     """
@@ -17,53 +18,85 @@ class TFIDF(Encoder):
 
         """
 
-        logger.info('Overriding class: Encoder -> TFIDF.')
+        logger.info('Overriding class: Encoder -> TfidfEncoder.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(TFIDF, self).__init__()
+        super(TfidfEncoder, self).__init__()
 
         logger.info('Class overrided.')
 
-    def learn(self, sentences, max_features=100):
-        """Learns a TFIDF representation based on the words' frequency.
+    def learn(self, tokens, top_tokens=100):
+        """Learns a TfidfVectorizer representation based on the tokens' frequency.
 
         Args:
-            sentences (df): A Panda's dataframe column holding sentences to be fitted.
-            max_features (int): Maximum number of features to be fitted.
+            tokens (list): A list of tokens.
+            top_tokens (int): Maximum number of top tokens to be learned.
 
         """
 
-        logger.debug('Running public method: learn().')
+        logger.debug('Learning how to encode ...')
 
         # Creates a TfidfVectorizer object
-        self.encoder = TfidfVectorizer(max_features=max_features,
-                                        preprocessor=lambda p: p, tokenizer=lambda t: t)
+        self.encoder = TfidfVectorizer(max_features=top_tokens)
 
-        # Fits sentences onto it
-        self.encoder.fit(sentences)
+        # Fits the tokens
+        self.encoder.fit(tokens)
 
-    def encode(self, sentences):
-        """Actually encodes the data into a TfidfVectorizer representation.
+    def encode(self, tokens):
+        """Encodes the data into a TfidfVectorizer representation.
 
         Args:
-            sentences (df): A Panda's dataframe column holding sentences to be encoded.
+            tokens (list): A list of tokens to be encoded.
+
+        Returns:
+            A numpy array containing the encoded tokens.
 
         """
 
-        logger.debug('Running public method: encode().')
+        logger.debug('Encoding new tokens ...')
 
-        # Checks if enconder actually exists, if not raises a RuntimeError
+        # Checks if enconder actually exists, if not raises an error
         if not self.encoder:
+            # Creates the error
             e = 'You need to call learn() prior to encode() method.'
+
+            # Logs the error
             logger.error(e)
+
             raise RuntimeError(e)
 
-        # Logging some important information
-        logger.debug(
-            f'Size: ({sentences.size}, {self.encoder.max_features}).')
+        # Applies the encoding to the new tokens
+        encoded_tokens = (self.encoder.transform(tokens)).toarray()
 
-        # Transforms sentences into TfidfVectorizer encoding (only if it has been previously fitted)
-        X = self.encoder.transform(sentences)
+        return encoded_tokens
 
-        # Applies encoded TfidfVectorizer to a numpy array
-        self.encoded_data = X.toarray()
+    def decode(self, encoded_tokens):
+        """Decodes the TfidfVectorizer representation back to tokens.
+
+        Args:
+            encoded_tokens (np.array): A numpy array containing the encoded tokens.
+
+        Returns:
+            A list of decoded tokens.
+
+        """
+
+        logger.debug('Decoding encoded tokens ...')
+
+        # Checks if enconder actually exists, if not raises an error
+        if not self.encoder:
+            # Creates the error
+            e = 'You need to call learn() prior to decode() method.'
+
+            # Logs the error
+            logger.error(e)
+
+            raise RuntimeError(e)
+
+        # Decoding the tokens
+        decoded_tokens = self.encoder.inverse_transform(encoded_tokens)
+
+        # Joining every list of decoded tokens into a sentence
+        decoded_tokens = [' '.join(list(d)) for d in decoded_tokens]
+
+        return decoded_tokens

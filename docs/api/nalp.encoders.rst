@@ -5,6 +5,7 @@ Text or Numbers? Encodings are used to make embeddings. Embeddings are used to f
 
 .. toctree::
     nalp.encoders.count
+    nalp.encoders.integer
     nalp.encoders.tfidf
     nalp.encoders.word2vec
 

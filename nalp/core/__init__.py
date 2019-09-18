@@ -1,3 +1,3 @@
-"""A core package, containing all the basic class and functions that will
-   be the foundartion for all common nalp modules.
+"""A core package, containing all the basic class and functions that serves as
+    the foundation of NALP common modules.
 """

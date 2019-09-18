@@ -4,7 +4,7 @@ with open('README.md', 'r') as f:
     long_description = f.read()
 
 setup(name='nalp',
-      version='1.0.2',
+      version='1.1.0',
       description='Natural Adversarial Language Processing',
       long_description=long_description,
       long_description_content_type='text/markdown',
@@ -14,14 +14,11 @@ setup(name='nalp',
       license='MIT',
       install_requires=['coverage>=4.5.2',
                         'gensim>=3.5.0',
-                        'matplotlib>=3.0.0',
+                        'mido>=1.2.9',
                         'nltk>=3.2.5',
                         'numpy>=1.13.3',
-                        'pandas>=0.23.4',
                         'pylint>=1.7.4',
                         'pytest>=3.2.3',
-                        'scikit-learn>=0.19.2',
-                        'scipy>=1.1.0',
                         'tensorflow>=2.0.0-beta1'
                         ],
       extras_require={
@@ -37,6 +34,8 @@ setup(name='nalp',
           'Intended Audience :: Science/Research',
           'License :: OSI Approved :: MIT License',
           'Programming Language :: Python :: 3.6',
+          'Programming Language :: Python :: 3.7',
+          'Programming Language :: Python :: 3.8',
           'Programming Language :: Python :: Implementation :: PyPy',
           'Topic :: Software Development :: Libraries',
           'Topic :: Software Development :: Libraries :: Python Modules'
