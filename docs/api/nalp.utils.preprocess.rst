@@ -1,7 +1,7 @@
-nalp.datasets.vanilla
+nalp.utils.preprocess
 ==========================
 
-.. automodule:: nalp.datasets.vanilla
+.. automodule:: nalp.utils.preprocess
     :members:
     :private-members:
     :special-members:

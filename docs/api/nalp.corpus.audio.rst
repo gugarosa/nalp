@@ -1,7 +1,7 @@
-nalp.core.neural
+nalp.corpus.audio
 ==========================
 
-.. automodule:: nalp.core.neural
+.. automodule:: nalp.corpus.audio
     :members:
     :private-members:
     :special-members:

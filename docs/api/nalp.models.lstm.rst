@@ -1,7 +1,7 @@
-nalp.stream.loader
+nalp.models.lstm
 ==========================
 
-.. automodule:: nalp.stream.loader
+.. automodule:: nalp.models.lstm
     :members:
     :private-members:
     :special-members:

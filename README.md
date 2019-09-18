@@ -40,32 +40,40 @@ NALP is based on the following structure, and you should pay attention to its tr
 ```
 - nalp
     - core
+        - corpus
         - dataset
         - encoder
-        - neural
+    - corpus
+        - audio
+        - document
+        - text
     - datasets
-        - one_hot
-        - vanilla
+        - next
     - encoders
         - count
+        - integer
         - tfidf
         - word2vec
-    - neurals
+    - models
+        - gru
+        - lstm
         - rnn
-    - stream
-        - loader
-        - preprocess
+    - neurals
+        - complex
+        - simple
     - utils
-        - decorators
+        - loader
         - logging
-        - math
-        - splitters
-    - visualization
+        - preprocess
 ```
 
 ### Core
 
-Core is the core. Essentially, it is the parent of everything. You should find parent classes defining the basis of our structure. They should provide variables and methods that will help to construct other modules. It is composed of the following classes:
+Core is the core. Essentially, it is the parent of everything. You should find parent classes defining the basis of our structure. They should provide variables and methods that will help to construct other modules.
+
+### Corpus
+
+Corpus
 
 ### Datasets
 
@@ -75,21 +83,17 @@ Because we need data, right? Datasets are composed of classes and methods that a
 
 Text or Numbers? Encodings are used to make embeddings. Embeddings are used to feed into neural networks. Remember that networks cannot read raw data; therefore, you might want to pre-encode your data using well-known encoders.
 
+### Models
+
+Models
+
 ### Neurals
 
 A neural networks package. In this package, you can find all neural-related implementations. From naïve RNNs to BiLSTMs, you can use whatever suits your needs. All implementations were done using raw Tensorflow, mainly to understand better and control the whole training and inference process.
 
-### Stream
-
-A stream package is used to manipulate data. From loading to processing, here you can find all classes and methods defined in order to help you achieve these tasks.
-
 ### Utils
 
 This is a utility package. Common things shared across the application should be implemented here. It is better to implement once and use as you wish than re-implementing the same thing over and over again.
-
-### Visualization
-
-A visualization package illustrates what is happening with your data. Use classes and methods to help you decide if your data is well enough to fulfill your desires.
 
 ---
 

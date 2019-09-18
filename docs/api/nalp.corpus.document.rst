@@ -1,7 +1,7 @@
-nalp.utils.splitters
+nalp.corpus.document
 ==========================
 
-.. automodule:: nalp.utils.splitters
+.. automodule:: nalp.corpus.document
     :members:
     :private-members:
     :special-members:

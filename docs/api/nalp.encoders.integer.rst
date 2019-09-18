@@ -1,7 +1,7 @@
-nalp.stream.preprocess
+nalp.encoders.integer
 ==========================
 
-.. automodule:: nalp.stream.preprocess
+.. automodule:: nalp.encoders.integer
     :members:
     :private-members:
     :special-members:

@@ -1,7 +1,7 @@
-nalp.datasets.one_hot
+nalp.core.corpus
 ==========================
 
-.. automodule:: nalp.datasets.one_hot
+.. automodule:: nalp.core.corpus
     :members:
     :private-members:
     :special-members:

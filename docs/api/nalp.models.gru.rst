@@ -1,7 +1,7 @@
-nalp.utils.decorators
+nalp.models.gru
 ==========================
 
-.. automodule:: nalp.utils.decorators
+.. automodule:: nalp.models.gru
     :members:
     :private-members:
     :special-members:
