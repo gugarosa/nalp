@@ -1,6 +1,5 @@
 import tensorflow as tf
 
-import nalp.utils.preprocess as p
 from nalp.corpus.text import TextCorpus
 from nalp.datasets.next import NextDataset
 from nalp.encoders.integer import IntegerEncoder

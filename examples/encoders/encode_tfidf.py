@@ -1,4 +1,3 @@
-import nalp.utils.preprocess as p
 from nalp.corpus.document import DocumentCorpus
 from nalp.encoders.tfidf import TfidfEncoder
 
