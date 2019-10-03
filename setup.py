@@ -19,7 +19,7 @@ setup(name='nalp',
                         'numpy>=1.13.3',
                         'pylint>=1.7.4',
                         'pytest>=3.2.3',
-                        'tensorflow>=2.0.0-beta1'
+                        'tensorflow>=2.0.0'
                         ],
       extras_require={
           'tests': ['coverage',
