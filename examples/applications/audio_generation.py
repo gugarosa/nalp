@@ -44,7 +44,7 @@ rnn.save_weights('models/audio_rnn', save_format='tf')
 rnn = RNN(vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
 
 # Loading pre-trained RNN weights
-rnn.load_weights('models/audio_rnn')
+rnn.load_weights('models/audio_rnn').expect_partial()
 
 # Now, for the inference step, we build with a batch size equals to 1
 rnn.build((1, None))
