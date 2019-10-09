@@ -48,6 +48,10 @@ class TextCorpus(Corpus):
         # Builds the vocabulary based on the tokens
         self._build(self.tokens)
 
+        # Debugging some important information
+        logger.debug(
+            f'Tokens: {len(self.tokens)} | Vocabulary Size: {len(self.vocab)} | Type: {type}.')
+
         logger.info('TextCorpus created.')
 
     @property

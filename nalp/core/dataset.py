@@ -58,13 +58,14 @@ class Dataset():
 
         """
 
-        logger.debug(
-            f'Creating sequences of maximum length: {self.max_length} ...')
+        logger.debug(f'Creating sequences ...')
 
         # Creating tensor slices from the encoded tokens
         slices = tf.data.Dataset.from_tensor_slices(self.encoded_tokens)
 
         # Creating the sequences
         sequences = slices.batch(self.max_length+1, drop_remainder=True)
+
+        logger.debug(f'Maximum length: {self.max_length}.')
 
         return sequences

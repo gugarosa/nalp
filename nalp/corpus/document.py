@@ -43,4 +43,7 @@ class DocumentCorpus(Corpus):
             # Gathers them to the property
             self.tokens = tokens
 
+        # Debugging some important information
+        logger.debug(f'Tokens: {len(self.tokens)} | Type: sentences.')
+
         logger.info('DocumentCorpus created.')

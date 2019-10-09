@@ -1,3 +1,5 @@
+from tensorflow import data
+
 import nalp.utils.logging as l
 from nalp.core.dataset import Dataset
 
@@ -31,12 +33,15 @@ class NextDataset(Dataset):
         # Mapping the sequences to input and targets
         map_sequences = sequences.map(self._create_input_target)
 
-        logger.debug(
-            f'Creating input and target batches of size: {batch_size}.')
+        logger.debug('Creating input and target batches ...')
 
         # Actually creating the desired amount of batches
         self.batches = map_sequences.shuffle(
             10000).batch(batch_size, drop_remainder=True)
+
+        # Debugging some important information
+        logger.debug(
+            f'Batches: {data.experimental.cardinality(self.batches)} | Batch size: {batch_size}.')
 
         logger.info('Class overrided.')
 
