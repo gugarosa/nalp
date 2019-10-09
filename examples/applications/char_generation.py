@@ -6,6 +6,10 @@ from nalp.datasets.next import NextDataset
 from nalp.encoders.integer import IntegerEncoder
 from nalp.models.rnn import RNN
 
+# When generating artificial text, make sure
+# to use the same data, classes and parameters
+# as the pre-trained network
+
 # Creating a character TextCorpus from file
 corpus = TextCorpus(from_file='data/text/chapter1_harry.txt', type='char')
 
@@ -15,22 +19,14 @@ encoder = IntegerEncoder()
 # Learns the encoding based on the TextCorpus dictionary and reverse dictionary
 encoder.learn(corpus.vocab_index, corpus.index_vocab)
 
-# Applies the encoding on new data
-encoded_tokens = encoder.encode(corpus.tokens)
-
-# Creating next target Dataset
-dataset = NextDataset(encoded_tokens, max_length=10, batch_size=64)
-
 # Creating the RNN
 rnn = RNN(vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
 
-# Compiling the RNN
-rnn.compile(optimize=tf.optimizers.Adam(learning_rate=0.001),
-            loss=tf.losses.SparseCategoricalCrossentropy(from_logits=True),
-            metrics=[tf.metrics.SparseCategoricalAccuracy(name='accuracy')])
+# Loading pre-trained RNN weights
+rnn.load_weights('models/rnn')
 
-# Fitting the RNN
-rnn.fit(dataset.batches, epochs=250)
+# Now, for the inference step, we build with a batch size equals to 1
+rnn.build((1, None))
 
 # Defining an start string to generate the text
 start_string = 'Mr.'
