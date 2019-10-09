@@ -24,6 +24,9 @@ dataset = NextDataset(encoded_tokens, max_length=10, batch_size=64)
 rnn = StackedRNN(vocab_size=corpus.vocab_size,
                  embedding_size=256, hidden_size=[128, 256, 512])
 
+# As NALP's StackedRNNs are stateful, we need to build it with a fixed batch size
+rnn.build((64, None))
+
 # Compiling the StackedRNN
 rnn.compile(optimize=tf.optimizers.Adam(learning_rate=0.001),
             loss=tf.losses.SparseCategoricalCrossentropy(from_logits=True),
@@ -36,7 +39,5 @@ rnn.fit(dataset.batches, epochs=100)
 # rnn.evaluate(dataset.batches)
 
 # Saving StackedRNN weights
-# rnn.save_weights('models/rnn', save_format='tf')
+rnn.save_weights('models/stacked_rnn', save_format='tf')
 
-# Loading StackedRNN weights
-# rnn.load_weights('models/rnn')

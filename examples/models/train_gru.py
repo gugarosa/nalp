@@ -23,6 +23,9 @@ dataset = NextDataset(encoded_tokens, max_length=10, batch_size=64)
 # Creating the GRU
 gru = GRU(vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
 
+# As NALP's GRUs are stateful, we need to build it with a fixed batch size
+gru.build((64, None))
+
 # Compiling the GRU
 gru.compile(optimize=tf.optimizers.Adam(learning_rate=0.001),
             loss=tf.losses.SparseCategoricalCrossentropy(from_logits=True),
@@ -35,7 +38,4 @@ gru.fit(dataset.batches, epochs=100)
 # gru.evaluate(dataset.batches)
 
 # Saving GRU weights
-# gru.save_weights('models/gru', save_format='tf')
-
-# Loading GRU weights
-# gru.load_weights('models/gru')
+gru.save_weights('models/gru', save_format='tf')

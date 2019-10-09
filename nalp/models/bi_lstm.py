@@ -37,11 +37,12 @@ class BiLSTM(SimpleNeural):
         cell = layers.LSTMCell(hidden_size, name='lstm_cell')
 
         # Creates the forward RNN layer
-        forward = layers.RNN(cell, name='forward_rnn', return_sequences=True)
+        forward = layers.RNN(cell, name='forward_rnn',
+                             return_sequences=True, stateful=True)
 
         # Creates the backward RNN layer
         backward = layers.RNN(cell, name='backward_rnn',
-                              return_sequences=True, go_backwards=True)
+                              return_sequences=True, stateful=True, go_backwards=True)
 
         # Creates the bi-directional Layer
         self.bidirect = layers.Bidirectional(

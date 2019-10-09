@@ -38,7 +38,8 @@ class StackedRNN(SimpleNeural):
 
         # Creates the RNN loop itself
         self.rnn = layers.RNN(self.cells, name='rnn_layer',
-                              return_sequences=True)
+                              return_sequences=True,
+                              stateful=True)
 
         # Creates the linear (Dense) layer
         self.linear = layers.Dense(vocab_size, name='dense')

@@ -23,6 +23,9 @@ dataset = NextDataset(encoded_tokens, max_length=10, batch_size=64)
 # Creating the RNN
 rnn = RNN(vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
 
+# As NALP's RNNs are stateful, we need to build it with a fixed batch size
+rnn.build((64, None))
+
 # Compiling the RNN
 rnn.compile(optimize=tf.optimizers.Adam(learning_rate=0.001),
             loss=tf.losses.SparseCategoricalCrossentropy(from_logits=True),
@@ -35,7 +38,4 @@ rnn.fit(dataset.batches, epochs=100)
 # rnn.evaluate(dataset.batches)
 
 # Saving RNN weights
-# rnn.save_weights('models/rnn', save_format='tf')
-
-# Loading RNN weights
-# rnn.load_weights('models/rnn')
+rnn.save_weights('models/rnn', save_format='tf')
