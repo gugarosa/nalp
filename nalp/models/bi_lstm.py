@@ -33,15 +33,18 @@ class BiLSTM(SimpleNeural):
         self.embedding = layers.Embedding(
             vocab_size, embedding_size, name='embedding')
 
-        # Creates a LSTM cell
-        cell = layers.LSTMCell(hidden_size, name='lstm_cell')
+        # Creates a forward LSTM cell
+        cell_f = layers.LSTMCell(hidden_size, name='lstm_cell_f')
+
+        # And a backward LSTM cell
+        cell_b = layers.LSTMCell(hidden_size, name='lstm_cell_b')
 
         # Creates the forward RNN layer
-        forward = layers.RNN(cell, name='forward_rnn',
+        forward = layers.RNN(cell_f, name='forward_rnn',
                              return_sequences=True, stateful=True)
 
         # Creates the backward RNN layer
-        backward = layers.RNN(cell, name='backward_rnn',
+        backward = layers.RNN(cell_b, name='backward_rnn',
                               return_sequences=True, stateful=True, go_backwards=True)
 
         # Creates the bi-directional Layer
