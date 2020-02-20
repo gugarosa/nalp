@@ -27,7 +27,7 @@ lstm = BiLSTM(vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
 lstm.build((64, None))
 
 # Compiling the LSTM
-lstm.compile(optimize=tf.optimizers.Adam(learning_rate=0.001),
+lstm.compile(optimizer=tf.optimizers.Adam(learning_rate=0.001),
             loss=tf.losses.SparseCategoricalCrossentropy(from_logits=True),
             metrics=[tf.metrics.SparseCategoricalAccuracy(name='accuracy')])
 

@@ -27,7 +27,7 @@ rnn = RNN(vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
 rnn.build((64, None))
 
 # Compiling the RNN
-rnn.compile(optimize=tf.optimizers.Adam(learning_rate=0.001),
+rnn.compile(optimizer=tf.optimizers.Adam(learning_rate=0.001),
             loss=tf.losses.SparseCategoricalCrossentropy(from_logits=True),
             metrics=[tf.metrics.SparseCategoricalAccuracy(name='accuracy')])
 

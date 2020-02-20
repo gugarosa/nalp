@@ -27,7 +27,7 @@ gru = GRU(vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
 gru.build((64, None))
 
 # Compiling the GRU
-gru.compile(optimize=tf.optimizers.Adam(learning_rate=0.001),
+gru.compile(optimizer=tf.optimizers.Adam(learning_rate=0.001),
             loss=tf.losses.SparseCategoricalCrossentropy(from_logits=True),
             metrics=[tf.metrics.SparseCategoricalAccuracy(name='accuracy')])
 

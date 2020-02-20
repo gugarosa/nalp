@@ -28,7 +28,7 @@ rnn = StackedRNN(vocab_size=corpus.vocab_size,
 rnn.build((64, None))
 
 # Compiling the StackedRNN
-rnn.compile(optimize=tf.optimizers.Adam(learning_rate=0.001),
+rnn.compile(optimizer=tf.optimizers.Adam(learning_rate=0.001),
             loss=tf.losses.SparseCategoricalCrossentropy(from_logits=True),
             metrics=[tf.metrics.SparseCategoricalAccuracy(name='accuracy')])
 
