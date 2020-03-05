@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 from nalp.corpus.text import TextCorpus
-from nalp.datasets.next import NextDataset
+from nalp.datasets.language_modelling import LanguageModellingDataset
 from nalp.encoders.integer import IntegerEncoder
 from nalp.models.bi_lstm import BiLSTM
 
@@ -17,8 +17,8 @@ encoder.learn(corpus.vocab_index, corpus.index_vocab)
 # Applies the encoding on new data
 encoded_tokens = encoder.encode(corpus.tokens)
 
-# Creating next target Dataset
-dataset = NextDataset(encoded_tokens, max_length=10, batch_size=64)
+# Creating Language Modelling Dataset
+dataset = LanguageModellingDataset(encoded_tokens, max_length=10, batch_size=64)
 
 # Creating the LSTM
 lstm = BiLSTM(vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)

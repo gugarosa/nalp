@@ -6,8 +6,8 @@ from nalp.core.dataset import Dataset
 logger = l.get_logger(__name__)
 
 
-class NextDataset(Dataset):
-    """A NextDataset class is responsible for creating a dataset that predicts the next timestep (t+1)
+class LanguageModellingDataset(Dataset):
+    """A LanguageModellingDataset class is responsible for creating a dataset that predicts the next timestep (t+1)
     given a timestep (t).
 
     """
@@ -22,10 +22,10 @@ class NextDataset(Dataset):
 
         """
 
-        logger.info('Overriding class: Dataset -> NextDataset.')
+        logger.info('Overriding class: Dataset -> LanguageModellingDataset.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(NextDataset, self).__init__(encoded_tokens, max_length)
+        super(LanguageModellingDataset, self).__init__(encoded_tokens, max_length)
 
         # Creating the sequences
         sequences = self._create_sequences()

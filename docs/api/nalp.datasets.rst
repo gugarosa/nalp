@@ -4,7 +4,7 @@ nalp.datasets
 Because we need data, right? Datasets are composed by classes and methods that allow to prepare data for further neural networks.
 
 .. toctree::
-    nalp.datasets.next
+    nalp.datasets.language_modelling
 
 .. automodule:: nalp.datasets
    :members:

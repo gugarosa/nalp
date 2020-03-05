@@ -1,7 +1,7 @@
 import nalp.utils.preprocess as p
 from nalp.corpus.text import TextCorpus
 from nalp.encoders.integer import IntegerEncoder
-from nalp.datasets.next import NextDataset
+from nalp.datasets.language_modelling import LanguageModellingDataset
 
 # Creating a character TextCorpus from file
 corpus = TextCorpus(from_file='data/text/chapter1_harry.txt', type='char')
@@ -15,8 +15,8 @@ encoder.learn(corpus.vocab_index, corpus.index_vocab)
 # Applies the encoding on new data
 encoded_tokens = encoder.encode(corpus.tokens)
 
-# Creating next target Dataset
-dataset = NextDataset(encoded_tokens, max_length=10, batch_size=1)
+# Creating Language Modelling Dataset
+dataset = LanguageModellingDataset(encoded_tokens, max_length=10, batch_size=1)
 
 # Iterating over one batch
 for input_batch, target_batch in dataset.batches.take(1):
