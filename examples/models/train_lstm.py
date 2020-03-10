@@ -3,7 +3,7 @@ import tensorflow as tf
 from nalp.corpus.text import TextCorpus
 from nalp.datasets.language_modelling import LanguageModellingDataset
 from nalp.encoders.integer import IntegerEncoder
-from nalp.models.lstm import LSTM
+from nalp.models.recurrent.lstm import LSTM
 
 # Creating a character TextCorpus from file
 corpus = TextCorpus(from_file='data/text/chapter1_harry.txt', type='char')

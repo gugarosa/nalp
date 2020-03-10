@@ -95,11 +95,11 @@ Each neural network architecture is defined in this package. From naïve RNNs to
 
 ### Utils
 
-This is a utility package. Common things shared across the application should be implemented here. It is better to implement once and use as you wish than re-implementing the same thing over and over again.
+This is a utility package. Common things shared across the application should be implemented here. It is better to implement once and use it as you wish than re-implementing the same thing over and over again.
 
 ### Wrappers
 
-The wrappers package provides standard, custom or adversarial implementations using Tensorflow. You can choose straightforward examples using the StandardWrapper class, more advanced customization methods using the CustomWrapper class or adversarial-based implementations using the AdversarialWrapper class.
+The wrappers package provides a standard, custom, or adversarial implementations using Tensorflow. You can choose straightforward examples using the StandardWrapper class, more advanced customization methods using the CustomWrapper class, or adversarial-based implementations using the AdversarialWrapper class.
 
 ---
 
@@ -121,7 +121,7 @@ pip install .
 
 ## Environment configuration
 
-Note that sometimes, there is a need for additional implementation. If needed, from here you will be the one to know all of its details.
+Note that sometimes, there is a need for additional implementation. If needed, from here, you will be the one to know all of its details.
 
 ### Ubuntu
 

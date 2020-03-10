@@ -1,7 +1,7 @@
 from tensorflow.keras import layers
 
 import nalp.utils.logging as l
-from nalps.wrappers.standard import StandardWrapper
+from nalp.wrappers.standard import StandardWrapper
 
 logger = l.get_logger(__name__)
 
@@ -24,7 +24,7 @@ class BiLSTM(StandardWrapper):
 
         """
 
-        logger.info('Overriding class: Neural -> BiLSTM.')
+        logger.info('Overriding class: StandardWrapper -> BiLSTM.')
 
         # Overrides its parent class with any custom arguments if needed
         super(BiLSTM, self).__init__(name='bi_lstm')

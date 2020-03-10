@@ -1,7 +1,7 @@
-nalp.models.rnn
+nalp.models.recurrent.rnn
 ==========================
 
-.. automodule:: nalp.models.rnn
+.. automodule:: nalp.models.recurrent.rnn
     :members:
     :private-members:
     :special-members:

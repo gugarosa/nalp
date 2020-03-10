@@ -6,7 +6,7 @@ import nalp.utils.preprocess as p
 from nalp.corpus.audio import AudioCorpus
 from nalp.datasets.language_modelling import LanguageModellingDataset
 from nalp.encoders.integer import IntegerEncoder
-from nalp.models.rnn import RNN
+from nalp.models.recurrent.rnn import RNN
 
 # Creating an AudioCorpus from file
 corpus = AudioCorpus(from_file='data/audio/sample.mid')

@@ -3,7 +3,7 @@ import tensorflow as tf
 from nalp.corpus.text import TextCorpus
 from nalp.datasets.language_modelling import LanguageModellingDataset
 from nalp.encoders.integer import IntegerEncoder
-from nalp.models.gru import GRU
+from nalp.models.recurrent.gru import GRU
 
 # Creating a character TextCorpus from file
 corpus = TextCorpus(from_file='data/text/chapter1_harry.txt', type='char')

@@ -4,7 +4,7 @@ import nalp.utils.preprocess as p
 from nalp.corpus.text import TextCorpus
 from nalp.datasets.language_modelling import LanguageModellingDataset
 from nalp.encoders.integer import IntegerEncoder
-from nalp.models.rnn import RNN
+from nalp.models.recurrent.rnn import RNN
 
 # When generating artificial text, make sure
 # to use the same data, classes and parameters

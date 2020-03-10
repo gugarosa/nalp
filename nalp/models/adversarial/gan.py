@@ -1,7 +1,7 @@
 from tensorflow.keras import layers
 
 import nalp.utils.logging as l
-from nalps.wrappers.standard import StandardWrapper
+from nalp.wrappers.standard import StandardWrapper
 
 logger = l.get_logger(__name__)
 
@@ -24,7 +24,7 @@ class GAN(StandardWrapper):
 
         """
 
-        logger.info('Overriding class: Neural -> GAN.')
+        logger.info('Overriding class: StandardWrapper -> GAN.')
 
         # Overrides its parent class with any custom arguments if needed
         super(GRU, self).__init__(name='gru')
