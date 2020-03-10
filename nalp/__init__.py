@@ -1,4 +1,4 @@
-"""This is NALP main library. Note that this library consists
+"""This is nalp main library. Note that this library consists
     of several modules and sub-modules.
 """
 

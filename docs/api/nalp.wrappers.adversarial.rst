@@ -1,7 +1,7 @@
-nalp.neurals.complex
+nalp.wrappers.adversarial
 ==========================
 
-.. automodule:: nalp.neurals.complex
+.. automodule:: nalp.wrappers.adversarial
     :members:
     :private-members:
     :special-members:

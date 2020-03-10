@@ -1,7 +1,7 @@
-nalp.neurals.simple
+nalp.wrappers.standard
 ==========================
 
-.. automodule:: nalp.neurals.simple
+.. automodule:: nalp.wrappers.standard
     :members:
     :private-members:
     :special-members:

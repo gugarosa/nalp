@@ -21,8 +21,8 @@ NALP is compatible with: **Python 3.6+** and **PyPy 3.5**.
     api/nalp.datasets
     api/nalp.encoders
     api/nalp.models
-    api/nalp.neurals
     api/nalp.utils
+    api/nalp.wrappers
 
 
 Indices and tables
