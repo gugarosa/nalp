@@ -38,4 +38,4 @@ rnn.fit(dataset.batches, epochs=100)
 # rnn.evaluate(dataset.batches)
 
 # Saving RNN weights
-rnn.save_weights('models/rnn', save_format='tf')
+rnn.save_weights('trained/rnn', save_format='tf')

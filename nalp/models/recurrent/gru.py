@@ -1,12 +1,12 @@
 from tensorflow.keras import layers
 
 import nalp.utils.logging as l
-from nalp.neurals.simple import SimpleNeural
+from nalps.wrappers.standard import StandardWrapper
 
 logger = l.get_logger(__name__)
 
 
-class GRU(SimpleNeural):
+class GRU(StandardWrapper):
     """A GRU class is the one in charge of Gated Recurrent Unit implementation.
 
     References:

@@ -38,4 +38,4 @@ lstm.fit(dataset.batches, epochs=100)
 # lstm.evaluate(dataset.batches)
 
 # Saving LSTM weights
-lstm.save_weights('models/lstm', save_format='tf')
+lstm.save_weights('trained/lstm', save_format='tf')

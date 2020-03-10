@@ -1,12 +1,12 @@
 from tensorflow.keras import layers
 
 import nalp.utils.logging as l
-from nalp.neurals.simple import SimpleNeural
+from nalps.wrappers.standard import StandardWrapper
 
 logger = l.get_logger(__name__)
 
 
-class StackedRNN(SimpleNeural):
+class StackedRNN(StandardWrapper):
     """A StackedRNN class is the one in charge of stacked Recurrent Neural Networks implementation.
 
     References:

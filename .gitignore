@@ -10,7 +10,7 @@ nalp.log.*
 
 # Tensorflow
 checkpoint
-models/*
+trained/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

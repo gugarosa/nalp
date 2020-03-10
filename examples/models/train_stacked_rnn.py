@@ -39,5 +39,5 @@ rnn.fit(dataset.batches, epochs=100)
 # rnn.evaluate(dataset.batches)
 
 # Saving StackedRNN weights
-rnn.save_weights('models/stacked_rnn', save_format='tf')
+rnn.save_weights('trained/stacked_rnn', save_format='tf')
 

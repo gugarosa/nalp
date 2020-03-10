@@ -23,7 +23,7 @@ encoder.learn(corpus.vocab_index, corpus.index_vocab)
 rnn = RNN(vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
 
 # Loading pre-trained RNN weights
-rnn.load_weights('models/rnn').expect_partial()
+rnn.load_weights('trained/rnn').expect_partial()
 
 # Now, for the inference step, we build with a batch size equals to 1
 rnn.build((1, None))

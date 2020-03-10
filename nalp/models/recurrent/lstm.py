@@ -1,12 +1,12 @@
 from tensorflow.keras import layers
 
 import nalp.utils.logging as l
-from nalp.neurals.simple import SimpleNeural
+from nalps.wrappers.standard import StandardWrapper
 
 logger = l.get_logger(__name__)
 
 
-class LSTM(SimpleNeural):
+class LSTM(StandardWrapper):
     """A LSTM class is the one in charge of Long Short-Term Memory implementation.
 
     References:

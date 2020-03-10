@@ -38,4 +38,4 @@ gru.fit(dataset.batches, epochs=100)
 # gru.evaluate(dataset.batches)
 
 # Saving GRU weights
-gru.save_weights('models/gru', save_format='tf')
+gru.save_weights('trained/gru', save_format='tf')
