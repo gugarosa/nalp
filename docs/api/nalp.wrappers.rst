@@ -8,6 +8,6 @@ The wrappers package provides standard, custom or adversarial implementations us
     nalp.wrappers.custom
     nalp.wrappers.standard
 
-.. automodule:: nalp.wrappers
+.. autoapimodule:: nalp.wrappers
    :members:
    :show-inheritance:

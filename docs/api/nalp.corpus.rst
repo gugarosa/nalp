@@ -8,6 +8,6 @@ Every pipeline has its first step, right? The corpus package serves as a basic c
     nalp.corpus.document
     nalp.corpus.text
 
-.. automodule:: nalp.corpus
+.. autoapimodule:: nalp.corpus
    :members:
    :show-inheritance:

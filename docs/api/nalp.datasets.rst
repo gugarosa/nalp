@@ -6,6 +6,6 @@ Because we need data, right? Datasets are composed by classes and methods that a
 .. toctree::
     nalp.datasets.language_modelling
 
-.. automodule:: nalp.datasets
+.. autoapimodule:: nalp.datasets
    :members:
    :show-inheritance:

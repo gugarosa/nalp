@@ -9,6 +9,6 @@ Text or Numbers? Encodings are used to make embeddings. Embeddings are used to f
     nalp.encoders.tfidf
     nalp.encoders.word2vec
 
-.. automodule:: nalp.encoders
+.. autoapimodule:: nalp.encoders
    :members:
    :show-inheritance:

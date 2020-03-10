@@ -7,6 +7,6 @@ Each neural network architecture is defined in this package. From naïve RNNs to
     nalp.models.adversarial
     nalp.models.recurrent
 
-.. automodule:: nalp.models
+.. autoapimodule:: nalp.models
    :members:
    :show-inheritance:

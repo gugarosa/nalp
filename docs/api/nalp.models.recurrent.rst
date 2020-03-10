@@ -10,6 +10,6 @@ Recurrent-based pre-defined architectures.
     nalp.models.recurrent.rnn
     nalp.models.recurrent.stacked_rnn
 
-.. automodule:: nalp.models.recurrent
+.. autoapimodule:: nalp.models.recurrent
    :members:
    :show-inheritance:

@@ -8,6 +8,6 @@ This is an utilities package. Common things shared across the application should
     nalp.utils.logging
     nalp.utils.preprocess
 
-.. automodule:: nalp.utils
+.. autoapimodule:: nalp.utils
    :members:
    :show-inheritance:

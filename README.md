@@ -16,7 +16,7 @@ Use NALP if you need a library or wish to:
 
 Read the docs at [nalp.readthedocs.io](https://nalp.readthedocs.io).
 
-NALP is compatible with: **Python 3.6+** and **PyPy 3.5**.
+NALP is compatible with: **Python 3.6+**.
 
 ---
 

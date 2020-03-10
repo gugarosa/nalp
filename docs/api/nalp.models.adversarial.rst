@@ -6,6 +6,6 @@ Adversarial-based pre-defined architectures.
 .. toctree::
     nalp.models.adversarial.gan
 
-.. automodule:: nalp.models.adversarial
+.. autoapimodule:: nalp.models.adversarial
    :members:
    :show-inheritance:

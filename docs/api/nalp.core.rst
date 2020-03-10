@@ -8,6 +8,6 @@ The core is the core. Essentially, it is the parent of everything. You should fi
     nalp.core.dataset
     nalp.core.encoder
 
-.. automodule:: nalp.core
+.. autoapimodule:: nalp.core
    :members:
    :show-inheritance:

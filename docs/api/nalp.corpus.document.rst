@@ -1,7 +1,7 @@
 nalp.corpus.document
 ==========================
 
-.. automodule:: nalp.corpus.document
+.. autoapimodule:: nalp.corpus.document
     :members:
     :private-members:
     :special-members:

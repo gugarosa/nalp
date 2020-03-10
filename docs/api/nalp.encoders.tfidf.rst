@@ -1,7 +1,7 @@
 nalp.encoders.tfidf
 ==========================
 
-.. automodule:: nalp.encoders.tfidf
+.. autoapimodule:: nalp.encoders.tfidf
     :members:
     :private-members:
     :special-members:

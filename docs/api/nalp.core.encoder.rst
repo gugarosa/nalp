@@ -1,7 +1,7 @@
 nalp.core.encoder
 ==========================
 
-.. automodule:: nalp.core.encoder
+.. autoapimodule:: nalp.core.encoder
     :members:
     :private-members:
     :special-members:
