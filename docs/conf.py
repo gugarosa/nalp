@@ -15,7 +15,6 @@
 import os
 import sys
 
-import nalp
 import sphinx_rtd_theme
 
 sys.path.insert(0, os.path.abspath('.'))
@@ -28,10 +27,10 @@ copyright = '2020, Gustavo de Rosa'
 author = 'Gustavo de Rosa'
 
 # The short X.Y version
-version = nalp.__version__
+version = '1.2.0'
 
 # The full version, including alpha/beta/rc tags
-release = nalp.__version__
+release = '1.2.0'
 
 
 # -- General configuration ---------------------------------------------------
