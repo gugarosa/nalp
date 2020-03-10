@@ -1,3 +1,3 @@
-"""A machine learning related package. It will offer basic definitions
-    to easily build a network's architecture.
+"""A package for already-implemented machine learning architectures, divided into
+adversarial and recurrent models.
 """

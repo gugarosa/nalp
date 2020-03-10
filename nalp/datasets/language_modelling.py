@@ -25,7 +25,8 @@ class LanguageModellingDataset(Dataset):
         logger.info('Overriding class: Dataset -> LanguageModellingDataset.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(LanguageModellingDataset, self).__init__(encoded_tokens, max_length)
+        super(LanguageModellingDataset, self).__init__(
+            encoded_tokens, max_length)
 
         # Creating the sequences
         sequences = self._create_sequences()

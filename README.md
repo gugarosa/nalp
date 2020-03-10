@@ -55,16 +55,22 @@ NALP is based on the following structure, and you should pay attention to its tr
         - tfidf
         - word2vec
     - models
-        - gru
-        - lstm
-        - rnn
-    - neurals
-        - complex
-        - simple
+        - adversarial
+            - gan
+        - recurrent
+            - bi_lstm
+            - gru
+            - lstm
+            - rnn
+            - stacked_rnn
     - utils
         - loader
         - logging
         - preprocess
+    - wrappers
+        - adversarial
+        - custom
+        - standard
 ```
 
 ### Core
@@ -85,15 +91,15 @@ Text or Numbers? Encodings are used to make embeddings. Embeddings are used to f
 
 ### Models
 
-Each neural network architecture is defined in this package. From naïve RNNs to BiLSTMs, you can use whatever suits your needs.
-
-### Neurals
-
-The neurals package provides simple or complex implementations using Tensorflow. You can choose straightforward examples using the Simple class or more advanced customization methods using the Complex class.
+Each neural network architecture is defined in this package. From naïve RNNs to BiLSTMs, from GANs to TextGANs, you can use whatever suits your needs.
 
 ### Utils
 
 This is a utility package. Common things shared across the application should be implemented here. It is better to implement once and use as you wish than re-implementing the same thing over and over again.
+
+### Wrappers
+
+The wrappers package provides standard, custom or adversarial implementations using Tensorflow. You can choose straightforward examples using the StandardWrapper class, more advanced customization methods using the CustomWrapper class or adversarial-based implementations using the AdversarialWrapper class.
 
 ---
 

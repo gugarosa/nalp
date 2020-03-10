@@ -62,6 +62,7 @@ def tokenize_to_word(s):
 
     return nltk.word_tokenize(s)
 
+
 def pipeline(*func):
     """Creates a pre-processing pipeline.
 

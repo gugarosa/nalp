@@ -16,7 +16,6 @@ setup(name='nalp',
                         'gensim>=3.8.1',
                         'mido>=1.2.9',
                         'nltk>=3.4.5',
-                        'numpy>=1.18.1',
                         'pylint>=2.4.4',
                         'pytest>=5.3.3',
                         'tensorflow>=2.1.0'

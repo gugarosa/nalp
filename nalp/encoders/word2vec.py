@@ -47,7 +47,7 @@ class Word2vecEncoder(Encoder):
 
         # Creates a Word2Vec model
         self.encoder = W2V(sentences=tokens, size=max_features, window=window_size, min_count=min_count,
-                            sg=algorithm, alpha=learning_rate, iter=iterations, workers=multiprocessing.cpu_count())
+                           sg=algorithm, alpha=learning_rate, iter=iterations, workers=multiprocessing.cpu_count())
 
     def encode(self, tokens, max_tokens=10):
         """Encodes the data into a Word2Vec representation.
@@ -74,7 +74,8 @@ class Word2vecEncoder(Encoder):
         wv = self.encoder.wv
 
         # Creates an encoded tokens variable to hold encoded data
-        encoded_tokens = np.zeros((len(tokens), max_tokens, self.encoder.vector_size))
+        encoded_tokens = np.zeros(
+            (len(tokens), max_tokens, self.encoder.vector_size))
 
         # Iterate through all sentences
         for i in range(0, len(tokens)):

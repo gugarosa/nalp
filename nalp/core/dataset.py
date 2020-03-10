@@ -5,7 +5,7 @@ import nalp.utils.logging as l
 logger = l.get_logger(__name__)
 
 
-class Dataset():
+class Dataset:
     """A Dataset class is responsible for receiving encoded tokens and
     creating data that will be feed as an input to the networks.
 

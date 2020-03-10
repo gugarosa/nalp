@@ -6,8 +6,8 @@ import nalp.utils.logging as l
 logger = l.get_logger(__name__)
 
 
-class ComplexNeural(Model):
-    """A ComplexNeural class is responsible for hardly-implementing a neural network, when
+class CustomWrapper(Model):
+    """A CustomWrapper class is responsible for hardly-implementing a neural network, when
     custom training or additional sets are needed.
 
     """
@@ -23,7 +23,7 @@ class ComplexNeural(Model):
         """
 
         # Overrides its parent class with any custom arguments if needed
-        super(ComplexNeural, self).__init__(name=name)
+        super(CustomWrapper, self).__init__(name=name)
 
     def compile(self, optimize, loss, metrics=[]):
         """Main building method.

@@ -1,3 +1,3 @@
-"""A encoding package, containing encoders, decoders and all text to vector
+"""An encoding package, containing encoders, decoders and all text-to-vector
     necessities.
 """

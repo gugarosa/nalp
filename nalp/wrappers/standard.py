@@ -6,8 +6,8 @@ import nalp.utils.logging as l
 logger = l.get_logger(__name__)
 
 
-class SimpleNeural(Model):
-    """A SimpleNeural class is responsible for easily-implementing a neural network, when
+class StandardWrapper(Model):
+    """A StandardWrapper class is responsible for easily-implementing a neural network, when
     custom training or additional sets are not needed.
 
     """
@@ -23,7 +23,7 @@ class SimpleNeural(Model):
         """
 
         # Overrides its parent class with any custom arguments if needed
-        super(SimpleNeural, self).__init__(name=name)
+        super(StandardWrapper, self).__init__(name=name)
 
     def call(self, x):
         """Method that holds vital information whenever this class is called.
