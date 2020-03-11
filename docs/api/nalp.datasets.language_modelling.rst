@@ -1,7 +1,7 @@
-nalp.datasets.language_modelling
+nalp.datasets.language_modeling
 ==================================
 
-.. autoapiclass:: nalp.datasets.language_modelling.LanguageModellingDataset
+.. autoapiclass:: nalp.datasets.language_modeling.LanguageModelingDataset
     :members:
     :private-members:
     :special-members:

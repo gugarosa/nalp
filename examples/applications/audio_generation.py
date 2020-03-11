@@ -4,7 +4,7 @@ from mido import Message, MidiFile, MidiTrack
 
 import nalp.utils.preprocess as p
 from nalp.corpus.audio import AudioCorpus
-from nalp.datasets.language_modelling import LanguageModellingDataset
+from nalp.datasets.language_modeling import LanguageModelingDataset
 from nalp.encoders.integer import IntegerEncoder
 from nalp.models.recurrent.rnn import RNN
 
@@ -20,8 +20,8 @@ encoder.learn(corpus.vocab_index, corpus.index_vocab)
 # Applies the encoding on new data
 encoded_tokens = encoder.encode(corpus.tokens)
 
-# Creating Language Modelling Dataset
-dataset = LanguageModellingDataset(encoded_tokens, max_length=100, batch_size=64)
+# Creating Language Modeling Dataset
+dataset = LanguageModelingDataset(encoded_tokens, max_length=100, batch_size=64)
 
 # Creating the RNN
 rnn = RNN(vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
