@@ -1,7 +1,7 @@
 nalp.encoders.integer
 ==========================
 
-.. autoapimodule:: nalp.encoders.integer
+.. autoapiclass:: nalp.encoders.integer.IntegerEncoder
     :members:
     :private-members:
     :special-members:

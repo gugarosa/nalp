@@ -170,8 +170,8 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'nalp', 'NALP Documentation',
-     author, 'nalp', 'One line description of project.',
-     'Miscellaneous'),
+     author, 'nalp', 'NALP is a library that covers Natural Adversarial Language Processing.',
+     'Natural Language Processing'),
 ]
 
 
