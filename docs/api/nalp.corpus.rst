@@ -10,4 +10,4 @@ Every pipeline has its first step, right? The corpus package serves as a basic c
 
 .. autoapimodule:: nalp.corpus
    :members:
-   :show-inheritance:
+   
