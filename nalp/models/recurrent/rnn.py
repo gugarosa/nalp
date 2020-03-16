@@ -10,7 +10,7 @@ class RNN(StandardWrapper):
     """An RNN class is the one in charge of Recurrent Neural Networks vanilla implementation.
 
     References:
-        http://psych.colorado.edu/~kimlab/Elman1990.pdf
+        J. Elman. Finding structure in time. Cognitive science 14.2 (1990).
 
     """
 

@@ -104,7 +104,7 @@ class DCGAN(AdversarialWrapper):
     """A GAN class is the one in charge of Generative Adversarial Networks implementation.
 
     References:
-        
+        A. Radford, L. Metz, S. Chintala. Unsupervised representation learning with deep convolutional generative adversarial networks. Preprint arXiv:1511.06434 (2015).
 
     """
 

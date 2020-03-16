@@ -10,7 +10,7 @@ class GRU(StandardWrapper):
     """A GRU class is the one in charge of Gated Recurrent Unit implementation.
 
     References:
-        https://www.aclweb.org/anthology/D14-1179
+        K. Cho, et al. Learning phrase representations using RNN encoder-decoder for statistical machine translation. Preprint arXiv:1406.1078 (2014).
 
     """
 

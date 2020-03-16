@@ -39,5 +39,8 @@ for i in range(sampled_images.shape[0]):
     # Plots the image to the figure
     plt.imshow(sampled_images[i, :, :] * 127.5 + 127.5, cmap='gray')
 
+    # Disabling the axis
+    plt.axis('off')
+
 # Showing the plot
 plt.show()

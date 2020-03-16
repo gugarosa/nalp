@@ -10,7 +10,7 @@ class BiLSTM(StandardWrapper):
     """A BiLSTM class is the one in charge of a bi-directional Long Short-Term Memory implementation.
 
     References:
-        https://www.bioinf.jku.at/publications/older/2604.pdf
+        S. Hochreiter, Jürgen Schmidhuber. Long short-term memory. Neural computation 9.8 (1997).
 
     """
 

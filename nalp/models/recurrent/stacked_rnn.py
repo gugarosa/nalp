@@ -10,7 +10,7 @@ class StackedRNN(StandardWrapper):
     """A StackedRNN class is the one in charge of stacked Recurrent Neural Networks implementation.
 
     References:
-        http://psych.colorado.edu/~kimlab/Elman1990.pdf
+        J. Elman. Finding structure in time. Cognitive science 14.2 (1990).
 
     """
 
