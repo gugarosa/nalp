@@ -12,7 +12,7 @@ class StandardWrapper(Model):
 
     """
 
-    def __init__(self, name):
+    def __init__(self, name=''):
         """Initialization method.
 
         Note that basic variables shared by all childs should be declared here, e.g., layers.

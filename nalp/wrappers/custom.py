@@ -12,7 +12,7 @@ class CustomWrapper(Model):
 
     """
 
-    def __init__(self, name):
+    def __init__(self, name=''):
         """Initialization method.
 
         Note that basic variables shared by all childs should be declared here, e.g., layers.
@@ -25,18 +25,18 @@ class CustomWrapper(Model):
         # Overrides its parent class with any custom arguments if needed
         super(CustomWrapper, self).__init__(name=name)
 
-    def compile(self, optimize, loss, metrics=[]):
+    def compile(self, optimizer, loss, metrics=[]):
         """Main building method.
 
         Args:
-            optimize (tf.optimizers): An optimizer instance.
+            optimizer (tf.optimizers): An optimizer instance.
             loss (tf.loss): A loss instance.
             metrics (list): A list of metrics to be displayed.
 
         """
 
         # Creates an optimizer object
-        self.optimize = optimize
+        self.optimizer = optimizer
 
         # Defining the loss function
         self.loss = loss
@@ -94,7 +94,7 @@ class CustomWrapper(Model):
         gradients = tape.gradient(loss, self.trainable_variables)
 
         # Apply gradients using an optimizer
-        self.optimize.apply_gradients(
+        self.optimizer.apply_gradients(
             zip(gradients, self.trainable_variables))
 
         # Update the loss metric state

@@ -41,7 +41,6 @@ gan = GAN()
 
 # Compiling the GAN
 gan.compile(optimizer=tf.optimizers.Adam(learning_rate=0.001),
-            loss=tf.losses.BinaryCrossentropy(from_logits=True),
-            metrics=[tf.metrics.SparseCategoricalAccuracy(name='accuracy')])
+            loss=tf.losses.BinaryCrossentropy(from_logits=True))
 
-gan.fit(train_dataset, epochs=1)
+gan.fit(train_dataset, epochs=5)
