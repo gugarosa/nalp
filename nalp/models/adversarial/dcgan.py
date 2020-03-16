@@ -100,7 +100,7 @@ class Generator(StandardWrapper):
         return generated_data
 
 
-class GAN(AdversarialWrapper):
+class DCGAN(AdversarialWrapper):
     """A GAN class is the one in charge of Generative Adversarial Networks implementation.
 
     References:
@@ -127,4 +127,4 @@ class GAN(AdversarialWrapper):
         G = Generator(vocab_size=vocab_size, embedding_size=embedding_size)
 
         # Overrides its parent class with any custom arguments if needed
-        super(GAN, self).__init__(D, G, name='gan')
+        super(DCGAN, self).__init__(D, G, name='dcgan')
