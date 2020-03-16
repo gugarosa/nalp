@@ -101,7 +101,7 @@ class AdversarialWrapper(Model):
         z = tf.random.normal([x.shape[0], 1, 1, 100])
 
         # Using tensorflow's gradient
-        with tf.GradientTape() as D_tape, tf.GradientTape() as G_tape:
+        with tf.GradientTape() as G_tape, tf.GradientTape() as D_tape:
             # Generates new data, e.g., G(z)
             x_fake = self.G(z)
 
@@ -124,10 +124,12 @@ class AdversarialWrapper(Model):
         D_gradients = D_tape.gradient(D_loss, self.D.trainable_variables)
 
         # Applies the generator's gradients using an optimizer
-        self.G_optimizer.apply_gradients(zip(G_gradients, self.G.trainable_variables))
+        self.G_optimizer.apply_gradients(
+            zip(G_gradients, self.G.trainable_variables))
 
         # Applies the discriminator's gradients using an optimizer
-        self.D_optimizer.apply_gradients(zip(D_gradients, self.D.trainable_variables))
+        self.D_optimizer.apply_gradients(
+            zip(D_gradients, self.D.trainable_variables))
 
         # Updates the generator's loss state
         self.G_loss.update_state(G_loss)
@@ -148,18 +150,19 @@ class AdversarialWrapper(Model):
 
         # Iterate through all epochs
         for e in range(epochs):
+            logger.info(f'Epoch {e+1}/{epochs}')
+            
             # Resetting states to further append losses
             self.G_loss.reset_states()
             self.D_loss.reset_states()
-
-            logger.info(f'Epoch {e+1}/{epochs}')
 
             # Iterate through all possible training batches
             for batch in batches:
                 # Performs the optimization step
                 self.step(batch)
 
-            logger.info(f'Loss(G): {self.G_loss.result().numpy():.4f} | Loss(D): {self.D_loss.result().numpy():.4f} ')
+            logger.info(
+                f'Loss(G): {self.G_loss.result().numpy():.4f} | Loss(D): {self.D_loss.result().numpy():.4f}')
 
     @tf.function
     def sample(self, z):

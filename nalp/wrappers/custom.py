@@ -15,8 +15,6 @@ class CustomWrapper(Model):
     def __init__(self, name=''):
         """Initialization method.
 
-        Note that basic variables shared by all childs should be declared here, e.g., layers.
-
         Args:
             name (str): The model's identifier string.
 
@@ -25,13 +23,12 @@ class CustomWrapper(Model):
         # Overrides its parent class with any custom arguments if needed
         super(CustomWrapper, self).__init__(name=name)
 
-    def compile(self, optimizer, loss, metrics=[]):
+    def compile(self, optimizer, loss):
         """Main building method.
 
         Args:
             optimizer (tf.optimizers): An optimizer instance.
             loss (tf.loss): A loss instance.
-            metrics (list): A list of metrics to be displayed.
 
         """
 
@@ -138,7 +135,9 @@ class CustomWrapper(Model):
         logger.info('Fitting model ...')
 
         # Iterate through all epochs
-        for epoch in range(epochs):
+        for e in range(epochs):
+            logger.info(f'Epoch {e+1}/{epochs}')
+
             # Resetting states to further append losses and accuracies
             self.train_loss.reset_states()
             self.train_accuracy.reset_states()
@@ -150,9 +149,6 @@ class CustomWrapper(Model):
                 # Performs the optimization step
                 self.step(x_batch, y_batch)
 
-            logger.debug(
-                f'Epoch: {epoch+1}/{epochs} | Loss: {self.train_loss.result().numpy():.4f} | Accuracy: {self.train_accuracy.result().numpy():.4f}')
-
             # Checks if there is a validation set
             if val_batches:
                 # Iterate through all possible batches, dependending on batch size
@@ -160,8 +156,7 @@ class CustomWrapper(Model):
                     # Evaluates the network
                     self.val_step(x_batch, y_batch)
 
-                logger.debug(
-                    f'Val Loss: {self.val_loss.result().numpy():.4f} | Val Accuracy: {self.val_accuracy.result().numpy():.4f}\n')
+            logger.info(f'Loss: {self.train_loss.result().numpy():.4f} | Accuracy: {self.train_accuracy.result().numpy():.4f} | Val Accuracy: {self.val_loss.result().numpy():.4f if val_batches else "?"} | Val Accuracy: {self.val_accuracy.result().numpy():.4f if val_batches else "?"}')
 
     def evaluate(self, val_batches):
         """Evaluates the model.
