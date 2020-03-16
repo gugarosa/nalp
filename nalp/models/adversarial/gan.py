@@ -9,11 +9,15 @@ logger = l.get_logger(__name__)
 
 
 class Discriminator(StandardWrapper):
-    """
+    """A Discriminator class stands for the discriminative part of a Generative Adversarial Network.
+
     """
 
-    def __init__(self, vocab_size=1, embedding_size=1):
+    def __init__(self, alpha=0.01):
         """Initialization method.
+
+        Args:
+            alpha (float): LeakyReLU activation threshold.
 
         """
 
@@ -22,15 +26,22 @@ class Discriminator(StandardWrapper):
         # Overrides its parent class with any custom arguments if needed
         super(Discriminator, self).__init__(name='D_gan')
 
-        self.conv1 = layers.Conv2D(64, (4, 4), strides=(2, 2), padding='same')
-        self.conv2 = layers.Conv2D(128, (4, 4), strides=(2, 2), padding='same', use_bias=False)
-        self.conv2_bn = layers.BatchNormalization()
-        self.conv3 = layers.Conv2D(256, (3, 3), strides=(2, 2), use_bias=False)
-        self.conv3_bn = layers.BatchNormalization()
-        self.conv4 = layers.Conv2D(1, (3, 3))
+        # Defining an alpha property for the LeakyReLU activation
+        self.alpha = alpha
 
+        # Defining the first linear layer
+        self.linear1 = layers.Dense(512)
 
-    def call(self, x, training=True):
+        # Defining the second linear layer
+        self.linear2 = layers.Dense(256)
+
+        # Defining the third linear layer
+        self.linear3 = layers.Dense(128)
+
+        # Defining the output as a logit unit that decides whether input is real or fake
+        self.out = layers.Dense(1)
+
+    def call(self, x):
         """Method that holds vital information whenever this class is called.
 
         Args:
@@ -40,22 +51,34 @@ class Discriminator(StandardWrapper):
             The same tensor after passing through each defined layer.
 
         """
-        
-        conv1 = tf.nn.leaky_relu(self.conv1(x))
-        conv2 = self.conv2(conv1)
-        conv2_bn = self.conv2_bn(conv2, training=training)
-        conv3 = self.conv3(conv2_bn)
-        conv3_bn = self.conv3_bn(conv3, training=training)
-        conv4 = self.conv4(conv3_bn)
-        discriminator_logits = tf.squeeze(conv4, axis=[1, 2])
-        return discriminator_logits
+
+        # Passing down first linear layer with LeakyReLU activation
+        x = tf.nn.leaky_relu(self.linear1(x), self.alpha)
+
+        # Passing down second linear layer with LeakyReLU activation
+        x = tf.nn.leaky_relu(self.linear2(x), self.alpha)
+
+        # Passing down third linear layer with LeakyReLU activation
+        x = tf.nn.leaky_relu(self.linear3(x), self.alpha)
+
+        # Passing down the output layer
+        x = self.out(x)
+
+        return x
+
 
 class Generator(StandardWrapper):
-    """
+    """A Generator class stands for the generative part of a Generative Adversarial Network.
+
     """
 
-    def __init__(self, vocab_size=1, embedding_size=1):
+    def __init__(self, n_input=100, n_output=784, alpha=0.01):
         """Initialization method.
+
+        Args:
+            n_input (int): Number of input (noise) dimension.
+            n_output (int): Number of output units.
+            alpha (float): LeakyReLU activation threshold.
 
         """
 
@@ -64,15 +87,25 @@ class Generator(StandardWrapper):
         # Overrides its parent class with any custom arguments if needed
         super(Generator, self).__init__(name='G_gan')
 
-        self.conv1 = layers.Conv2DTranspose(filters=256, kernel_size=(3, 3), strides=(2, 2), use_bias=False)
-        self.conv1_bn = layers.BatchNormalization()
-        self.conv2 = layers.Conv2DTranspose(filters=128, kernel_size=(3, 3), strides=(2, 2), use_bias=False)
-        self.conv2_bn = layers.BatchNormalization()
-        self.conv3 = layers.Conv2DTranspose(filters=64, kernel_size=(4, 4), strides=(2, 2), padding='same', use_bias=False)
-        self.conv3_bn = layers.BatchNormalization()
-        self.conv4 = layers.Conv2DTranspose(filters=1, kernel_size=(4, 4), strides=(2, 2), padding='same')
+        # Defining an alpha property for the LeakyReLU activation
+        self.alpha = alpha
 
-    def call(self, x, training=True):
+        # Defining a property for the input noise dimension
+        self.n_input = n_input
+
+        # Defining the first linear layer
+        self.linear1 = layers.Dense(128)
+
+        # Defining the second linear layer
+        self.linear2 = layers.Dense(256)
+
+        # Defining the third linear layer
+        self.linear3 = layers.Dense(512)
+
+        # Defining the output layer with a `tanh` activation for restraining interval to [-1, 1]
+        self.out = layers.Dense(n_output, activation='tanh')
+
+    def call(self, x):
         """Method that holds vital information whenever this class is called.
 
         Args:
@@ -83,49 +116,46 @@ class Generator(StandardWrapper):
 
         """
 
-        
-        conv1 = self.conv1(x)
-        conv1_bn = self.conv1_bn(conv1, training=training)
-        conv1 = tf.nn.relu(conv1_bn)
-        
-        conv2 = self.conv2(conv1)
-        conv2_bn = self.conv2_bn(conv2, training=training)
-        conv2 = tf.nn.relu(conv2_bn)
-        
-        conv3 = self.conv3(conv2)
-        conv3_bn = self.conv3_bn(conv3, training=training)
-        conv3 = tf.nn.relu(conv3_bn)
-        
-        conv4 = self.conv4(conv3)
-        generated_data = tf.nn.sigmoid(conv4)
-        return generated_data
+        # Passing down first linear layer with LeakyReLU activation
+        x = tf.nn.leaky_relu(self.linear1(x), self.alpha)
+
+        # Passing down second linear layer with LeakyReLU activation
+        x = tf.nn.leaky_relu(self.linear2(x), self.alpha)
+
+        # Passing down third linear layer with LeakyReLU activation
+        x = tf.nn.leaky_relu(self.linear3(x), self.alpha)
+
+        # Passing down the output layer
+        x = self.out(x)
+
+        return x
 
 
 class GAN(AdversarialWrapper):
-    """A GAN class is the one in charge of Generative Adversarial Networks implementation.
+    """A GAN class is the one in charge of naïve Generative Adversarial Networks implementation.
 
     References:
-        
+        I. Goodfellow, et al. Generative adversarial nets. Advances in neural information processing systems (2014).
 
     """
 
-    def __init__(self, vocab_size=1, embedding_size=1):
+    def __init__(self, gen_input=100, gen_output=784, alpha=0.01):
         """Initialization method.
 
         Args:
-            vocab_size (int): The size of the vocabulary.
-            embedding_size (int): The size of the embedding layer.
-            hidden_size (int): The amount of hidden neurons.
+            gen_input (int): Number of input (noise) dimension in the Generator.
+            gen_output (int): Number of output units in the Generator.
+            alpha (float): LeakyReLU activation threshold.
 
         """
 
         logger.info('Overriding class: AdversarialWrapper -> GAN.')
 
         # Creating the discriminator network
-        D = Discriminator(vocab_size=vocab_size, embedding_size=embedding_size)
+        D = Discriminator(alpha=alpha)
 
         # Creating the generator network
-        G = Generator(vocab_size=vocab_size, embedding_size=embedding_size)
+        G = Generator(n_input=gen_input, n_output=gen_output, alpha=alpha)
 
         # Overrides its parent class with any custom arguments if needed
         super(GAN, self).__init__(D, G, name='gan')
