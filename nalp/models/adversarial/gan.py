@@ -1,3 +1,4 @@
+import tensorflow as tf
 from tensorflow.keras import layers
 
 import nalp.utils.logging as l
@@ -21,25 +22,15 @@ class DiscriminatorGAN(StandardWrapper):
         # Overrides its parent class with any custom arguments if needed
         super(DiscriminatorGAN, self).__init__(name='discriminator_gan')
 
-        # Creates an embedding layer
-        self.embedding = layers.Embedding(vocab_size, embedding_size, name='embedding')
+        self.conv1 = layers.Conv2D(64, (4, 4), strides=(2, 2), padding='same')
+        self.conv2 = layers.Conv2D(128, (4, 4), strides=(2, 2), padding='same', use_bias=False)
+        self.conv2_bn = layers.BatchNormalization()
+        self.conv3 = layers.Conv2D(256, (3, 3), strides=(2, 2), use_bias=False)
+        self.conv3_bn = layers.BatchNormalization()
+        self.conv4 = layers.Conv2D(1, (3, 3))
 
-        #
-        self.conv1 = layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same', name='conv1')
 
-        #
-        self.leaky_relu = layers.LeakyReLU(name='leaky_relu')
-
-        #
-        self.dropout = layers.Dropout(0.3, name='drop')
-
-        #
-        self.conv2 = layers.Conv2D(128, (5, 5), strides=(2, 2), padding='same', name='conv2')
-
-        #
-        self.linear = layers.Dense(1, name='dense')
-
-    def call(self, x):
+    def call(self, x, training=True):
         """Method that holds vital information whenever this class is called.
 
         Args:
@@ -49,32 +40,15 @@ class DiscriminatorGAN(StandardWrapper):
             The same tensor after passing through each defined layer.
 
         """
-
-        #
-        x = self.embedding(x)
         
-        #
-        x = self.conv1(x)
-
-        #
-        x = self.leaky_relu(x)
-
-        #
-        x = self.dropout(x)
-
-        #
-        x = self.conv2(x)
-
-        #
-        x = self.leaky_relu(x)
-
-        #
-        x = self.dropout(x)
-
-        #
-        x = self.linear(x)
-
-        return x
+        conv1 = tf.nn.leaky_relu(self.conv1(x))
+        conv2 = self.conv2(conv1)
+        conv2_bn = self.conv2_bn(conv2, training=training)
+        conv3 = self.conv3(conv2_bn)
+        conv3_bn = self.conv3_bn(conv3, training=training)
+        conv4 = self.conv4(conv3_bn)
+        discriminator_logits = tf.squeeze(conv4, axis=[1, 2])
+        return discriminator_logits
 
 class GeneratorGAN(StandardWrapper):
     """
@@ -90,25 +64,15 @@ class GeneratorGAN(StandardWrapper):
         # Overrides its parent class with any custom arguments if needed
         super(GeneratorGAN, self).__init__(name='generator_gan')
 
-        # Creates an embedding layer
-        self.embedding = layers.Embedding(vocab_size, embedding_size, name='embedding')
+        self.conv1 = layers.Conv2DTranspose(filters=256, kernel_size=(3, 3), strides=(2, 2), use_bias=False)
+        self.conv1_bn = layers.BatchNormalization()
+        self.conv2 = layers.Conv2DTranspose(filters=128, kernel_size=(3, 3), strides=(2, 2), use_bias=False)
+        self.conv2_bn = layers.BatchNormalization()
+        self.conv3 = layers.Conv2DTranspose(filters=64, kernel_size=(4, 4), strides=(2, 2), padding='same', use_bias=False)
+        self.conv3_bn = layers.BatchNormalization()
+        self.conv4 = layers.Conv2DTranspose(filters=1, kernel_size=(4, 4), strides=(2, 2), padding='same')
 
-        #
-        self.conv1 = layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same', name='conv1')
-
-        #
-        self.leaky_relu = layers.LeakyReLU(name='leaky_relu')
-
-        #
-        self.dropout = layers.Dropout(0.3, name='drop')
-
-        #
-        self.conv2 = layers.Conv2D(128, (5, 5), strides=(2, 2), padding='same', name='conv2')
-
-        #
-        self.linear = layers.Dense(1, name='dense')
-
-    def call(self, x):
+    def call(self, x, training=True):
         """Method that holds vital information whenever this class is called.
 
         Args:
@@ -119,31 +83,22 @@ class GeneratorGAN(StandardWrapper):
 
         """
 
-        #
-        x = self.embedding(x)
         
-        #
-        x = self.conv1(x)
-
-        #
-        x = self.leaky_relu(x)
-
-        #
-        x = self.dropout(x)
-
-        #
-        x = self.conv2(x)
-
-        #
-        x = self.leaky_relu(x)
-
-        #
-        x = self.dropout(x)
-
-        #
-        x = self.linear(x)
-
-        return x
+        conv1 = self.conv1(x)
+        conv1_bn = self.conv1_bn(conv1, training=training)
+        conv1 = tf.nn.relu(conv1_bn)
+        
+        conv2 = self.conv2(conv1)
+        conv2_bn = self.conv2_bn(conv2, training=training)
+        conv2 = tf.nn.relu(conv2_bn)
+        
+        conv3 = self.conv3(conv2)
+        conv3_bn = self.conv3_bn(conv3, training=training)
+        conv3 = tf.nn.relu(conv3_bn)
+        
+        conv4 = self.conv4(conv3)
+        generated_data = tf.nn.sigmoid(conv4)
+        return generated_data
 
 
 class GAN(AdversarialWrapper):

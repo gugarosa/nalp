@@ -80,14 +80,14 @@ class AdversarialWrapper(Model):
 
         raise NotImplementedError
 
-    def discriminator_loss(true_y, fake_y):
+    def discriminator_loss(self, true_y, fake_y):
         true_loss = self.loss(tf.ones_like(true_y), true_y)
         fake_loss = self.loss(tf.zeros_like(fake_y), fake_y)
 
         return true_loss + fake_loss
 
-    def generator_loss(fake_y):
-        return self.loss(tf.ones.like(fake_y), fake_y)
+    def generator_loss(self, fake_y):
+        return self.loss(tf.ones_like(fake_y), fake_y)
 
     @tf.function
     def step(self, x):
@@ -99,7 +99,7 @@ class AdversarialWrapper(Model):
 
         """
 
-        # noise = tf.random.normal
+        noise = tf.random.normal([64, 1, 1, 100])
 
         # Using tensorflow's gradient
         with tf.GradientTape() as D_tape, tf.GradientTape() as G_tape:
@@ -146,9 +146,9 @@ class AdversarialWrapper(Model):
         # Iterate through all epochs
         for epoch in range(epochs):
             # Iterate through all possible training batches, dependending on batch size
-            for x_batch, y_batch in batches:
+            for x_batch in batches:
                 # Performs the optimization step
-                self.step(x_batch, y_batch)
+                self.step(x_batch)
 
             logger.debug(
                 f'Epoch: {epoch+1}/{epochs} | Loss: {self.train_loss.result().numpy():.4f} | Accuracy: {self.train_accuracy.result().numpy():.4f}')
