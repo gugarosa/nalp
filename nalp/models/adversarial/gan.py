@@ -8,7 +8,7 @@ from nalp.wrappers.standard import StandardWrapper
 logger = l.get_logger(__name__)
 
 
-class DiscriminatorGAN(StandardWrapper):
+class Discriminator(StandardWrapper):
     """
     """
 
@@ -17,10 +17,10 @@ class DiscriminatorGAN(StandardWrapper):
 
         """
 
-        logger.info('Overriding class: StandardWrapper -> DiscriminatorGAN.')
+        logger.info('Overriding class: StandardWrapper -> Discriminator.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(DiscriminatorGAN, self).__init__(name='discriminator_gan')
+        super(Discriminator, self).__init__(name='D_gan')
 
         self.conv1 = layers.Conv2D(64, (4, 4), strides=(2, 2), padding='same')
         self.conv2 = layers.Conv2D(128, (4, 4), strides=(2, 2), padding='same', use_bias=False)
@@ -50,7 +50,7 @@ class DiscriminatorGAN(StandardWrapper):
         discriminator_logits = tf.squeeze(conv4, axis=[1, 2])
         return discriminator_logits
 
-class GeneratorGAN(StandardWrapper):
+class Generator(StandardWrapper):
     """
     """
 
@@ -59,10 +59,10 @@ class GeneratorGAN(StandardWrapper):
 
         """
 
-        logger.info('Overriding class: StandardWrapper -> GeneratorGAN.')
+        logger.info('Overriding class: StandardWrapper -> Generator.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(GeneratorGAN, self).__init__(name='generator_gan')
+        super(Generator, self).__init__(name='G_gan')
 
         self.conv1 = layers.Conv2DTranspose(filters=256, kernel_size=(3, 3), strides=(2, 2), use_bias=False)
         self.conv1_bn = layers.BatchNormalization()
@@ -121,23 +121,11 @@ class GAN(AdversarialWrapper):
 
         logger.info('Overriding class: AdversarialWrapper -> GAN.')
 
-        #
-        D = DiscriminatorGAN(vocab_size=vocab_size, embedding_size=embedding_size)
+        # Creating the discriminator network
+        D = Discriminator(vocab_size=vocab_size, embedding_size=embedding_size)
 
-        #
-        G = GeneratorGAN(vocab_size=vocab_size, embedding_size=embedding_size)
+        # Creating the generator network
+        G = Generator(vocab_size=vocab_size, embedding_size=embedding_size)
 
         # Overrides its parent class with any custom arguments if needed
         super(GAN, self).__init__(D, G, name='gan')
-
-
-    def call(self, x):
-        """Method that holds vital information whenever this class is called.
-
-        Args:
-            x (tf.Tensor): A tensorflow's tensor holding input data.
-
-        Returns:
-            The same tensor after passing through each defined layer.
-
-        """
