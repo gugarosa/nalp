@@ -98,9 +98,6 @@ class Generator(Model):
         # Defining a property for the input noise dimension
         self.n_input = n_input
 
-        # Defining the first linear layer
-        # self.linear1 = layers.Dense(7*7*256, use_bias=False)
-
         # Defining the first convolutional transpose layer
         self.conv1 = layers.Conv2DTranspose(
             128, (5, 5), strides=(7, 7), padding='same', use_bias=False)

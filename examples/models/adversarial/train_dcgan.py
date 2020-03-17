@@ -29,7 +29,7 @@ dcgan.compile(optimizer=tf.optimizers.Adam(learning_rate=0.0001),
             loss=tf.losses.BinaryCrossentropy(from_logits=True))
 
 # Fitting the DCGAN
-dcgan.fit(dataset, epochs=1)
+dcgan.fit(dataset, epochs=50)
 
 # Saving DCGAN weights
 dcgan.save_weights('trained/dcgan', save_format='tf')
