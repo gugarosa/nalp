@@ -98,22 +98,29 @@ class Generator(Model):
         # Defining a property for the input noise dimension
         self.n_input = n_input
 
-        self.dense = layers.Dense(7*7*256, use_bias=False)
+        # Defining the first linear layer
+        # self.linear1 = layers.Dense(7*7*256, use_bias=False)
 
+        # Defining the first convolutional transpose layer
         self.conv1 = layers.Conv2DTranspose(
-            128, (5, 5), strides=(1, 1), padding='same', use_bias=False)
+            128, (5, 5), strides=(7, 7), padding='same', use_bias=False)
 
+        # Defining the first batch normalization layer
+        self.bn1 = layers.BatchNormalization()
+
+        # Defining the second convolutional transpose layer
         self.conv2 = layers.Conv2DTranspose(
             64, (5, 5), strides=(2, 2), padding='same', use_bias=False)
 
+        # Defining the second batch normalization layer
+        self.bn2 = layers.BatchNormalization()
+
+        # Defining the third convolutional transpose layer
         self.conv3 = layers.Conv2DTranspose(1, (5, 5), strides=(
             2, 2), padding='same', use_bias=False, activation='tanh')
 
-        self.bn_1 = layers.BatchNormalization()
-
-        self.bn_2 = layers.BatchNormalization()
-
-        self.bn_3 = layers.BatchNormalization()
+        # Defining the third batch normalization layer
+        self.bn3 = layers.BatchNormalization()
 
     def call(self, x, training=True):
         """Method that holds vital information whenever this class is called.
@@ -127,17 +134,19 @@ class Generator(Model):
 
         """
 
-        x = tf.nn.leaky_relu(self.bn_1(self.dense(x)))
+        # Passing down first convolutional transpose layer with Batch Normalization and LeakyReLU activation
+        x = tf.nn.leaky_relu(
+            self.bn1(self.conv1(x), training=training), self.alpha)
 
-        x = tf.reshape(x, [x.shape[0], 7, 7, 256])
+        # Passing down second convolutional transpose layer with Batch Normalization and LeakyReLU activation
+        x = tf.nn.leaky_relu(
+            self.bn2(self.conv2(x), training=training), self.alpha)
 
-        x = tf.nn.leaky_relu(self.bn_2(self.conv1(x)))
+        # Passing down third convolutional transpose layer with Batch Normalization and LeakyReLU activation
+        x = tf.nn.leaky_relu(
+            self.bn3(self.conv3(x), training=training), self.alpha)
 
-        x = tf.nn.leaky_relu(self.bn_3(self.conv2(x)))
-
-        generated_data = self.conv3(x)
-
-        return generated_data
+        return x
 
 
 class DCGAN(AdversarialModel):
@@ -164,7 +173,7 @@ class DCGAN(AdversarialModel):
         D = Discriminator(alpha=alpha, dropout=dropout)
 
         # Creating the generator network
-        G = Generator(gen_input=gen_input, alpha=alpha)
+        G = Generator(n_input=gen_input, alpha=alpha)
 
         # Overrides its parent class with any custom arguments if needed
         super(DCGAN, self).__init__(D, G, name='dcgan')
