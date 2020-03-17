@@ -48,11 +48,10 @@ NALP is based on the following structure, and you should pay attention to its tr
         - document
         - text
     - datasets
+        - image
         - language_modeling
     - encoders
-        - count
         - integer
-        - tfidf
         - word2vec
     - models
         - adversarial
