@@ -5,9 +5,6 @@ from nalp.models.adversarial.dcgan import DCGAN
 # Defining a constant to hold the input noise dimension
 N_NOISE = 100
 
-# Defining a constant to hold the number of features
-N_FEATURES = 784
-
 # Defining a constant to hold the batch size
 BATCH_SIZE = 256
 
@@ -25,7 +22,7 @@ dataset = tf.data.Dataset.from_tensor_slices(
     x_train).shuffle(100000).batch(BATCH_SIZE)
 
 # Creating the DCGAN
-dcgan = DCGAN(gen_input=N_NOISE, gen_output=N_FEATURES, alpha=0.01)
+dcgan = DCGAN(gen_input=N_NOISE, alpha=0.2, dropout=0.3)
 
 # Compiling the DCGAN
 dcgan.compile(optimizer=tf.optimizers.Adam(learning_rate=0.0001),

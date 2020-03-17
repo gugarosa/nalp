@@ -40,11 +40,12 @@ class Discriminator(Model):
         # Defining the output as a logit unit that decides whether input is real or fake
         self.out = layers.Dense(1)
 
-    def call(self, x):
+    def call(self, x, training=True):
         """Method that holds vital information whenever this class is called.
 
         Args:
             x (tf.Tensor): A tensorflow's tensor holding input data.
+            training (bool): Whether architecture is under training or not.
 
         Returns:
             The same tensor after passing through each defined layer.
@@ -104,11 +105,12 @@ class Generator(Model):
         # Defining the output layer with a `tanh` activation for restraining interval to [-1, 1]
         self.out = layers.Dense(n_output, activation='tanh')
 
-    def call(self, x):
+    def call(self, x, training=True):
         """Method that holds vital information whenever this class is called.
 
         Args:
             x (tf.Tensor): A tensorflow's tensor holding input data.
+            training (bool): Whether architecture is under training or not.
 
         Returns:
             The same tensor after passing through each defined layer.

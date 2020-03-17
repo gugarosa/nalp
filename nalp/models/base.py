@@ -24,7 +24,7 @@ class Model(tf.keras.Model):
         # Overrides its parent class with any custom arguments if needed
         super(Model, self).__init__(name=name)
 
-    def call(self, x):
+    def call(self, x, training=True):
         """Method that holds vital information whenever this class is called.
 
         Note that you will need to implement this method directly on its child. Essentially,
@@ -32,6 +32,7 @@ class Model(tf.keras.Model):
 
         Args:
             x (tf.Tensor): A tensorflow's tensor holding input data.
+            training (bool): Whether architecture is under training or not.
 
         Raises:
             NotImplementedError
@@ -447,6 +448,6 @@ class AdversarialModel(Model):
         logger.info('Sampling with the model ...')
 
         # Performs the forward pass on the generator
-        preds = self.G(z)
+        preds = self.G(z, training=False)
 
         return preds
