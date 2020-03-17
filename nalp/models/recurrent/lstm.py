@@ -1,12 +1,12 @@
 from tensorflow.keras import layers
 
 import nalp.utils.logging as l
-from nalp.wrappers.standard import StandardWrapper
+from nalp.models.base import Model
 
 logger = l.get_logger(__name__)
 
 
-class LSTM(StandardWrapper):
+class LSTM(Model):
     """A LSTM class is the one in charge of Long Short-Term Memory implementation.
 
     References:
@@ -24,7 +24,7 @@ class LSTM(StandardWrapper):
 
         """
 
-        logger.info('Overriding class: StandardWrapper -> LSTM.')
+        logger.info('Overriding class: Model -> LSTM.')
 
         # Overrides its parent class with any custom arguments if needed
         super(LSTM, self).__init__(name='lstm')

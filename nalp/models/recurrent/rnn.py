@@ -1,12 +1,12 @@
 from tensorflow.keras import layers
 
 import nalp.utils.logging as l
-from nalp.wrappers.standard import StandardWrapper
+from nalp.models.base import Model
 
 logger = l.get_logger(__name__)
 
 
-class RNN(StandardWrapper):
+class RNN(Model):
     """An RNN class is the one in charge of Recurrent Neural Networks vanilla implementation.
 
     References:
@@ -24,7 +24,7 @@ class RNN(StandardWrapper):
 
         """
 
-        logger.info('Overriding class: StandardWrapper -> RNN.')
+        logger.info('Overriding class: Model -> RNN.')
 
         # Overrides its parent class with any custom arguments if needed
         super(RNN, self).__init__(name='rnn')

@@ -1,12 +1,12 @@
 from tensorflow.keras import layers
 
 import nalp.utils.logging as l
-from nalp.wrappers.standard import StandardWrapper
+from nalp.models.base import Model
 
 logger = l.get_logger(__name__)
 
 
-class BiLSTM(StandardWrapper):
+class BiLSTM(Model):
     """A BiLSTM class is the one in charge of a bi-directional Long Short-Term Memory implementation.
 
     References:
@@ -24,7 +24,7 @@ class BiLSTM(StandardWrapper):
 
         """
 
-        logger.info('Overriding class: StandardWrapper -> BiLSTM.')
+        logger.info('Overriding class: Model -> BiLSTM.')
 
         # Overrides its parent class with any custom arguments if needed
         super(BiLSTM, self).__init__(name='bi_lstm')

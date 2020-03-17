@@ -1,12 +1,12 @@
 from tensorflow.keras import layers
 
 import nalp.utils.logging as l
-from nalp.wrappers.standard import StandardWrapper
+from nalp.models.base import Model
 
 logger = l.get_logger(__name__)
 
 
-class GRU(StandardWrapper):
+class GRU(Model):
     """A GRU class is the one in charge of Gated Recurrent Unit implementation.
 
     References:
@@ -24,7 +24,7 @@ class GRU(StandardWrapper):
 
         """
 
-        logger.info('Overriding class: StandardWrapper -> GRU.')
+        logger.info('Overriding class: Model -> GRU.')
 
         # Overrides its parent class with any custom arguments if needed
         super(GRU, self).__init__(name='gru')

@@ -2,13 +2,12 @@ import tensorflow as tf
 from tensorflow.keras import layers
 
 import nalp.utils.logging as l
-from nalp.wrappers.adversarial import AdversarialWrapper
-from nalp.wrappers.standard import StandardWrapper
+from nalp.models.base import AdversarialModel, Model
 
 logger = l.get_logger(__name__)
 
 
-class Discriminator(StandardWrapper):
+class Discriminator(Model):
     """A Discriminator class stands for the discriminative part of a Generative Adversarial Network.
 
     """
@@ -21,7 +20,7 @@ class Discriminator(StandardWrapper):
 
         """
 
-        logger.info('Overriding class: StandardWrapper -> Discriminator.')
+        logger.info('Overriding class: Model -> Discriminator.')
 
         # Overrides its parent class with any custom arguments if needed
         super(Discriminator, self).__init__(name='D_gan')
@@ -67,7 +66,7 @@ class Discriminator(StandardWrapper):
         return x
 
 
-class Generator(StandardWrapper):
+class Generator(Model):
     """A Generator class stands for the generative part of a Generative Adversarial Network.
 
     """
@@ -82,7 +81,7 @@ class Generator(StandardWrapper):
 
         """
 
-        logger.info('Overriding class: StandardWrapper -> Generator.')
+        logger.info('Overriding class: Model -> Generator.')
 
         # Overrides its parent class with any custom arguments if needed
         super(Generator, self).__init__(name='G_gan')
@@ -131,7 +130,7 @@ class Generator(StandardWrapper):
         return x
 
 
-class GAN(AdversarialWrapper):
+class GAN(AdversarialModel):
     """A GAN class is the one in charge of naïve Generative Adversarial Networks implementation.
 
     References:
@@ -149,7 +148,7 @@ class GAN(AdversarialWrapper):
 
         """
 
-        logger.info('Overriding class: AdversarialWrapper -> GAN.')
+        logger.info('Overriding class: AdversarialModel -> GAN.')
 
         # Creating the discriminator network
         D = Discriminator(alpha=alpha)

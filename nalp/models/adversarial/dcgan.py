@@ -3,7 +3,7 @@ from tensorflow.keras import layers
 
 import nalp.utils.logging as l
 from nalp.wrappers.adversarial import AdversarialWrapper
-from nalp.wrappers.standard import StandardWrapper
+from nalp.models.base import Model
 
 logger = l.get_logger(__name__)
 
@@ -101,7 +101,7 @@ class Generator(StandardWrapper):
 
 
 class DCGAN(AdversarialWrapper):
-    """A GAN class is the one in charge of Generative Adversarial Networks implementation.
+    """A DCGAN class is the one in charge of Deep Convolutional Generative Adversarial Networks implementation.
 
     References:
         A. Radford, L. Metz, S. Chintala. Unsupervised representation learning with deep convolutional generative adversarial networks. Preprint arXiv:1511.06434 (2015).
