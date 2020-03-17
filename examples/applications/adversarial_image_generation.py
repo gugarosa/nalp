@@ -23,7 +23,7 @@ gan = GAN(gen_input=N_NOISE, gen_output=N_FEATURES, alpha=0.01)
 gan.load_weights('trained/gan').expect_partial()
 
 # Creating a noise tensor for further sampling
-z = tf.random.normal([16, N_NOISE])
+z = tf.random.normal([N_SAMPLES, 1, 1, N_NOISE])
 
 # Sampling an artificial image
 sampled_images = tf.reshape(gan.sample(z), (N_SAMPLES, 28, 28))
