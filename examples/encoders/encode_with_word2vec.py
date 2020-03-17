@@ -1,8 +1,8 @@
-from nalp.corpus.document import DocumentCorpus
+from nalp.corpus.text import TextCorpus
 from nalp.encoders.word2vec import Word2vecEncoder
 
-# Creating a DocumentCorpus from file
-corpus = DocumentCorpus(from_file='data/document/chapter1_harry.txt')
+# Creating a TextCorpus from file
+corpus = TextCorpus(from_file='data/text/chapter1_harry.txt', type='word')
 
 # Creating an Word2vecEncoder
 encoder = Word2vecEncoder()
@@ -15,3 +15,9 @@ encoded_tokens = encoder.encode(corpus.tokens)
 
 # Printing encoded tokens
 print(encoded_tokens)
+
+# Decodes the encoded tokens
+decoded_tokens = encoder.decode(encoded_tokens)
+
+# Printing decoded tokens
+print(decoded_tokens)

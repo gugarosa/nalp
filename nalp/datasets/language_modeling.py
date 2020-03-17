@@ -36,7 +36,7 @@ class LanguageModelingDataset(Dataset):
 
         logger.debug('Creating input and target batches ...')
 
-        # Actually creating the desired amount of batches
+        # Actually creates the desired amount of batches
         self.batches = map_sequences.shuffle(
             10000).batch(batch_size, drop_remainder=True)
 

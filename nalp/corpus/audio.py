@@ -14,7 +14,7 @@ class AudioCorpus(Corpus):
 
     """
 
-    def __init__(self, from_file=None):
+    def __init__(self, from_file):
         """Initialization method.
 
         Args:

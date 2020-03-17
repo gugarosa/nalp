@@ -34,8 +34,8 @@ class TextCorpus(Corpus):
             # Loads the text from file
             text = l.load_txt(from_file)
 
-            # Creates a pipeline based on desired type
-            pipe = self._create_pipeline(type)
+            # Creates a tokenizer based on desired type
+            pipe = self._create_tokenizer(type)
 
             # Retrieve the tokens
             self.tokens = pipe(text)
@@ -102,14 +102,14 @@ class TextCorpus(Corpus):
     def index_vocab(self, index_vocab):
         self._index_vocab = index_vocab
 
-    def _create_pipeline(self, type):
-        """Creates a pipeline based on the input type.
+    def _create_tokenizer(self, type):
+        """Creates a tokenizer based on the input type.
 
         Args:
-            type (str): A type to create the pipeline. Should be `char` or `word`.
+            type (str): A type to create the tokenizer. Should be `char` or `word`.
 
         Returns:
-            The created pipeline.
+            The created tokenizer.
 
         """
 

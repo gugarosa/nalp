@@ -27,7 +27,7 @@ class Word2vecEncoder(Encoder):
 
         logger.info('Class overrided.')
 
-    def learn(self, tokens, max_features=128, window_size=5, min_count=1, algorithm=0, learning_rate=0.01, iterations=10):
+    def learn(self, tokens, max_features=128, window_size=5, min_count=1, algorithm=0, learning_rate=0.01, iterations=1000):
         """Learns a Word2Vec representation based on the its methodology.
 
         One can use CBOW or Skip-gram algorithm for the learning procedure.
@@ -46,15 +46,14 @@ class Word2vecEncoder(Encoder):
         logger.debug('Learning how to encode ...')
 
         # Creates a Word2Vec model
-        self.encoder = W2V(sentences=tokens, size=max_features, window=window_size, min_count=min_count,
+        self.encoder = W2V(sentences=[tokens], size=max_features, window=window_size, min_count=min_count,
                            sg=algorithm, alpha=learning_rate, iter=iterations, workers=multiprocessing.cpu_count())
 
-    def encode(self, tokens, max_tokens=10):
+    def encode(self, tokens):
         """Encodes the data into a Word2Vec representation.
 
         Args:
             tokens (list): A list of tokens to be encoded.
-            max_tokens (int): Maximum amount of tokens per sentence.
 
         """
 
@@ -74,17 +73,40 @@ class Word2vecEncoder(Encoder):
         wv = self.encoder.wv
 
         # Creates an encoded tokens variable to hold encoded data
-        encoded_tokens = np.zeros(
-            (len(tokens), max_tokens, self.encoder.vector_size))
+        encoded_tokens = np.zeros((len(tokens), self.encoder.vector_size))
 
-        # Iterate through all sentences
-        for i in range(0, len(tokens)):
-            # For each sentence, iterate over its tokens
-            for t, token in enumerate(tokens[i]):
-                # If token index exceed maximum length, break the loop
-                if t >= max_tokens:
-                    break
-                # Else, store its word vector value to a new variable
-                encoded_tokens[i, t, :] = wv[token]
+        # Iterate through all tokens
+        for i, token in enumerate(tokens):
+            # Else, store its word vector value to a new variable
+            encoded_tokens[i, :] = wv[token]
 
         return encoded_tokens
+
+    def decode(self, encoded_tokens):
+        """Decodes the encoding back to tokens.
+
+        Args:
+            encoded_tokens (np.array): A numpy array containing the encoded tokens.
+
+        Returns:
+            A list of decoded tokens.
+
+        """
+
+        logger.debug('Decoding encoded tokens ...')
+
+        # Checks if decoder actually exists, if not raises an error
+        if not self.encoder:
+            # Creates the error
+            e = 'You need to call learn() prior to decode() method.'
+
+            # Logs the error
+            logger.error(e)
+
+            raise RuntimeError(e)
+
+        # Decoding the tokens
+        decoded_tokens = [self.encoder.wv.most_similar(
+            positive=[t])[0][0] for t in encoded_tokens]
+
+        return decoded_tokens
