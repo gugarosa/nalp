@@ -78,11 +78,12 @@ class Generator(Model):
 
     """
 
-    def __init__(self, n_input=100, alpha=0.2):
+    def __init__(self, n_input=100, n_output=784, alpha=0.2):
         """Initialization method.
 
         Args:
             n_input (int): Number of input (noise) dimension.
+            n_output (int): Number of output units.
             alpha (float): LeakyReLU activation threshold.
 
         """
@@ -97,6 +98,9 @@ class Generator(Model):
 
         # Defining a property for the input noise dimension
         self.n_input = n_input
+
+        #
+        initial_strides = tf.sqrt(n_output)
 
         # Defining the first convolutional transpose layer
         self.conv1 = layers.Conv2DTranspose(
@@ -154,23 +158,24 @@ class DCGAN(AdversarialModel):
 
     """
 
-    def __init__(self, gen_input=100, alpha=0.2, dropout=0.3):
+    def __init__(self, gen_input=100, gen_output=784, alpha=0.2, dropout=0.3):
         """Initialization method.
 
         Args:
             gen_input (int): Number of input (noise) dimension in the Generator.
+            gen_output (int): Number of output units in the Generator.
             alpha (float): LeakyReLU activation threshold.
             dropout (float): Dropout activation rate.
 
         """
 
-        logger.info('Overriding class: AdversarialModel -> GAN.')
+        logger.info('Overriding class: AdversarialModel -> DCGAN.')
 
         # Creating the discriminator network
         D = Discriminator(alpha=alpha, dropout=dropout)
 
         # Creating the generator network
-        G = Generator(n_input=gen_input, alpha=alpha)
+        G = Generator(n_input=gen_input, n_output=gen_output, alpha=alpha)
 
         # Overrides its parent class with any custom arguments if needed
         super(DCGAN, self).__init__(D, G, name='dcgan')
