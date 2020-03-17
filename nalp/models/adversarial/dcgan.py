@@ -1,3 +1,5 @@
+import math
+
 import tensorflow as tf
 from tensorflow.keras import layers
 
@@ -99,12 +101,12 @@ class Generator(Model):
         # Defining a property for the input noise dimension
         self.n_input = n_input
 
-        #
-        initial_strides = tf.sqrt(n_output)
+        # Based on the number of output features, we calculate the number of initial strides
+        initial_strides = int(math.sqrt(n_output) / 4)
 
         # Defining the first convolutional transpose layer
         self.conv1 = layers.Conv2DTranspose(
-            128, (5, 5), strides=(7, 7), padding='same', use_bias=False)
+            128, (5, 5), strides=initial_strides, padding='same', use_bias=False)
 
         # Defining the first batch normalization layer
         self.bn1 = layers.BatchNormalization()
