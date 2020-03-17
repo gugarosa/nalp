@@ -22,7 +22,6 @@ NALP is compatible with: **Python 3.6+**.
     api/nalp.encoders
     api/nalp.models
     api/nalp.utils
-    api/nalp.wrappers
 
 
 Indices and tables

@@ -1,10 +1,11 @@
 nalp.models
 ==============
 
-Each neural network architecture is defined in this package. From naïve RNNs to BiLSTMs, you can use whatever suits your needs.
+Each neural network architecture is defined in this package. From naïve RNNs to BiLSTMs, from GANs to TextGANs, you can use whatever suits your needs.
 
 .. toctree::
     nalp.models.adversarial
+    nalp.models.base
     nalp.models.recurrent
 
 .. autoapimodule:: nalp.models
