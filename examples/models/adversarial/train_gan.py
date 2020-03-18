@@ -25,7 +25,7 @@ dataset = tf.data.Dataset.from_tensor_slices(
     x_train).shuffle(100000).batch(BATCH_SIZE)
 
 # Creating the GAN
-gan = GAN(gen_input=N_NOISE, gen_output=N_FEATURES, alpha=0.01)
+gan = GAN(input_shape=(N_FEATURES,), noise_dim=100, n_samplings=3, alpha=0.01)
 
 # Compiling the GAN
 gan.compile(optimizer=tf.optimizers.Adam(learning_rate=0.0001),

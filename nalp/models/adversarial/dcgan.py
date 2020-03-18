@@ -14,7 +14,7 @@ class Discriminator(Model):
 
     """
 
-    def __init__(self, alpha=0.2, dropout=0.3):
+    def __init__(self, alpha=0.3, dropout=0.3):
         """Initialization method.
 
         Args:
@@ -80,7 +80,7 @@ class Generator(Model):
 
     """
 
-    def __init__(self, n_input=100, n_output=784, alpha=0.2):
+    def __init__(self, n_input=100, n_output=784, alpha=0.3):
         """Initialization method.
 
         Args:
@@ -104,26 +104,30 @@ class Generator(Model):
         # Based on the number of output features, we calculate the number of initial strides
         initial_strides = int(math.sqrt(n_output) / 4)
 
-        # Defining the first convolutional transpose layer
-        self.conv1 = layers.Conv2DTranspose(
-            128, (5, 5), strides=initial_strides, padding='same', use_bias=False)
+        # Defining the first linear layer
+        self.linear1 = layers.Dense(initial_strides ** 2 * 256, use_bias=False)
 
         # Defining the first batch normalization layer
         self.bn1 = layers.BatchNormalization()
+
+        # Defining the first convolutional transpose layer
+        self.conv1 = layers.Conv2DTranspose(
+            128, (5, 5), strides=(1, 1), padding='same', use_bias=False)
+
+        # Defining the second batch normalization layer
+        self.bn2 = layers.BatchNormalization()
 
         # Defining the second convolutional transpose layer
         self.conv2 = layers.Conv2DTranspose(
             64, (5, 5), strides=(2, 2), padding='same', use_bias=False)
 
-        # Defining the second batch normalization layer
-        self.bn2 = layers.BatchNormalization()
+        # Defining the third batch normalization layer
+        self.bn3 = layers.BatchNormalization()
 
         # Defining the third convolutional transpose layer
         self.conv3 = layers.Conv2DTranspose(1, (5, 5), strides=(
             2, 2), padding='same', use_bias=False, activation='tanh')
 
-        # Defining the third batch normalization layer
-        self.bn3 = layers.BatchNormalization()
 
     def call(self, x, training=True):
         """Method that holds vital information whenever this class is called.
@@ -139,15 +143,20 @@ class Generator(Model):
 
         # Passing down first convolutional transpose layer with Batch Normalization and LeakyReLU activation
         x = tf.nn.leaky_relu(
-            self.bn1(self.conv1(x), training=training), self.alpha)
+            self.bn1(self.linear1(x), training=training), self.alpha)
+
+        x = tf.reshape(x, (x.shape[0], 7, 7, 256))
+
+        # Passing down first convolutional transpose layer with Batch Normalization and LeakyReLU activation
+        x = tf.nn.leaky_relu(
+            self.bn2(self.conv1(x), training=training), self.alpha)
 
         # Passing down second convolutional transpose layer with Batch Normalization and LeakyReLU activation
         x = tf.nn.leaky_relu(
-            self.bn2(self.conv2(x), training=training), self.alpha)
+            self.bn3(self.conv2(x), training=training), self.alpha)
 
         # Passing down third convolutional transpose layer with Batch Normalization and LeakyReLU activation
-        x = tf.nn.leaky_relu(
-            self.bn3(self.conv3(x), training=training), self.alpha)
+        x = self.conv3(x)
 
         return x
 
@@ -160,7 +169,7 @@ class DCGAN(AdversarialModel):
 
     """
 
-    def __init__(self, gen_input=100, gen_output=784, alpha=0.2, dropout=0.3):
+    def __init__(self, gen_input=100, gen_output=784, alpha=0.3, dropout=0.3):
         """Initialization method.
 
         Args:

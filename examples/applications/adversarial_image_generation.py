@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import tensorflow as tf
 
-from nalp.models.adversarial.gan import GAN
+from nalp.models.adversarial.dcgan import DCGAN
 
 # When generating artificial images, make sure
 # to use the same data, classes and parameters
@@ -17,10 +17,10 @@ N_NOISE = 100
 N_FEATURES = 784
 
 # Creating the GAN
-gan = GAN(gen_input=N_NOISE, gen_output=N_FEATURES, alpha=0.01)
+gan = DCGAN(gen_input=N_NOISE, gen_output=N_FEATURES)
 
 # Loading pre-trained GAN weights
-gan.load_weights('trained/gan').expect_partial()
+gan.load_weights('trained/dcgan').expect_partial()
 
 # Creating a noise tensor for further sampling
 z = tf.random.normal([N_SAMPLES, 1, 1, N_NOISE])

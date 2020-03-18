@@ -12,10 +12,11 @@ class Discriminator(Model):
 
     """
 
-    def __init__(self, alpha=0.01):
+    def __init__(self, n_samplings, alpha):
         """Initialization method.
 
         Args:
+            n_samplings (int): Number of down/up samplings to perform.
             alpha (float): LeakyReLU activation threshold.
 
         """
@@ -25,17 +26,16 @@ class Discriminator(Model):
         # Overrides its parent class with any custom arguments if needed
         super(Discriminator, self).__init__(name='D_gan')
 
-        # Defining an alpha property for the LeakyReLU activation
+        # Defining a property for the LeakyReLU activation
         self.alpha = alpha
 
-        # Defining the first linear layer
-        self.linear1 = layers.Dense(512)
+        # Defining a list for holding the linear layers
+        self.linear = []
 
-        # Defining the second linear layer
-        self.linear2 = layers.Dense(256)
-
-        # Defining the third linear layer
-        self.linear3 = layers.Dense(128)
+        # For every possible downsampling
+        for i in range(n_samplings, 0, -1):
+            # Appends a linear layer to the list
+            self.linear.append(layers.Dense(128 * i))
 
         # Defining the output as a logit unit that decides whether input is real or fake
         self.out = layers.Dense(1)
@@ -52,14 +52,10 @@ class Discriminator(Model):
 
         """
 
-        # Passing down first linear layer with LeakyReLU activation
-        x = tf.nn.leaky_relu(self.linear1(x), self.alpha)
-
-        # Passing down second linear layer with LeakyReLU activation
-        x = tf.nn.leaky_relu(self.linear2(x), self.alpha)
-
-        # Passing down third linear layer with LeakyReLU activation
-        x = tf.nn.leaky_relu(self.linear3(x), self.alpha)
+        # For every possible linear layer
+        for l in self.linear:
+            # Applies the layer with a LeakyReLU activation
+            x = tf.nn.leaky_relu(l(x), self.alpha)
 
         # Passing down the output layer
         x = self.out(x)
@@ -72,12 +68,13 @@ class Generator(Model):
 
     """
 
-    def __init__(self, n_input=100, n_output=784, alpha=0.01):
+    def __init__(self, input_shape, noise_dim, n_samplings, alpha):
         """Initialization method.
 
         Args:
-            n_input (int): Number of input (noise) dimension.
-            n_output (int): Number of output units.
+            input_shape (tuple): An input shape for the tensor.
+            noise_dim (int): Amount of noise dimensions.
+            n_samplings (int): Number of down/up samplings to perform.
             alpha (float): LeakyReLU activation threshold.
 
         """
@@ -87,23 +84,22 @@ class Generator(Model):
         # Overrides its parent class with any custom arguments if needed
         super(Generator, self).__init__(name='G_gan')
 
-        # Defining an alpha property for the LeakyReLU activation
+        # Defining a property for the LeakyReLU activation
         self.alpha = alpha
 
         # Defining a property for the input noise dimension
-        self.n_input = n_input
+        self.noise_dim = noise_dim
 
-        # Defining the first linear layer
-        self.linear1 = layers.Dense(128)
+        # Defining a list for holding the linear layers
+        self.linear = []
 
-        # Defining the second linear layer
-        self.linear2 = layers.Dense(256)
-
-        # Defining the third linear layer
-        self.linear3 = layers.Dense(512)
+        # For every possible upsampling
+        for i in range(n_samplings):
+            # Appends a linear layer to the list
+            self.linear.append(layers.Dense(128 * (i + 1)))
 
         # Defining the output layer with a `tanh` activation for restraining interval to [-1, 1]
-        self.out = layers.Dense(n_output, activation='tanh')
+        self.out = layers.Dense(input_shape[0], activation='tanh')
 
     def call(self, x, training=True):
         """Method that holds vital information whenever this class is called.
@@ -117,14 +113,10 @@ class Generator(Model):
 
         """
 
-        # Passing down first linear layer with LeakyReLU activation
-        x = tf.nn.leaky_relu(self.linear1(x), self.alpha)
-
-        # Passing down second linear layer with LeakyReLU activation
-        x = tf.nn.leaky_relu(self.linear2(x), self.alpha)
-
-        # Passing down third linear layer with LeakyReLU activation
-        x = tf.nn.leaky_relu(self.linear3(x), self.alpha)
+        # For every possible linear layer
+        for l in self.linear:
+            # Applies the layer with a LeakyReLU activation
+            x = tf.nn.leaky_relu(l(x), self.alpha)
 
         # Passing down the output layer
         x = self.out(x)
@@ -140,12 +132,13 @@ class GAN(AdversarialModel):
 
     """
 
-    def __init__(self, gen_input=100, gen_output=784, alpha=0.01):
+    def __init__(self, input_shape=(784,), noise_dim=100, n_samplings=3, alpha=0.01):
         """Initialization method.
 
         Args:
-            gen_input (int): Number of input (noise) dimension in the Generator.
-            gen_output (int): Number of output units in the Generator.
+            input_shape (tuple): An input shape for the Generator.
+            noise_dim (int): Amount of noise dimensions for the Generator.
+            n_samplings (int): Number of down/up samplings to perform.
             alpha (float): LeakyReLU activation threshold.
 
         """
@@ -153,10 +146,13 @@ class GAN(AdversarialModel):
         logger.info('Overriding class: AdversarialModel -> GAN.')
 
         # Creating the discriminator network
-        D = Discriminator(alpha=alpha)
+        D = Discriminator(n_samplings, alpha)
 
         # Creating the generator network
-        G = Generator(n_input=gen_input, n_output=gen_output, alpha=alpha)
+        G = Generator(input_shape, noise_dim, n_samplings, alpha)
 
         # Overrides its parent class with any custom arguments if needed
         super(GAN, self).__init__(D, G, name='gan')
+
+        logger.info(
+            f'Input: {input_shape} | Noise: {noise_dim} | Number of Samplings: {n_samplings} | Activation Rate: {alpha}.')

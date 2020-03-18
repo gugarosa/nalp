@@ -367,7 +367,7 @@ class AdversarialModel(Model):
         """
 
         # Defines a random noise signal as the generator's input
-        z = tf.random.normal([x.shape[0], 1, 1, self.G.n_input])
+        z = tf.random.normal([x.shape[0], 1, 1, self.G.noise_dim])
 
         # Using tensorflow's gradient
         with tf.GradientTape() as G_tape, tf.GradientTape() as D_tape:

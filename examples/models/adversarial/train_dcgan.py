@@ -22,17 +22,17 @@ x_train = (x_train - 127.5) / 127.5
 
 # Creating the dataset from shuffle and batched data
 dataset = tf.data.Dataset.from_tensor_slices(
-    x_train).shuffle(100000).batch(BATCH_SIZE)
+    x_train).shuffle(60000).batch(BATCH_SIZE)
 
 # Creating the DCGAN
-dcgan = DCGAN(gen_input=N_NOISE, gen_output=N_FEATURES, alpha=0.2, dropout=0.3)
+dcgan = DCGAN(gen_input=N_NOISE, gen_output=N_FEATURES, alpha=0.3, dropout=0.3)
 
 # Compiling the DCGAN
 dcgan.compile(optimizer=tf.optimizers.Adam(learning_rate=0.0001),
             loss=tf.losses.BinaryCrossentropy(from_logits=True))
 
 # Fitting the DCGAN
-dcgan.fit(dataset, epochs=1)
+dcgan.fit(dataset, epochs=100)
 
 # Saving DCGAN weights
 dcgan.save_weights('trained/dcgan', save_format='tf')
