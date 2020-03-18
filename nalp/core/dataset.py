@@ -1,4 +1,4 @@
-import tensorflow as tf
+from tensorflow import data
 
 import nalp.utils.logging as l
 
@@ -61,7 +61,7 @@ class Dataset:
         logger.debug(f'Creating sequences ...')
 
         # Creating tensor slices from the encoded tokens
-        slices = tf.data.Dataset.from_tensor_slices(self.encoded_tokens)
+        slices = data.Dataset.from_tensor_slices(self.encoded_tokens)
 
         # Creating the sequences
         sequences = slices.batch(self.max_length+1, drop_remainder=True)

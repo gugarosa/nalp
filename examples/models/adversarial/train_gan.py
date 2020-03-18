@@ -1,38 +1,23 @@
 import tensorflow as tf
 
+from nalp.datasets.image import ImageDataset
 from nalp.models.adversarial.gan import GAN
 
-# Defining a constant to hold the input noise dimension
-N_NOISE = 100
-
-# Defining a constant to hold the number of features
-N_FEATURES = 784
-
-# Defining a constant to hold the batch size
-BATCH_SIZE = 256
-
 # Loading the MNIST dataset
-(x_train, y_train), (_, _) = tf.keras.datasets.mnist.load_data()
+(x, y), (_, _) = tf.keras.datasets.mnist.load_data()
 
-# Reshaping the training data
-x_train = x_train.reshape(x_train.shape[0], N_FEATURES).astype('float32')
-
-# Normalizing the data
-x_train = (x_train - 127.5) / 127.5
-
-# Creating the dataset from shuffle and batched data
-dataset = tf.data.Dataset.from_tensor_slices(
-    x_train).shuffle(100000).batch(BATCH_SIZE)
+# Creating an Image Dataset
+dataset = ImageDataset(x, batch_size=256, shape=(x.shape[0], 784), normalize=True)
 
 # Creating the GAN
-gan = GAN(input_shape=(N_FEATURES,), noise_dim=100, n_samplings=3, alpha=0.01)
+gan = GAN(input_shape=(784,), noise_dim=100, n_samplings=3, alpha=0.01)
 
 # Compiling the GAN
 gan.compile(optimizer=tf.optimizers.Adam(learning_rate=0.0001),
             loss=tf.losses.BinaryCrossentropy(from_logits=True))
 
 # Fitting the GAN
-gan.fit(dataset, epochs=150)
+gan.fit(dataset.batches, epochs=150)
 
 # Saving GAN weights
 gan.save_weights('trained/gan', save_format='tf')
