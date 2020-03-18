@@ -45,7 +45,6 @@ NALP is based on the following structure, and you should pay attention to its tr
         - encoder
     - corpus
         - audio
-        - document
         - text
     - datasets
         - image
@@ -65,6 +64,7 @@ NALP is based on the following structure, and you should pay attention to its tr
             - rnn
             - stacked_rnn
     - utils
+        - constants
         - loader
         - logging
         - preprocess
@@ -76,7 +76,7 @@ The core is the core. Essentially, it is the parent of everything. You should fi
 
 ### Corpus
 
-Every pipeline has its first step, right? The corpus package serves as a basic class to load raw text, documents (list of sentences), and audio.
+Every pipeline has its first step, right? The corpus package serves as a basic class to load raw text and audio.
 
 ### Datasets
 
@@ -84,7 +84,7 @@ Because we need data, right? Datasets are composed of classes and methods that a
 
 ### Encoders
 
-Text or Numbers? Encodings are used to make embeddings. Embeddings are used to feed into neural networks. Remember that networks cannot read raw data; therefore, you might want to pre-encode your data using well-known encoders.
+Text or Numbers? Encodings are used to make embeddings. Embeddings are used to feed into neural networks. Remember that networks cannot read raw text; therefore, you might want to pre-encode your data using well-known encoders.
 
 ### Models
 

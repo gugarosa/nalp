@@ -1,7 +1,7 @@
-nalp.corpus.document
+nalp.utils.constants
 ==========================
 
-.. autoapiclass:: nalp.corpus.document.DocumentCorpus
+.. autoapimodule:: nalp.utils.constants
     :members:
     :private-members:
     :special-members:

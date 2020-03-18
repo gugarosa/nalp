@@ -1,3 +1,3 @@
 """A corpus package, containing all the basic class and functions to load
-    texts, documents and audio.
+    texts and audio.
 """
