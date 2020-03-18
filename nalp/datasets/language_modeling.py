@@ -1,5 +1,6 @@
 from tensorflow import data
 
+import nalp.utils.constants as c
 import nalp.utils.logging as l
 from nalp.core.dataset import Dataset
 
@@ -25,26 +26,46 @@ class LanguageModelingDataset(Dataset):
         logger.info('Overriding class: Dataset -> LanguageModelingDataset.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(LanguageModelingDataset, self).__init__(
-            encoded_tokens, max_length)
+        super(LanguageModelingDataset, self).__init__(encoded_tokens)
 
         # Creating the sequences
-        sequences = self._create_sequences()
+        sequences = self._create_sequences(encoded_tokens, max_length)
 
         # Mapping the sequences to input and targets
-        map_sequences = sequences.map(self._create_input_target)
+        mapped_sequences = sequences.map(self._create_input_target)
 
-        logger.debug('Creating input and target batches ...')
-
-        # Actually creates the desired amount of batches
-        self.batches = map_sequences.shuffle(
-            10000).batch(batch_size, drop_remainder=True)
+        # Building up the dataset class
+        self._build(mapped_sequences, batch_size)
 
         # Debugging some important information
         logger.debug(
             f'Batches: {data.experimental.cardinality(self.batches)} | Batch size: {batch_size}.')
 
         logger.info('Class overrided.')
+
+    def _create_sequences(self, encoded_tokens, max_length):
+        """Creates sequences of the desired length.
+
+        Args:
+            encoded_tokens (np.array): An array of encoded tokens.
+            max_length (int): Maximum sequences' length.
+
+        Returns:
+            A tensor of maximum length sequences.
+
+        """
+
+        logger.debug(f'Creating sequences ...')
+
+        # Creating tensor slices from the encoded tokens
+        slices = data.Dataset.from_tensor_slices(encoded_tokens)
+
+        # Creating the sequences
+        sequences = slices.batch(max_length + 1, drop_remainder=True)
+
+        logger.debug(f'Maximum length: {max_length}.')
+
+        return sequences
 
     def _create_input_target(self, sequence):
         """Creates input (t) and targets (t+1) using the next timestep approach.
@@ -64,3 +85,16 @@ class LanguageModelingDataset(Dataset):
         target = sequence[1:]
 
         return input, target
+
+    def _build(self, mapped_sequences, batch_size):
+        """Builds the batches based on the mapped sequences.
+
+        Args:
+            mapped_sequences (tf.Tensor): A tensor of mapped sequences.
+            batch_size (int): Size of batches.
+
+        """
+
+        # Creating the dataset from shuffled and batched data
+        self.batches = mapped_sequences.shuffle(
+            c.BUFFER_SIZE).batch(batch_size, drop_remainder=True)

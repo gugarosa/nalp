@@ -19,11 +19,40 @@ class ImageDataset(Dataset):
         Args:
             images (np.array): An array of images.
             batch_size (int): Size of batches.
+            shape (tuple): A tuple containing the shape if the array should be forced to reshape.
             normalize (bool): Whether images should be normalized between -1 and 1.
 
         """
 
         logger.info('Overriding class: Dataset -> ImageDataset.')
+
+        # Pre-process an array of images
+        processed_images = self._preprocess(images, shape, normalize)
+
+        # Overrides its parent class with any custom arguments if needed
+        super(ImageDataset, self).__init__(processed_images)
+
+        # Building up the dataset class
+        self._build(processed_images, batch_size)
+
+        # Debugging some important information
+        logger.debug(
+            f'Size: {shape} | Batch size: {batch_size} | Normalization: {normalize}.')
+
+        logger.info('Class overrided.')
+
+    def _preprocess(self, images, shape, normalize):
+        """Pre-process an array of images by reshaping and normalizing, if necessary.
+
+        Args:
+            images (np.array): An array of images.
+            shape (tuple): A tuple containing the shape if the array should be forced to reshape.
+            normalize (bool): Whether images should be normalized between -1 and 1.
+
+        Returns:
+            An array of pre-processed images.
+
+        """
 
         # If a shape is supplied
         if shape:
@@ -34,20 +63,23 @@ class ImageDataset(Dataset):
         else:
             # Just make sure that the array is float typed
             images = images.astype('float32')
-        
+
         # If images should be normalized
         if normalize:
             # Normalize the images between -1 and 1
             images = (images - 127.5) / 127.5
 
-        # Overrides its parent class with any custom arguments if needed
-        super(ImageDataset, self).__init__(images)
+        return images
+
+    def _build(self, processed_images, batch_size):
+        """Builds the batches based on the pre-processed images.
+
+        Args:
+            processed_images (np.array): An array of pre-processed images.
+            batch_size (int): Size of batches.
+
+        """
 
         # Creating the dataset from shuffled and batched data
-        self.batches = data.Dataset.from_tensor_slices(images).shuffle(c.BUFFER_SIZE).batch(batch_size)
-
-        # Debugging some important information
-        logger.debug(
-            f'Shape: {shape} | Batch size: {batch_size} | Normalization: {normalize}.')
-
-        logger.info('Class overrided.')
+        self.batches = data.Dataset.from_tensor_slices(
+            processed_images).shuffle(c.BUFFER_SIZE).batch(batch_size)
