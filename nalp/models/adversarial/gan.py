@@ -16,7 +16,7 @@ class Discriminator(Model):
         """Initialization method.
 
         Args:
-            n_samplings (int): Number of down/up samplings to perform.
+            n_samplings (int): Number of downsamplings to perform.
             alpha (float): LeakyReLU activation threshold.
 
         """
@@ -74,7 +74,7 @@ class Generator(Model):
         Args:
             input_shape (tuple): An input shape for the tensor.
             noise_dim (int): Amount of noise dimensions.
-            n_samplings (int): Number of down/up samplings to perform.
+            n_samplings (int): Number of upsamplings to perform.
             alpha (float): LeakyReLU activation threshold.
 
         """
