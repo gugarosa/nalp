@@ -14,12 +14,13 @@ class Discriminator(Model):
 
     """
 
-    def __init__(self, alpha=0.3, dropout=0.3):
+    def __init__(self, n_samplings, alpha, dropout_rate):
         """Initialization method.
 
         Args:
+            n_samplings (int): Number of downsamplings to perform.
             alpha (float): LeakyReLU activation threshold.
-            dropout (float): Dropout activation rate.
+            dropout_rate (float): Dropout activation rate.
 
         """
 
@@ -28,23 +29,22 @@ class Discriminator(Model):
         # Overrides its parent class with any custom arguments if needed
         super(Discriminator, self).__init__(name='D_dcgan')
 
-        # Defining an alpha property for the LeakyReLU activation
+        # Defining a property for the LeakyReLU activation
         self.alpha = alpha
 
-        # Defining a dropout rate property for the Dropout layer
-        self.dropout_rate = dropout
+        # Defining a list for holding the convolutional layers
+        self.conv = []
 
-        # Defining the first convolutional layer
-        self.conv1 = layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same')
+        # Defining a list for holding the dropout layers
+        self.drop = []
 
-        # Defining the first dropout layer
-        self.drop1 = layers.Dropout(dropout)
+        # For every possible downsampling
+        for i in range(n_samplings):
+            # Appends a convolutional layer to the list
+            self.conv.append(layers.Conv2D(64 * (i + 1), (5, 5), strides=(2, 2), padding='same'))
 
-        # Defining the second convolutional layer
-        self.conv2 = layers.Conv2D(128, (5, 5), strides=(2, 2), padding='same')
-
-        # Defining the second dropout layer
-        self.drop2 = layers.Dropout(dropout)
+            # Appends a dropout layer to the list
+            self.drop.append(layers.Dropout(dropout_rate))
 
         # Defining the output as a logit unit that decides whether input is real or fake
         self.out = layers.Dense(1)
@@ -61,13 +61,10 @@ class Discriminator(Model):
 
         """
 
-        # Passing down first convolutional layer with LeakyReLU activation and Dropout
-        x = self.drop1(tf.nn.leaky_relu(
-            self.conv1(x), self.alpha), training=training)
-
-        # Passing down second convolutional layer with LeakyReLU activation and Dropout
-        x = self.drop2(tf.nn.leaky_relu(
-            self.conv2(x), self.alpha), training=training)
+        # For every possible convolutional and dropout layer
+        for c, d in zip(self.conv, self.drop):
+            # Applies the convolutional layer with a LeakyReLU activation and dropout
+            x = d(tf.nn.leaky_relu(c(x), self.alpha), training=training)
 
         # Passing down the output layer
         x = self.out(x)
@@ -80,12 +77,13 @@ class Generator(Model):
 
     """
 
-    def __init__(self, n_input=100, n_output=784, alpha=0.3):
+    def __init__(self, input_shape, noise_dim, n_samplings, alpha):
         """Initialization method.
 
         Args:
-            n_input (int): Number of input (noise) dimension.
-            n_output (int): Number of output units.
+            input_shape (tuple): An input shape for the tensor.
+            noise_dim (int): Amount of noise dimensions.
+            n_samplings (int): Number of upsamplings to perform.
             alpha (float): LeakyReLU activation threshold.
 
         """
@@ -99,34 +97,41 @@ class Generator(Model):
         self.alpha = alpha
 
         # Defining a property for the input noise dimension
-        self.n_input = n_input
+        self.noise_dim = noise_dim
 
-        # Based on the number of output features, we calculate the number of initial strides
-        initial_strides = int(math.sqrt(n_output) / 4)
+        # Defining a property for the sampling factor used to calculate the upsampling
+        self.sampling_factor = 2 ** (n_samplings - 1)
 
-        # Defining the first linear layer
-        self.linear1 = layers.Dense(initial_strides ** 2 * 256, use_bias=False)
+        # Defining a property to 
+        self.initial_units = int(input_shape[0] / self.sampling_factor)
 
-        # Defining the first batch normalization layer
-        self.bn1 = layers.BatchNormalization()
+        # Defining a list for holding the upsampling layers
+        self.sampling = []
 
-        # Defining the first convolutional transpose layer
-        self.conv1 = layers.Conv2DTranspose(
-            128, (5, 5), strides=(1, 1), padding='same', use_bias=False)
+        # Defining a list for holding the batch normalization layers
+        self.bn = []
 
-        # Defining the second batch normalization layer
-        self.bn2 = layers.BatchNormalization()
+        # For every possible upsampling
+        for i in range(n_samplings, 0, -1):
+            #
+            if i == n_samplings:
+                #
+                self.sampling.append(layers.Dense(self.initial_units ** 2 * 64 * self.sampling_factor, use_bias=False))
 
-        # Defining the second convolutional transpose layer
-        self.conv2 = layers.Conv2DTranspose(
-            64, (5, 5), strides=(2, 2), padding='same', use_bias=False)
+            #
+            elif i == n_samplings - 1:
+                #
+                self.sampling.append(layers.Conv2DTranspose(64 * i, (5, 5), strides=(1, 1), padding='same', use_bias=False))
+            #
+            else:
+                #
+                self.sampling.append(layers.Conv2DTranspose(64 * i, (5, 5), strides=(2, 2), padding='same', use_bias=False))
 
-        # Defining the third batch normalization layer
-        self.bn3 = layers.BatchNormalization()
+            # Appends a batch normalization layer to the list
+            self.bn.append(layers.BatchNormalization())
 
         # Defining the third convolutional transpose layer
-        self.conv3 = layers.Conv2DTranspose(1, (5, 5), strides=(
-            2, 2), padding='same', use_bias=False, activation='tanh')
+        self.out = layers.Conv2DTranspose(1, (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh')
 
 
     def call(self, x, training=True):
@@ -141,22 +146,17 @@ class Generator(Model):
 
         """
 
-        # Passing down first convolutional transpose layer with Batch Normalization and LeakyReLU activation
-        x = tf.nn.leaky_relu(
-            self.bn1(self.linear1(x), training=training), self.alpha)
+        #
+        for i, (s, bn) in enumerate(zip(self.sampling, self.bn)):
+            #
+            x = tf.nn.leaky_relu(bn(s(x), training=training), self.alpha)
 
-        x = tf.reshape(x, (x.shape[0], 7, 7, 256))
-
-        # Passing down first convolutional transpose layer with Batch Normalization and LeakyReLU activation
-        x = tf.nn.leaky_relu(
-            self.bn2(self.conv1(x), training=training), self.alpha)
-
-        # Passing down second convolutional transpose layer with Batch Normalization and LeakyReLU activation
-        x = tf.nn.leaky_relu(
-            self.bn3(self.conv2(x), training=training), self.alpha)
+            #
+            if i == 0:
+                x = tf.reshape(x, [x.shape[0], self.initial_units, self.initial_units, 64 * self.sampling_factor])
 
         # Passing down third convolutional transpose layer with Batch Normalization and LeakyReLU activation
-        x = self.conv3(x)
+        x = self.out(x)
 
         return x
 
@@ -169,24 +169,25 @@ class DCGAN(AdversarialModel):
 
     """
 
-    def __init__(self, gen_input=100, gen_output=784, alpha=0.3, dropout=0.3):
+    def __init__(self, input_shape=(28, 28, 1), noise_dim=100, n_samplings=3, alpha=0.3, dropout_rate=0.3):
         """Initialization method.
 
         Args:
-            gen_input (int): Number of input (noise) dimension in the Generator.
-            gen_output (int): Number of output units in the Generator.
+            input_shape (tuple): An input shape for the Generator.
+            noise_dim (int): Amount of noise dimensions for the Generator.
+            n_samplings (int): Number of down/up samplings to perform.
             alpha (float): LeakyReLU activation threshold.
-            dropout (float): Dropout activation rate.
+            dropout_rate (float): Dropout activation rate.
 
         """
 
         logger.info('Overriding class: AdversarialModel -> DCGAN.')
 
         # Creating the discriminator network
-        D = Discriminator(alpha=alpha, dropout=dropout)
+        D = Discriminator(n_samplings, alpha, dropout_rate)
 
         # Creating the generator network
-        G = Generator(n_input=gen_input, n_output=gen_output, alpha=alpha)
+        G = Generator(input_shape, noise_dim, n_samplings, alpha)
 
         # Overrides its parent class with any custom arguments if needed
         super(DCGAN, self).__init__(D, G, name='dcgan')
