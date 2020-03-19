@@ -1,4 +1,5 @@
 import tensorflow as tf
+import numpy as np
 from tensorflow.keras import layers
 
 import nalp.utils.logging as l
@@ -13,18 +14,21 @@ class Generator(LSTM):
     """
 
     def __init__(self, vocab_size, embedding_size, hidden_size):
+        """
+        """
+        
         # Overrides its parent class with any custom arguments if needed
         super(Generator, self).__init__(vocab_size=vocab_size, embedding_size=embedding_size, hidden_size=hidden_size)
 
-    def generate_batch(self, length=1, temperature=1.0):
+    def generate_batch(self, batch_size=1, length=1, temperature=1.0):
         """
         """
 
         # Encoding the start string into tokens
-        start_batch = tf.zeros([4, 1])
+        start_batch = tf.zeros([batch_size, 1])
 
         # Creating an empty list to hold the sampled_tokens
-        sampled_batch = tf.zeros([4, 1], dtype='int64')
+        sampled_batch = tf.zeros([batch_size, 1], dtype='int64')
 
         # Resetting the network states
         self.reset_states()
@@ -41,8 +45,7 @@ class Generator(LSTM):
             preds /= temperature
 
             # Samples a predicted token
-            start_batch = tf.random.categorical(
-                preds, num_samples=1)
+            start_batch = tf.random.categorical(preds, num_samples=1)
 
             #
             sampled_batch = tf.concat([sampled_batch, start_batch], axis=1)
@@ -104,11 +107,20 @@ class SeqGAN(AdversarialModel):
         self.G_optimizer.apply_gradients(
             zip(gradients, self.G.trainable_variables))
 
+    @tf.function
+    def D_pre_step(self, x, y):
+        """
+        """
+
+        pass
+
+
+
     def pre_fit(self, batches, epochs=100):
         """
         """
 
-        logger.info('Pre-fitting Generator ...')
+        logger.info('Pre-fitting generator ...')
 
         # Iterate through all epochs
         for e in range(epochs):
@@ -119,7 +131,7 @@ class SeqGAN(AdversarialModel):
                 # Performs the optimization step
                 self.G_pre_step(x_batch, y_batch)
 
-        logger.info('Pre-fitting Discriminator ...')
+        logger.info('Pre-fitting discriminator ...')
 
         # Iterate through all epochs
         for e in range(epochs):
@@ -127,6 +139,23 @@ class SeqGAN(AdversarialModel):
 
             # Iterate through all possible training batches
             for x_batch, _ in batches:
-                self.G.generate_batch(x_batch.shape[1], 0.5)
-                # Performs the optimization step
-                # self.D_pre_step(x_batch, y_batch)
+                #
+                batch_size, max_length = x_batch.shape[0], x_batch.shape[1]
+
+                #
+                x_fake_batch = self.G.generate_batch(batch_size, max_length, 0.5)
+
+                #
+                x_batch = tf.concat([x_batch, x_fake_batch], axis=0)
+
+                #
+                y_batch = tf.concat([tf.zeros(batch_size,), tf.ones(batch_size,)], axis=0)
+
+                #
+                for _ in range(3):
+                    #
+
+                    indices = np.random.choice(x_batch.shape[0], batch_size, replace=False)
+
+                    #
+                    self.D_pre_step(tf.gather(x_batch, indices), tf.gather(y_batch, indices))
