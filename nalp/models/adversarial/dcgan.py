@@ -132,7 +132,7 @@ class Generator(Model):
             self.bn.append(layers.BatchNormalization())
 
         # Defining the output layer, which will be a convolutional transpose layer with `n_channels` filters
-        self.out = layers.Conv2DTranspose(input_shape[3], (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh')
+        self.out = layers.Conv2DTranspose(input_shape[2], (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh')
 
 
     def call(self, x, training=True):
