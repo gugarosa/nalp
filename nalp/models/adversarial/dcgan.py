@@ -102,8 +102,8 @@ class Generator(Model):
         # Defining a property for the sampling factor used to calculate the upsampling
         self.sampling_factor = 2 ** (n_samplings - 1)
 
-        # Defining a property to 
-        self.initial_units = int(input_shape[0] / self.sampling_factor)
+        # Defining a property for the initial size of the filter
+        self.filter_size = int(input_shape[0] / self.sampling_factor)
 
         # Defining a list for holding the upsampling layers
         self.sampling = []
@@ -113,25 +113,26 @@ class Generator(Model):
 
         # For every possible upsampling
         for i in range(n_samplings, 0, -1):
-            #
+            # If it is the first upsampling
             if i == n_samplings:
-                #
-                self.sampling.append(layers.Dense(self.initial_units ** 2 * 64 * self.sampling_factor, use_bias=False))
+                # Appends a linear layer with a custom amount of units
+                self.sampling.append(layers.Dense(self.filter_size ** 2 * 64 * self.sampling_factor, use_bias=False))
 
-            #
+            # If it is the second upsampling
             elif i == n_samplings - 1:
-                #
+                # Appends a convolutional layer with (1, 1) strides
                 self.sampling.append(layers.Conv2DTranspose(64 * i, (5, 5), strides=(1, 1), padding='same', use_bias=False))
-            #
+            
+            # If it is the rest of the upsamplings
             else:
-                #
+                # Appends a convolutional layer with (2, 2) strides
                 self.sampling.append(layers.Conv2DTranspose(64 * i, (5, 5), strides=(2, 2), padding='same', use_bias=False))
 
             # Appends a batch normalization layer to the list
             self.bn.append(layers.BatchNormalization())
 
-        # Defining the third convolutional transpose layer
-        self.out = layers.Conv2DTranspose(1, (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh')
+        # Defining the output layer, which will be a convolutional transpose layer with `n_channels` filters
+        self.out = layers.Conv2DTranspose(input_shape[3], (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh')
 
 
     def call(self, x, training=True):
@@ -146,16 +147,17 @@ class Generator(Model):
 
         """
 
-        #
+        # For every possible layer in the list
         for i, (s, bn) in enumerate(zip(self.sampling, self.bn)):
-            #
+            # Pass down the upsampling layer along with batch normalization and a LeakyReLU activation
             x = tf.nn.leaky_relu(bn(s(x), training=training), self.alpha)
 
-            #
+            # If it is the first layer, e.g., linear
             if i == 0:
-                x = tf.reshape(x, [x.shape[0], self.initial_units, self.initial_units, 64 * self.sampling_factor])
+                # Reshapes the tensor for the convolutional layer
+                x = tf.reshape(x, [x.shape[0], self.filter_size, self.filter_size, 64 * self.sampling_factor])
 
-        # Passing down third convolutional transpose layer with Batch Normalization and LeakyReLU activation
+        # Passing down output layer
         x = self.out(x)
 
         return x
@@ -191,3 +193,6 @@ class DCGAN(AdversarialModel):
 
         # Overrides its parent class with any custom arguments if needed
         super(DCGAN, self).__init__(D, G, name='dcgan')
+
+        logger.info(
+            f'Input: {input_shape} | Noise: {noise_dim} | Number of Samplings: {n_samplings} | Activation Rate: {alpha} | Dropout Rate: {dropout_rate}.')
