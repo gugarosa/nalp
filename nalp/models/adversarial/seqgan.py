@@ -14,7 +14,7 @@ class Discriminator(Model):
 
     """
 
-    def __init__(self, vocab_size, embedding_size):
+    def __init__(self, vocab_size, embedding_size, n_filters, filters_size):
         """Initialization method.
 
         Args:
@@ -30,6 +30,19 @@ class Discriminator(Model):
         # Creates an embedding layer
         self.embedding = layers.Embedding(
             vocab_size, embedding_size, name='embedding')
+
+        # Defining a list for holding the convolutional layers
+        self.conv = []
+
+        # Defining a list for holding the pooling layers
+        self.pool = []
+
+        #
+        for n, k in zip(n_filters, filters_size):
+            #
+            self.conv.append(layers.Conv2d(n, (k, embedding_size), strides=(1, 1), padding='valid'))
+
+
 
         #
         self.conv = layers.Conv2D(
@@ -160,7 +173,10 @@ class SeqGAN(AdversarialModel):
         """Initialization method.
 
         Args:
-
+            encoder (IntegerEncoder): An index to vocabulary encoder for the generator.
+            vocab_size (int): The size of the vocabulary for both discriminator and generator.
+            embedding_size (int): The size of the embedding layer for both discriminator and generator.
+            hidden_size (int): The amount of hidden neurons for the generator.
 
         """
 

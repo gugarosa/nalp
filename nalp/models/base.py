@@ -11,22 +11,18 @@ class Model(tf.keras.Model):
 
     """
 
-    def __init__(self, encoder, name=''):
+    def __init__(self, name=''):
         """Initialization method.
 
         Note that basic variables shared by all childs should be declared here, e.g., layers.
 
         Args:
-            encoder (IntegerEncoder): An index to vocabulary encoder.
             name (str): The model's identifier string.
 
         """
 
         # Overrides its parent class with any custom arguments if needed
         super(Model, self).__init__(name=name)
-
-        # Creates a property for holding the used encoder
-        self.encoder = encoder
 
     def call(self, x, training=True):
         """Method that holds vital information whenever this class is called.
@@ -434,7 +430,7 @@ class AdversarialModel(Model):
                 self.step(batch)
 
             logger.info(
-                f'Loss(G): {self.G_loss.result().numpy():.4f} | Loss(D): {self.D_loss.result().numpy():.4f}')
+                f'Loss(G): {self.G_loss.result().numpy()} | Loss(D): {self.D_loss.result().numpy()}')
 
     @tf.function
     def sample(self, z):

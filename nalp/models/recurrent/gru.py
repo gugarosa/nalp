@@ -28,7 +28,10 @@ class GRU(Model):
         logger.info('Overriding class: Model -> GRU.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(GRU, self).__init__(encoder, name='gru')
+        super(GRU, self).__init__(name='gru')
+
+        # Creates a property for holding the used encoder
+        self.encoder = encoder
 
         # Creates an embedding layer
         self.embedding = layers.Embedding(

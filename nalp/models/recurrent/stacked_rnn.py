@@ -28,7 +28,10 @@ class StackedRNN(Model):
         logger.info('Overriding class: Model -> StackedRNN.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(StackedRNN, self).__init__(encoder, name='stacked_rnn')
+        super(StackedRNN, self).__init__(name='stacked_rnn')
+
+        # Creates a property for holding the used encoder
+        self.encoder = encoder
 
         # Creates an embedding layer
         self.embedding = layers.Embedding(

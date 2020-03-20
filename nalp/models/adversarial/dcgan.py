@@ -1,5 +1,3 @@
-import math
-
 import tensorflow as tf
 from tensorflow.keras import layers
 
@@ -33,18 +31,11 @@ class Discriminator(Model):
         self.alpha = alpha
 
         # Defining a list for holding the convolutional layers
-        self.conv = []
+        self.conv = [layers.Conv2D(
+            64 * (i + 1), (5, 5), strides=(2, 2), padding='same') for i in range(n_samplings)]
 
         # Defining a list for holding the dropout layers
-        self.drop = []
-
-        # For every possible downsampling
-        for i in range(n_samplings):
-            # Appends a convolutional layer to the list
-            self.conv.append(layers.Conv2D(64 * (i + 1), (5, 5), strides=(2, 2), padding='same'))
-
-            # Appends a dropout layer to the list
-            self.drop.append(layers.Dropout(dropout_rate))
+        self.drop = [layers.Dropout(dropout_rate) for i in range(n_samplings)]
 
         # Defining the output as a logit unit that decides whether input is real or fake
         self.out = layers.Dense(1)
@@ -108,32 +99,33 @@ class Generator(Model):
         # Defining a list for holding the upsampling layers
         self.sampling = []
 
-        # Defining a list for holding the batch normalization layers
-        self.bn = []
-
         # For every possible upsampling
         for i in range(n_samplings, 0, -1):
             # If it is the first upsampling
             if i == n_samplings:
                 # Appends a linear layer with a custom amount of units
-                self.sampling.append(layers.Dense(self.filter_size ** 2 * 64 * self.sampling_factor, use_bias=False))
+                self.sampling.append(layers.Dense(
+                    self.filter_size ** 2 * 64 * self.sampling_factor, use_bias=False))
 
             # If it is the second upsampling
             elif i == n_samplings - 1:
                 # Appends a convolutional layer with (1, 1) strides
-                self.sampling.append(layers.Conv2DTranspose(64 * i, (5, 5), strides=(1, 1), padding='same', use_bias=False))
-            
+                self.sampling.append(layers.Conv2DTranspose(
+                    64 * i, (5, 5), strides=(1, 1), padding='same', use_bias=False))
+
             # If it is the rest of the upsamplings
             else:
                 # Appends a convolutional layer with (2, 2) strides
-                self.sampling.append(layers.Conv2DTranspose(64 * i, (5, 5), strides=(2, 2), padding='same', use_bias=False))
+                self.sampling.append(layers.Conv2DTranspose(
+                    64 * i, (5, 5), strides=(2, 2), padding='same', use_bias=False))
 
-            # Appends a batch normalization layer to the list
-            self.bn.append(layers.BatchNormalization())
+        # Defining a list for holding the batch normalization layers
+        self.bn = [layers.BatchNormalization()
+                   for i in range(n_samplings, 0, -1)]
 
         # Defining the output layer, which will be a convolutional transpose layer with `n_channels` filters
-        self.out = layers.Conv2DTranspose(input_shape[2], (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh')
-
+        self.out = layers.Conv2DTranspose(input_shape[2], (5, 5), strides=(
+            2, 2), padding='same', use_bias=False, activation='tanh')
 
     def call(self, x, training=True):
         """Method that holds vital information whenever this class is called.
@@ -155,7 +147,8 @@ class Generator(Model):
             # If it is the first layer, e.g., linear
             if i == 0:
                 # Reshapes the tensor for the convolutional layer
-                x = tf.reshape(x, [x.shape[0], self.filter_size, self.filter_size, 64 * self.sampling_factor])
+                x = tf.reshape(
+                    x, [x.shape[0], self.filter_size, self.filter_size, 64 * self.sampling_factor])
 
         # Passing down output layer
         x = self.out(x)

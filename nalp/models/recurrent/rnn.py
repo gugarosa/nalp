@@ -28,7 +28,10 @@ class RNN(Model):
         logger.info('Overriding class: Model -> RNN.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(RNN, self).__init__(encoder, name='rnn')
+        super(RNN, self).__init__(name='rnn')
+
+        # Creates a property for holding the used encoder
+        self.encoder = encoder
 
         # Creates an embedding layer
         self.embedding = layers.Embedding(
