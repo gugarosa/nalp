@@ -149,6 +149,54 @@ class Generator(LSTM):
 
         return sampled_batch
 
+    def get_reward(self, x, n_rollouts, D):
+        """
+        """
+
+        #
+        batch_size, max_length = x.shape[0], x.shape[1]
+
+        #
+        idx = 0
+
+        #
+        rewards = tf.zeros([1, batch_size])
+
+        #
+        for rollout in range(n_rollouts):
+            #
+            for step in range(1, max_length + 1):
+                #
+                output = self(x)[:, -1, :]
+
+                #
+                samples = x[:, :step]
+
+                #
+                for _ in range(step, max_length):
+                    #
+                    output = tf.random.categorical(output, num_samples=1)
+
+                    #
+                    samples = tf.concat([samples, output], axis=1)
+
+                    #
+                    output = tf.squeeze(self(output), 1)
+                
+                #
+                output = tf.squeeze(tf.math.softmax(D(samples)), 1)
+
+                #
+                # reward = output[:, 1]
+
+                #
+                rewards = tf.concat([rewards, tf.expand_dims(output[:, 1], 0)], axis=0)
+        
+        rewards = tf.reduce_mean(tf.reshape(rewards[1:, :], [batch_size, max_length, n_rollouts]), axis=-1)
+
+
+        print(rewards)
+                
 
 class SeqGAN(AdversarialModel):
     """A SeqGAN class is the one in charge of Sequence Generative Adversarial Networks implementation.
@@ -214,8 +262,8 @@ class SeqGAN(AdversarialModel):
         self.G_loss.update_state(loss)
 
     @tf.function
-    def D_pre_step(self, x, y):
-        """Performs a single batch optimization pre-fitting step over the discriminator.
+    def D_step(self, x, y):
+        """Performs a single batch optimization step over the discriminator.
 
         Args:
             x (tf.Tensor): A tensor containing the inputs.
@@ -287,20 +335,78 @@ class SeqGAN(AdversarialModel):
                     batch_size, max_length, 0.5)
 
                 # Concatenates real inputs and fake inputs into a single tensor
-                x_batch = tf.concat([x_batch, x_fake_batch], axis=0)
+                x_concat_batch = tf.concat([x_batch, x_fake_batch], axis=0)
 
                 # Creates a tensor holding label 0 for real samples and label 1 for fake samples
-                y_batch = tf.concat(
+                y_concat_batch = tf.concat(
                     [tf.zeros(batch_size,), tf.ones(batch_size,)], axis=0)
 
                 # For a fixed amount of discriminator steps
                 for _ in range(d_steps):
                     # Performs a random samples selection of batch size
                     indices = np.random.choice(
-                        x_batch.shape[0], batch_size, replace=False)
+                        x_concat_batch.shape[0], batch_size, replace=False)
 
                     # Performs the optimization step over the discriminator
-                    self.D_pre_step(tf.gather(x_batch, indices),
-                                    tf.gather(y_batch, indices))
+                    self.D_step(tf.gather(x_concat_batch, indices),
+                                tf.gather(y_concat_batch, indices))
 
             logger.info(f'Loss(D): {self.D_loss.result().numpy()}')
+
+    def fit(self, batches, epochs=100, d_epochs=5, d_steps=3):
+        """Trains the model.
+
+        Args:
+            batches (Dataset): Training batches containing samples.
+            epochs (int): The maximum number of total training epochs.
+            d_epochs (int): The maximum number of discriminator epochs per total epoch.
+            d_steps (int): Amount of training steps per discriminator epoch.
+
+        """
+
+        logger.info('Fitting model ...')
+
+        # Iterate through all epochs
+        for e in range(epochs):
+            logger.info(f'Epoch {e+1}/{epochs}')
+
+            # Resetting state to further append losses
+            self.G_loss.reset_states()
+            self.D_loss.reset_states()
+
+            # Iterate through all possible pre-training batches
+            for x_batch, _ in batches:
+                # Gathering the batch size and the maximum sequence length
+                batch_size, max_length = x_batch.shape[0], x_batch.shape[1]
+
+                # Generates a batch of fake inputs
+                x_fake_batch = self.G.generate_batch(batch_size, max_length, 0.5)
+
+                #
+                self.G.get_reward(x_fake_batch, 16, self.D)
+
+
+                # for _ in range(d_epochs):
+                #     # Generates a batch of fake inputs
+                #     x_fake_batch = self.G.generate_batch(
+                #         batch_size, max_length, 0.5)
+
+                #     # Concatenates real inputs and fake inputs into a single tensor
+                #     x_concat_batch = tf.concat([x_batch, x_fake_batch], axis=0)
+
+                #     # Creates a tensor holding label 0 for real samples and label 1 for fake samples
+                #     y_concat_batch = tf.concat(
+                #         [tf.zeros(batch_size,), tf.ones(batch_size,)], axis=0)
+
+                #     # For a fixed amount of discriminator steps
+                #     for _ in range(d_steps):
+                #         # Performs a random samples selection of batch size
+                #         indices = np.random.choice(
+                #             x_concat_batch.shape[0], batch_size, replace=False)
+
+                #         # Performs the optimization step over the discriminator
+                #         self.D_step(tf.gather(x_concat_batch, indices),
+                #                     tf.gather(y_concat_batch, indices))
+
+            logger.info(
+                f'Loss(G): {self.G_loss.result().numpy()} | Loss(D): {self.D_loss.result().numpy()}')
