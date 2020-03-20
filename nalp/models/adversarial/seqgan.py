@@ -9,6 +9,70 @@ from nalp.models.recurrent.lstm import LSTM
 logger = l.get_logger(__name__)
 
 
+class Discriminator(Model):
+    """A Discriminator class stands for the discriminative part of a Sequence Generative Adversarial Network.
+
+    """
+
+    def __init__(self, vocab_size, embedding_size):
+        """Initialization method.
+
+        """
+
+        logger.info('Overriding class: Model -> Discriminator.')
+
+        # Overrides its parent class with any custom arguments if needed
+        super(Discriminator, self).__init__(name='D_seqgan')
+
+        # Creates an embedding layer
+        self.embedding = layers.Embedding(vocab_size, embedding_size, name='embedding')
+
+        #
+        self.conv = layers.Conv2D(128, (3, 256), strides=(1, 1), padding='valid')
+
+        #
+        self.pool = layers.MaxPool1D(1, 128)
+
+        #
+        self.highway = layers.Dense(128)
+
+        #
+        self.out = layers.Dense(2)
+
+        #
+        self.drop = layers.Dropout(0.25)
+
+    def call(self, x):
+        # print(x.shape)
+
+        x = self.embedding(x)
+
+        x = tf.expand_dims(x, -1)
+
+        # print(x.shape)
+
+        x = tf.nn.relu(self.conv(x))
+
+        # print(x.shape)
+
+        x = tf.squeeze(x, 2)
+
+
+        pool = self.pool(x)
+
+        # print(pool.shape)
+
+        x = self.highway(pool)
+
+        # print(x.shape)
+
+        x = tf.math.sigmoid(x) * tf.nn.relu(x) + (1 - tf.math.sigmoid(x)) * pool
+
+        # print(x.shape)
+
+        return x
+
+
 class Generator(LSTM):
     """
     """
@@ -75,13 +139,13 @@ class SeqGAN(AdversarialModel):
         self.encoder = encoder
 
         # Creating the discriminator network
-        # D = Discriminator(n_samplings, alpha, dropout_rate)
+        D = Discriminator(vocab_size, embedding_size)
 
         # Creating the generator network
         G = Generator(vocab_size, embedding_size, hidden_size)
 
         # Overrides its parent class with any custom arguments if needed
-        super(SeqGAN, self).__init__(None, G, name='seqgan')
+        super(SeqGAN, self).__init__(D, G, name='seqgan')
 
     @tf.function
     def G_pre_step(self, x, y):
@@ -112,7 +176,22 @@ class SeqGAN(AdversarialModel):
         """
         """
 
-        pass
+        # Using tensorflow's gradient
+        with tf.GradientTape() as tape:
+            # Calculate the predictions based on inputs
+            preds = self.D(x)
+
+            # Calculate the loss
+            loss = self.loss(y, preds)
+
+        # Calculate the gradient based on loss for each training variable
+        gradients = tape.gradient(loss, self.D.trainable_variables)
+
+        # Apply gradients using an optimizer
+        self.D_optimizer.apply_gradients(
+            zip(gradients, self.D.trainable_variables))
+
+        tf.print(loss)
 
 
 
