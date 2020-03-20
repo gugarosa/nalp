@@ -24,7 +24,7 @@ dataset = LanguageModelingDataset(encoded_tokens, max_length=10, batch_size=4)
 seqgan = SeqGAN(encoder, vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
 
 # Compiling the SeqGAN
-seqgan.compile(optimizer=tf.optimizers.Adam(learning_rate=0.001), loss=tf.losses.SparseCategoricalCrossentropy(from_logits=True))
+seqgan.compile(tf.optimizers.Adam(learning_rate=0.001), tf.losses.SparseCategoricalCrossentropy(from_logits=True))
 
 # Pre-fitting the SeqGAN
-seqgan.pre_fit(dataset.batches, epochs=1)
+seqgan.pre_fit(dataset.batches, epochs=1, steps=3)

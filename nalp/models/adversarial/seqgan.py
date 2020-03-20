@@ -17,6 +17,9 @@ class Discriminator(Model):
     def __init__(self, vocab_size, embedding_size):
         """Initialization method.
 
+        Args:
+
+
         """
 
         logger.info('Overriding class: Model -> Discriminator.')
@@ -68,18 +71,26 @@ class Discriminator(Model):
 
         x = tf.math.sigmoid(x) * tf.nn.relu(x) + (1 - tf.math.sigmoid(x)) * pool
 
+        x = self.out(self.drop(x))
+
         # print(x.shape)
 
         return x
 
 
 class Generator(LSTM):
-    """
+    """A Generator class stands for the generator part of a Sequence Generative Adversarial Network.
+
     """
 
     def __init__(self, vocab_size, embedding_size, hidden_size):
+        """Initialization method.
+
+        Args:
+
         """
-        """
+
+        logger.info('Overriding class: LSTM -> Generator.')
         
         # Overrides its parent class with any custom arguments if needed
         super(Generator, self).__init__(vocab_size=vocab_size, embedding_size=embedding_size, hidden_size=hidden_size)
@@ -122,7 +133,7 @@ class SeqGAN(AdversarialModel):
     """A SeqGAN class is the one in charge of Sequence Generative Adversarial Networks implementation.
 
     References:
-        
+        L. Yu, et al. Seqgan: Sequence generative adversarial nets with policy gradient. 31th AAAI Conference on Artificial Intelligence (2017).
 
     """
 
@@ -149,10 +160,11 @@ class SeqGAN(AdversarialModel):
 
     @tf.function
     def G_pre_step(self, x, y):
-        """Performs a single batch optimization step.
+        """Performs a single batch optimization pre-fitting step over the generator.
 
         Args:
             x (tf.Tensor): A tensor containing the inputs.
+            y (tf.Tensor): A tensor containing the inputs' labels.
 
         """
 
@@ -171,9 +183,17 @@ class SeqGAN(AdversarialModel):
         self.G_optimizer.apply_gradients(
             zip(gradients, self.G.trainable_variables))
 
+        # Updates the generator's loss state
+        self.G_loss.update_state(loss)
+
     @tf.function
     def D_pre_step(self, x, y):
-        """
+        """Performs a single batch optimization pre-fitting step over the discriminator.
+
+        Args:
+            x (tf.Tensor): A tensor containing the inputs.
+            y (tf.Tensor): A tensor containing the inputs' labels.
+
         """
 
         # Using tensorflow's gradient
@@ -191,12 +211,16 @@ class SeqGAN(AdversarialModel):
         self.D_optimizer.apply_gradients(
             zip(gradients, self.D.trainable_variables))
 
-        tf.print(loss)
-
-
+        # Updates the discriminator's loss state
+        self.D_loss.update_state(loss)
 
     def pre_fit(self, batches, epochs=100):
-        """
+        """Pre-trains the model.
+
+        Args:
+            batches (Dataset): Pre-training batches containing samples.
+            epochs (int): The maximum number of pre-training epochs.
+
         """
 
         logger.info('Pre-fitting generator ...')
@@ -205,10 +229,15 @@ class SeqGAN(AdversarialModel):
         for e in range(epochs):
             logger.info(f'Epoch {e+1}/{epochs}')
 
-            # Iterate through all possible training batches
+            # Resetting state to further append losses
+            self.G_loss.reset_states()
+
+            # Iterate through all possible pre-training batches
             for x_batch, y_batch in batches:
-                # Performs the optimization step
+                # Performs the optimization step over the generator
                 self.G_pre_step(x_batch, y_batch)
+
+            logger.info(f'Loss(G): {self.G_loss.result().numpy()}')
 
         logger.info('Pre-fitting discriminator ...')
 
@@ -216,25 +245,29 @@ class SeqGAN(AdversarialModel):
         for e in range(epochs):
             logger.info(f'Epoch {e+1}/{epochs}')
 
-            # Iterate through all possible training batches
+            # Resetting state to further append losses
+            self.D_loss.reset_states()
+
+            # Iterate through all possible pre-training batches
             for x_batch, _ in batches:
-                #
+                # Gathering the batch size and the maximum sequence length
                 batch_size, max_length = x_batch.shape[0], x_batch.shape[1]
 
-                #
+                # Generates a batch of fake inputs
                 x_fake_batch = self.G.generate_batch(batch_size, max_length, 0.5)
 
-                #
+                # Concatenates real inputs and fake inputs into a single tensor
                 x_batch = tf.concat([x_batch, x_fake_batch], axis=0)
 
-                #
+                # Creates a tensor holding label 0 for real samples and label 1 for fake samples
                 y_batch = tf.concat([tf.zeros(batch_size,), tf.ones(batch_size,)], axis=0)
 
-                #
+                # For a fixed amount of steps
                 for _ in range(3):
-                    #
-
+                    # Performs a random samples selection of batch size
                     indices = np.random.choice(x_batch.shape[0], batch_size, replace=False)
 
-                    #
+                    # Performs the optimization step over the discriminator
                     self.D_pre_step(tf.gather(x_batch, indices), tf.gather(y_batch, indices))
+
+            logger.info(f'Loss(D): {self.D_loss.result().numpy()}')
