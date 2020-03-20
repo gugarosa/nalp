@@ -21,7 +21,7 @@ encoded_tokens = encoder.encode(corpus.tokens)
 dataset = LanguageModelingDataset(encoded_tokens, max_length=10, batch_size=64)
 
 # Creating the GRU
-gru = GRU(vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
+gru = GRU(encoder=encoder, vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
 
 # As NALP's GRUs are stateful, we need to build it with a fixed batch size
 gru.build((64, None))

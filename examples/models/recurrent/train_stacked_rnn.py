@@ -21,7 +21,7 @@ encoded_tokens = encoder.encode(corpus.tokens)
 dataset = LanguageModelingDataset(encoded_tokens, max_length=10, batch_size=64)
 
 # Creating the StackedRNN
-rnn = StackedRNN(vocab_size=corpus.vocab_size,
+rnn = StackedRNN(encoder=encoder, vocab_size=corpus.vocab_size,
                  embedding_size=256, hidden_size=[128, 256, 512])
 
 # As NALP's StackedRNNs are stateful, we need to build it with a fixed batch size

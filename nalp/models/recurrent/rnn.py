@@ -14,10 +14,11 @@ class RNN(Model):
 
     """
 
-    def __init__(self, vocab_size=1, embedding_size=1, hidden_size=1):
+    def __init__(self, encoder=None, vocab_size=1, embedding_size=1, hidden_size=1):
         """Initialization method.
 
         Args:
+            encoder (IntegerEncoder): An index to vocabulary encoder.
             vocab_size (int): The size of the vocabulary.
             embedding_size (int): The size of the embedding layer.
             hidden_size (int): The amount of hidden neurons.
@@ -27,7 +28,7 @@ class RNN(Model):
         logger.info('Overriding class: Model -> RNN.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(RNN, self).__init__(name='rnn')
+        super(RNN, self).__init__(encoder, name='rnn')
 
         # Creates an embedding layer
         self.embedding = layers.Embedding(

@@ -20,7 +20,7 @@ encoder = IntegerEncoder()
 encoder.learn(corpus.vocab_index, corpus.index_vocab)
 
 # Creating the RNN
-rnn = RNN(vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
+rnn = RNN(encoder=encoder, vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
 
 # Loading pre-trained RNN weights
 rnn.load_weights('trained/rnn').expect_partial()
@@ -32,7 +32,7 @@ rnn.build((1, None))
 start_string = 'Mr.'
 
 # Generating artificial text
-text = rnn.generate_text(encoder, start=start_string, length=1000, temperature=0.5)
+text = rnn.generate_text(start=start_string, length=1000, temperature=0.5)
 
 # Outputting the text
 print(start_string + ''.join(text))

@@ -14,10 +14,11 @@ class BiLSTM(Model):
 
     """
 
-    def __init__(self, vocab_size=1, embedding_size=1, hidden_size=1):
+    def __init__(self, encoder, ocab_size=1, embedding_size=1, hidden_size=1):
         """Initialization method.
 
         Args:
+            encoder (IntegerEncoder): An index to vocabulary encoder.
             vocab_size (int): The size of the vocabulary.
             embedding_size (int): The size of the embedding layer.
             hidden_size (int): The amount of hidden neurons.
@@ -27,7 +28,7 @@ class BiLSTM(Model):
         logger.info('Overriding class: Model -> BiLSTM.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(BiLSTM, self).__init__(name='bi_lstm')
+        super(BiLSTM, self).__init__(encoder, name='bi_lstm')
 
         # Creates an embedding layer
         self.embedding = layers.Embedding(

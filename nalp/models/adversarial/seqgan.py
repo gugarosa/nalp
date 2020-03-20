@@ -28,10 +28,12 @@ class Discriminator(Model):
         super(Discriminator, self).__init__(name='D_seqgan')
 
         # Creates an embedding layer
-        self.embedding = layers.Embedding(vocab_size, embedding_size, name='embedding')
+        self.embedding = layers.Embedding(
+            vocab_size, embedding_size, name='embedding')
 
         #
-        self.conv = layers.Conv2D(128, (3, 256), strides=(1, 1), padding='valid')
+        self.conv = layers.Conv2D(
+            128, (3, 256), strides=(1, 1), padding='valid')
 
         #
         self.pool = layers.MaxPool1D(1, 128)
@@ -60,7 +62,6 @@ class Discriminator(Model):
 
         x = tf.squeeze(x, 2)
 
-
         pool = self.pool(x)
 
         # print(pool.shape)
@@ -69,7 +70,8 @@ class Discriminator(Model):
 
         # print(x.shape)
 
-        x = tf.math.sigmoid(x) * tf.nn.relu(x) + (1 - tf.math.sigmoid(x)) * pool
+        x = tf.math.sigmoid(x) * tf.nn.relu(x) + \
+            (1 - tf.math.sigmoid(x)) * pool
 
         x = self.out(self.drop(x))
 
@@ -83,26 +85,41 @@ class Generator(LSTM):
 
     """
 
-    def __init__(self, vocab_size, embedding_size, hidden_size):
+    def __init__(self, encoder, vocab_size, embedding_size, hidden_size):
         """Initialization method.
 
         Args:
+            encoder (IntegerEncoder): An index to vocabulary encoder.
+            vocab_size (int): The size of the vocabulary.
+            embedding_size (int): The size of the embedding layer.
+            hidden_size (int): The amount of hidden neurons.
 
         """
 
         logger.info('Overriding class: LSTM -> Generator.')
-        
+
         # Overrides its parent class with any custom arguments if needed
-        super(Generator, self).__init__(vocab_size=vocab_size, embedding_size=embedding_size, hidden_size=hidden_size)
+        super(Generator, self).__init__(encoder=encoder, vocab_size=vocab_size,
+                                        embedding_size=embedding_size, hidden_size=hidden_size)
 
     def generate_batch(self, batch_size=1, length=1, temperature=1.0):
-        """
+        """Generates a batch of tokens by feeding to the network the
+        current token (t) and predicting the next token (t+1).
+
+        Args:
+            batch_size (int): Size of the batch to be generated.
+            length (int): Length of generated tokens.
+            temperature (float): A temperature value to sample the token.
+
+        Returns:
+            A (batch_size, length) tensor of generated tokens.
+
         """
 
-        # Encoding the start string into tokens
+        # Creating an empty tensor for the starting batch
         start_batch = tf.zeros([batch_size, 1])
 
-        # Creating an empty list to hold the sampled_tokens
+        # Creating an empty tensor for the sampled batch
         sampled_batch = tf.zeros([batch_size, 1], dtype='int64')
 
         # Resetting the network states
@@ -113,21 +130,23 @@ class Generator(LSTM):
             # Predicts the current token
             preds = self(start_batch)
 
-            # Removes the first dimension of the tensor
+            # Removes the second dimension of the tensor
             preds = tf.squeeze(preds, 1)
 
             # Regularize the prediction with the temperature
             preds /= temperature
 
-            # Samples a predicted token
+            # Samples a predicted batch
             start_batch = tf.random.categorical(preds, num_samples=1)
 
-            #
+            # Concatenates the sampled batch with the predicted batch
             sampled_batch = tf.concat([sampled_batch, start_batch], axis=1)
 
+        # Ignores the first column of the sampled batch
         sampled_batch = sampled_batch[:, 1:]
 
         return sampled_batch
+
 
 class SeqGAN(AdversarialModel):
     """A SeqGAN class is the one in charge of Sequence Generative Adversarial Networks implementation.
@@ -137,23 +156,21 @@ class SeqGAN(AdversarialModel):
 
     """
 
-    def __init__(self, encoder, vocab_size=1, embedding_size=1, hidden_size=1):
+    def __init__(self, encoder=None, vocab_size=1, embedding_size=1, hidden_size=1):
         """Initialization method.
 
         Args:
-            
+
 
         """
 
         logger.info('Overriding class: AdversarialModel -> SeqGAN.')
 
-        self.encoder = encoder
-
         # Creating the discriminator network
         D = Discriminator(vocab_size, embedding_size)
 
         # Creating the generator network
-        G = Generator(vocab_size, embedding_size, hidden_size)
+        G = Generator(encoder, vocab_size, embedding_size, hidden_size)
 
         # Overrides its parent class with any custom arguments if needed
         super(SeqGAN, self).__init__(D, G, name='seqgan')
@@ -214,12 +231,13 @@ class SeqGAN(AdversarialModel):
         # Updates the discriminator's loss state
         self.D_loss.update_state(loss)
 
-    def pre_fit(self, batches, epochs=100):
+    def pre_fit(self, batches, epochs=100, steps=3):
         """Pre-trains the model.
 
         Args:
             batches (Dataset): Pre-training batches containing samples.
             epochs (int): The maximum number of pre-training epochs.
+            steps (int): Amount of pre-training steps per epoch for the discriminator.
 
         """
 
@@ -254,20 +272,24 @@ class SeqGAN(AdversarialModel):
                 batch_size, max_length = x_batch.shape[0], x_batch.shape[1]
 
                 # Generates a batch of fake inputs
-                x_fake_batch = self.G.generate_batch(batch_size, max_length, 0.5)
+                x_fake_batch = self.G.generate_batch(
+                    batch_size, max_length, 0.5)
 
                 # Concatenates real inputs and fake inputs into a single tensor
                 x_batch = tf.concat([x_batch, x_fake_batch], axis=0)
 
                 # Creates a tensor holding label 0 for real samples and label 1 for fake samples
-                y_batch = tf.concat([tf.zeros(batch_size,), tf.ones(batch_size,)], axis=0)
+                y_batch = tf.concat(
+                    [tf.zeros(batch_size,), tf.ones(batch_size,)], axis=0)
 
                 # For a fixed amount of steps
-                for _ in range(3):
+                for _ in range(steps):
                     # Performs a random samples selection of batch size
-                    indices = np.random.choice(x_batch.shape[0], batch_size, replace=False)
+                    indices = np.random.choice(
+                        x_batch.shape[0], batch_size, replace=False)
 
                     # Performs the optimization step over the discriminator
-                    self.D_pre_step(tf.gather(x_batch, indices), tf.gather(y_batch, indices))
+                    self.D_pre_step(tf.gather(x_batch, indices),
+                                    tf.gather(y_batch, indices))
 
             logger.info(f'Loss(D): {self.D_loss.result().numpy()}')

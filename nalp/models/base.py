@@ -11,18 +11,22 @@ class Model(tf.keras.Model):
 
     """
 
-    def __init__(self, name=''):
+    def __init__(self, encoder, name=''):
         """Initialization method.
 
         Note that basic variables shared by all childs should be declared here, e.g., layers.
 
         Args:
+            encoder (IntegerEncoder): An index to vocabulary encoder.
             name (str): The model's identifier string.
 
         """
 
         # Overrides its parent class with any custom arguments if needed
         super(Model, self).__init__(name=name)
+
+        # Creates a property for holding the used encoder
+        self.encoder = encoder
 
     def call(self, x, training=True):
         """Method that holds vital information whenever this class is called.
@@ -41,12 +45,11 @@ class Model(tf.keras.Model):
 
         raise NotImplementedError
 
-    def generate_text(self, encoder, start, length=100, temperature=1.0):
+    def generate_text(self, start, length=100, temperature=1.0):
         """Generates text by feeding to the network the
         current token (t) and predicting the next token (t+1).
 
         Args:
-            encoder (IntegerEncoder): An index to vocabulary encoder.
             start (str): The start string to generate the text.
             length (int): Length of generated text.
             temperature (float): A temperature value to sample the token.
@@ -59,7 +62,7 @@ class Model(tf.keras.Model):
         logger.debug(f'Generating text with length: {length} ...')
 
         # Encoding the start string into tokens
-        start_tokens = encoder.encode(start)
+        start_tokens = self.encoder.encode(start)
 
         # Expanding the first dimension of tensor
         start_tokens = tf.expand_dims(start_tokens, 0)
@@ -92,7 +95,7 @@ class Model(tf.keras.Model):
             sampled_tokens.append(sampled_token)
 
         # Decodes the list into raw text
-        text = encoder.decode(sampled_tokens)
+        text = self.encoder.decode(sampled_tokens)
 
         return text
 

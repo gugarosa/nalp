@@ -14,10 +14,11 @@ class LSTM(Model):
 
     """
 
-    def __init__(self, vocab_size=1, embedding_size=1, hidden_size=1):
+    def __init__(self, encoder, vocab_size=1, embedding_size=1, hidden_size=1):
         """Initialization method.
 
         Args:
+            encoder (IntegerEncoder): An index to vocabulary encoder.
             vocab_size (int): The size of the vocabulary.
             embedding_size (int): The size of the embedding layer.
             hidden_size (int): The amount of hidden neurons.
@@ -27,7 +28,7 @@ class LSTM(Model):
         logger.info('Overriding class: Model -> LSTM.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(LSTM, self).__init__(name='lstm')
+        super(LSTM, self).__init__(encoder, name='lstm')
 
         # Creates an embedding layer
         self.embedding = layers.Embedding(

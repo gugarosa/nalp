@@ -14,10 +14,11 @@ class StackedRNN(Model):
 
     """
 
-    def __init__(self, vocab_size=1, embedding_size=1, hidden_size=[1, 1]):
+    def __init__(self, encoder, vocab_size=1, embedding_size=1, hidden_size=[1, 1]):
         """Initialization method.
 
         Args:
+            encoder (IntegerEncoder): An index to vocabulary encoder.
             vocab_size (int): The size of the vocabulary.
             embedding_size (int): The size of the embedding layer.
             hidden_size (list): Amount of hidden neurons per cell.
@@ -27,7 +28,7 @@ class StackedRNN(Model):
         logger.info('Overriding class: Model -> StackedRNN.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(StackedRNN, self).__init__(name='stacked_rnn')
+        super(StackedRNN, self).__init__(encoder, name='stacked_rnn')
 
         # Creates an embedding layer
         self.embedding = layers.Embedding(

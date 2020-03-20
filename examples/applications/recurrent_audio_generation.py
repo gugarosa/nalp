@@ -24,7 +24,7 @@ encoded_tokens = encoder.encode(corpus.tokens)
 dataset = LanguageModelingDataset(encoded_tokens, max_length=100, batch_size=64)
 
 # Creating the RNN
-rnn = RNN(vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
+rnn = RNN(encoder=encoder, vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
 
 # As NALP's RNNs are stateful, we need to build it with a fixed batch size
 rnn.build((64, None))
@@ -41,7 +41,7 @@ rnn.fit(dataset.batches, epochs=25)
 rnn.save_weights('trained/audio_rnn', save_format='tf')
 
 # Re-creating the RNN
-rnn = RNN(vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
+rnn = RNN(encoder=encoder, vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
 
 # Loading pre-trained RNN weights
 rnn.load_weights('trained/audio_rnn').expect_partial()
@@ -50,7 +50,7 @@ rnn.load_weights('trained/audio_rnn').expect_partial()
 rnn.build((1, None))
 
 # Generating artificial notes
-notes = rnn.generate_text(encoder, start=[55], length=1000, temperature=0.5)
+notes = rnn.generate_text(start=[55], length=1000, temperature=0.5)
 
 # Creating midi classes to hold generated audio and further music track
 audio = MidiFile()
