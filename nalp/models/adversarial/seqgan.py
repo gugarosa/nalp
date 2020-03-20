@@ -1,5 +1,5 @@
-import tensorflow as tf
 import numpy as np
+import tensorflow as tf
 from tensorflow.keras import layers
 
 import nalp.utils.logging as l
@@ -24,7 +24,6 @@ class Discriminator(Model):
             n_filters (list): Number of filters to be applied.
             filters_size (list): Size of filters to be applied.
             dropout_rate (float): Dropout activation rate.
-
 
         """
 

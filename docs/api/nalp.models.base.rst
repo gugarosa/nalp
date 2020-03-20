@@ -6,11 +6,6 @@ nalp.models.base
     :private-members:
     :special-members:
 
-.. autoapiclass:: nalp.models.base.CustomModel
-    :members:
-    :private-members:
-    :special-members:
-
 .. autoapiclass:: nalp.models.base.Model
     :members:
     :private-members:
