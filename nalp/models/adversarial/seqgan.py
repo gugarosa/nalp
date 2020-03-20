@@ -14,11 +14,12 @@ class Discriminator(Model):
 
     """
 
-    def __init__(self, vocab_size, embedding_size, n_filters, filters_size, dropout_rate):
+    def __init__(self, vocab_size, max_length, embedding_size, n_filters, filters_size, dropout_rate):
         """Initialization method.
 
         Args:
             vocab_size (int): The size of the vocabulary.
+            max_length (int): Maximum length of the sequences.
             embedding_size (int): The size of the embedding layer.
             n_filters (list): Number of filters to be applied.
             filters_size (list): Size of filters to be applied.
@@ -37,46 +38,23 @@ class Discriminator(Model):
             vocab_size, embedding_size, name='embedding')
 
         # Defining a list for holding the convolutional layers
-        self.conv = [layers.Conv2D(n, (k, embedding_size), strides=(1, 1), padding='valid') for n, k in zip(n_filters, filters_size)]
+        self.conv = [layers.Conv2D(n, (k, embedding_size), strides=(
+            1, 1), padding='valid') for n, k in zip(n_filters, filters_size)]
 
         # Defining a list for holding the pooling layers
-        self.pool = [layers.MaxPool1D(1, n) for n in n_filters]
+        self.pool = [layers.MaxPool1D(max_length - k + 1, 1)
+                     for k in filters_size]
 
-        #
+        # Defining a linear layer for serving as the `highway`
         self.highway = layers.Dense(sum(n_filters))
 
-        #
+        # Defining the dropout layer
         self.drop = layers.Dropout(dropout_rate)
 
-        #
+        # And finally, defining the output layer
         self.out = layers.Dense(2)
 
-        # #
-        # for n, k in zip(n_filters, filters_size):
-        #     #
-        #     self.conv.append(layers.Conv2d(n, (k, embedding_size), strides=(1, 1), padding='valid'))
-
-
-
-        # #
-        # self.conv = layers.Conv2D(
-        #     128, (3, 256), strides=(1, 1), padding='valid')
-
-        # #
-        # self.pool = layers.MaxPool1D(1, 128)
-
-        # #
-        # self.highway = layers.Dense(128)
-
-        # #
-        # self.out = layers.Dense(2)
-
-        # #
-        # self.drop = layers.Dropout(0.25)
-
     def call(self, x):
-        # print(x.shape)
-
         # Passing down the embedding layer
         x = self.embedding(x)
 
@@ -87,55 +65,22 @@ class Discriminator(Model):
         # and removal of third dimension
         convs = [tf.squeeze(tf.nn.relu(conv(x)), 2) for conv in self.conv]
 
-        for c in convs:
-            print(c.shape)
+        # Passing down the pooling layers per convolutional layer
+        pools = [pool(conv) for pool, conv in zip(self.pool, convs)]
 
-        #
-        # pools = [pool(conv) for pool, conv in zip(self.pool, convs)]
-
-        pools = [tf.nn.max_pool1d(conv, conv.shape[1], strides=1, padding='VALID') for conv in convs]
-
-        for p in pools:
-            print(p.shape)
-
-        #
+        # Concatenating all the pooling outputs into a single tensor
         x = tf.concat(pools, axis=2)
 
-        print(x.shape)
-
-        #
+        # Calculating the output of the linear layer
         hw = self.highway(x)
 
-        #
+        # Calculating the `highway` layer
         x = tf.math.sigmoid(hw) * tf.nn.relu(hw) + (1 - tf.math.sigmoid(hw)) * x
 
-        #
+        # Calculating the output with a dropout regularization
         x = self.out(self.drop(x))
 
         return x
-
-        # x = tf.nn.relu(self.conv(x))
-
-        # print(x.shape)
-
-        # x = tf.squeeze(x, 2)
-
-        # pool = self.pool(x)
-
-        # print(pool.shape)
-
-        # x = self.highway(pool)
-
-        # print(x.shape)
-
-        # x = tf.math.sigmoid(x) * tf.nn.relu(x) + \
-        #     (1 - tf.math.sigmoid(x)) * pool
-
-        # x = self.out(self.drop(x))
-
-        # # print(x.shape)
-
-        # return x
 
 
 class Generator(LSTM):
@@ -214,12 +159,13 @@ class SeqGAN(AdversarialModel):
 
     """
 
-    def __init__(self, encoder=None, vocab_size=1, embedding_size=1, hidden_size=1, n_filters=[64], filters_size=[3], dropout_rate=0.25):
+    def __init__(self, encoder=None, vocab_size=1, max_length=1, embedding_size=1, hidden_size=1, n_filters=[64], filters_size=[1], dropout_rate=0.25):
         """Initialization method.
 
         Args:
             encoder (IntegerEncoder): An index to vocabulary encoder for the generator.
             vocab_size (int): The size of the vocabulary for both discriminator and generator.
+            max_length (int): Maximum length of the sequences for the discriminator.
             embedding_size (int): The size of the embedding layer for both discriminator and generator.
             hidden_size (int): The amount of hidden neurons for the generator.
             n_filters (list): Number of filters to be applied in the discriminator.
@@ -231,7 +177,8 @@ class SeqGAN(AdversarialModel):
         logger.info('Overriding class: AdversarialModel -> SeqGAN.')
 
         # Creating the discriminator network
-        D = Discriminator(vocab_size, embedding_size, n_filters, filters_size, dropout_rate)
+        D = Discriminator(vocab_size, max_length, embedding_size,
+                          n_filters, filters_size, dropout_rate)
 
         # Creating the generator network
         G = Generator(encoder, vocab_size, embedding_size, hidden_size)
