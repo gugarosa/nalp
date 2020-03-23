@@ -222,7 +222,7 @@ class SeqGAN(AdversarialModel):
 
     """
 
-    def __init__(self, encoder=None, vocab_size=1, max_length=1, embedding_size=1, hidden_size=1, n_filters=[64], filters_size=[1], dropout_rate=0.25, temperature=0.1):
+    def __init__(self, encoder=None, vocab_size=1, max_length=1, embedding_size=1, hidden_size=1, n_filters=[64], filters_size=[1], dropout_rate=0.25, temperature=1):
         """Initialization method.
 
         Args:
