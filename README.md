@@ -56,6 +56,7 @@ NALP is based on the following structure, and you should pay attention to its tr
         - adversarial
             - dcgan
             - gan
+            - maligan
             - seqgan
         - base
         - recurrent

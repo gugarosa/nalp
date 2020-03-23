@@ -203,7 +203,7 @@ class MaliGAN(AdversarialModel):
     Generative Adversarial Networks implementation.
 
     References:
-
+        T. Che, et al. Maximum-likelihood augmented discrete generative adversarial networks. Preprint arXiv:1702.07983 (2017).
 
     """
 
