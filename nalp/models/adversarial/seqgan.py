@@ -87,7 +87,7 @@ class Generator(LSTM):
 
     """
 
-    def __init__(self, encoder, vocab_size, embedding_size, hidden_size):
+    def __init__(self, encoder, vocab_size, embedding_size, hidden_size, temperature):
         """Initialization method.
 
         Args:
@@ -95,6 +95,7 @@ class Generator(LSTM):
             vocab_size (int): The size of the vocabulary.
             embedding_size (int): The size of the embedding layer.
             hidden_size (int): The amount of hidden neurons.
+            temperature (float): Temperature value to sample the token.
 
         """
 
@@ -106,6 +107,9 @@ class Generator(LSTM):
 
         # Defining a property for holding the vocabulary size
         self.vocab_size = vocab_size
+
+        # Defining a property for holding the temperature
+        self.T = temperature
 
     def generate_batch(self, batch_size=1, length=1, temperature=1.0):
         """Generates a batch of tokens by feeding to the network the
@@ -122,7 +126,8 @@ class Generator(LSTM):
         """
 
         # Generating an uniform tensor between 0 and vocab_size
-        start_batch = tf.random.uniform([batch_size, 1], 0, self.vocab_size, dtype='int64')
+        start_batch = tf.random.uniform(
+            [batch_size, 1], 0, self.vocab_size, dtype='int64')
 
         # Creating an empty tensor for the sampled batch
         sampled_batch = tf.zeros([batch_size, 1], dtype='int64')
@@ -156,50 +161,58 @@ class Generator(LSTM):
         return x_sampled_batch, y_sampled_batch
 
     def get_reward(self, x, n_rollouts, D):
-        """
+        """Calculates rewards over an input using a Monte Carlo search strategy.
+
+        Args:
+            x (tf.Tensor): A tensor containing the inputs.
+            n_rollouts (int): Number of rollouts for conducting the Monte Carlo search.
+            D (Discriminator): A Discriminator object.
+
         """
 
-        #
+        # Gathers the batch size and maximum sequence length
         batch_size, max_length = x.shape[0], x.shape[1]
 
-        #
+        # Defines an index as zero
         idx = 0
 
-        #
+        # Creates an empty tensor for holding the rewards
         rewards = tf.zeros([1, batch_size])
 
-        #
+        # For every possible rollout
         for rollout in range(n_rollouts):
-            #
+            # For every possible sequence step
             for step in range(1, max_length + 1):
-                #
+                # Calculate and gathers the last step output
                 output = self(x)[:, -1, :]
 
-                #
+                # Gathers the input upon to the current step
                 samples = x[:, :step]
 
-                #
+                # For every possible value ranging from step to maximum length
                 for _ in range(step, max_length):
-                    #
+                    # Calculates the output
                     output = tf.random.categorical(output, num_samples=1)
 
-                    #
+                    # Concatenates the samples with the output
                     samples = tf.concat([samples, output], axis=1)
 
-                    #
+                    # Squeezes the second dimension of the output tensor
                     output = tf.squeeze(self(output), 1)
-                
-                #
+
+                # Calculates the softmax over the discriminator output and removes the second dimension
                 output = tf.squeeze(tf.math.softmax(D(samples)), 1)
 
-                #
-                rewards = tf.concat([rewards, tf.expand_dims(output[:, 1], 0)], axis=0)
-        
-        #
-        rewards = tf.reduce_mean(tf.reshape(rewards[1:, :], [batch_size, max_length, n_rollouts]), axis=-1)
+                # Concatenates and accumulates the rewards tensor for every step
+                rewards = tf.concat(
+                    [rewards, tf.expand_dims(output[:, 1], 0)], axis=0)
+
+        # Calculates the mean over the rewards tensor
+        rewards = tf.reduce_mean(tf.reshape(
+            rewards[1:, :], [batch_size, max_length, n_rollouts]), axis=-1)
 
         return rewards
-                
+
 
 class SeqGAN(AdversarialModel):
     """A SeqGAN class is the one in charge of Sequence Generative Adversarial Networks implementation.
@@ -209,7 +222,7 @@ class SeqGAN(AdversarialModel):
 
     """
 
-    def __init__(self, encoder=None, vocab_size=1, max_length=1, embedding_size=1, hidden_size=1, n_filters=[64], filters_size=[1], dropout_rate=0.25):
+    def __init__(self, encoder=None, vocab_size=1, max_length=1, embedding_size=1, hidden_size=1, n_filters=[64], filters_size=[1], dropout_rate=0.25, temperature=0.1):
         """Initialization method.
 
         Args:
@@ -221,6 +234,7 @@ class SeqGAN(AdversarialModel):
             n_filters (list): Number of filters to be applied in the discriminator.
             filters_size (list): Size of filters to be applied in the discriminator.
             dropout_rate (float): Dropout activation rate.
+            temperature (float): Temperature value to sample the token.
 
         """
 
@@ -231,7 +245,7 @@ class SeqGAN(AdversarialModel):
                           n_filters, filters_size, dropout_rate)
 
         # Creating the generator network
-        G = Generator(encoder, vocab_size, embedding_size, hidden_size)
+        G = Generator(encoder, vocab_size, embedding_size, hidden_size, temperature)
 
         # Overrides its parent class with any custom arguments if needed
         super(SeqGAN, self).__init__(D, G, name='seqgan')
@@ -281,10 +295,8 @@ class SeqGAN(AdversarialModel):
             preds = self.G(x)
 
             # Calculate the loss
-            loss = tf.reduce_mean(self.loss(y, preds) * rewards)
+            loss = self.loss(y, preds, rewards)
 
-        tf.print(loss)
-        
         # Calculate the gradient based on loss for each training variable
         gradients = tape.gradient(loss, self.G.trainable_variables)
 
@@ -366,7 +378,7 @@ class SeqGAN(AdversarialModel):
 
                 # Generates a batch of fake inputs
                 x_fake_batch, _ = self.G.generate_batch(
-                    batch_size, max_length, 0.5)
+                    batch_size, max_length, self.G.T)
 
                 # Concatenates real inputs and fake inputs into a single tensor
                 x_concat_batch = tf.concat([x_batch, x_fake_batch], axis=0)
@@ -415,7 +427,8 @@ class SeqGAN(AdversarialModel):
                 batch_size, max_length = x_batch.shape[0], x_batch.shape[1]
 
                 # Generates a batch of fake inputs
-                x_fake_batch, y_fake_batch = self.G.generate_batch(batch_size, max_length, 0.5)
+                x_fake_batch, y_fake_batch = self.G.generate_batch(
+                    batch_size, max_length, self.G.T)
 
                 # Gathers the rewards based on the sampled batch
                 rewards = self.G.get_reward(x_fake_batch, n_rollouts, self.D)
@@ -427,7 +440,7 @@ class SeqGAN(AdversarialModel):
                 for _ in range(d_epochs):
                     # Generates a batch of fake inputs
                     x_fake_batch, _ = self.G.generate_batch(
-                        batch_size, max_length, 0.5)
+                        batch_size, max_length, self.G.T)
 
                     # Concatenates real inputs and fake inputs into a single tensor
                     x_concat_batch = tf.concat([x_batch, x_fake_batch], axis=0)

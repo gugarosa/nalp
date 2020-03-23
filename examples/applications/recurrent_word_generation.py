@@ -1,8 +1,6 @@
 import tensorflow as tf
 
-import nalp.utils.preprocess as p
 from nalp.corpus.text import TextCorpus
-from nalp.datasets.language_modeling import LanguageModelingDataset
 from nalp.encoders.integer import IntegerEncoder
 from nalp.models.recurrent.rnn import RNN
 
