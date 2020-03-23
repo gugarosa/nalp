@@ -295,7 +295,7 @@ class SeqGAN(AdversarialModel):
             preds = self.G(x)
 
             # Calculate the loss
-            loss = self.loss(y, preds, rewards)
+            loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(y, preds) * rewards)
 
         # Calculate the gradient based on loss for each training variable
         gradients = tape.gradient(loss, self.G.trainable_variables)
