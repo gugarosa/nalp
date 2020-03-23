@@ -29,7 +29,7 @@ seqgan.compile(tf.optimizers.Adam(learning_rate=0.001),
                tf.losses.SparseCategoricalCrossentropy(from_logits=True))
 
 # Pre-fitting the SeqGAN
-seqgan.pre_fit(dataset.batches, g_epochs=1, d_epochs=1, d_steps=3)
+seqgan.pre_fit(dataset.batches, g_epochs=50, d_epochs=10, d_steps=3)
 
 # Fitting the SeqGAN
-seqgan.fit(dataset.batches, epochs=1, d_epochs=5, d_steps=3)
+seqgan.fit(dataset.batches, epochs=3, d_epochs=5, d_steps=3, n_rollouts=16)

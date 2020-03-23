@@ -104,6 +104,9 @@ class Generator(LSTM):
         super(Generator, self).__init__(encoder=encoder, vocab_size=vocab_size,
                                         embedding_size=embedding_size, hidden_size=hidden_size)
 
+        # Defining a property for holding the vocabulary size
+        self.vocab_size = vocab_size
+
     def generate_batch(self, batch_size=1, length=1, temperature=1.0):
         """Generates a batch of tokens by feeding to the network the
         current token (t) and predicting the next token (t+1).
@@ -118,8 +121,8 @@ class Generator(LSTM):
 
         """
 
-        # Creating an empty tensor for the starting batch
-        start_batch = tf.zeros([batch_size, 1])
+        # Generating an uniform tensor between 0 and vocab_size
+        start_batch = tf.random.uniform([batch_size, 1], 0, self.vocab_size, dtype='int64')
 
         # Creating an empty tensor for the sampled batch
         sampled_batch = tf.zeros([batch_size, 1], dtype='int64')
@@ -144,10 +147,13 @@ class Generator(LSTM):
             # Concatenates the sampled batch with the predicted batch
             sampled_batch = tf.concat([sampled_batch, start_batch], axis=1)
 
-        # Ignores the first column of the sampled batch
-        sampled_batch = sampled_batch[:, 1:]
+        # Ignoring the last column to get the input sampled batch
+        x_sampled_batch = sampled_batch[:, :length]
 
-        return sampled_batch
+        # Ignoring the first column to get the input sampled batch
+        y_sampled_batch = sampled_batch[:, 1:]
+
+        return x_sampled_batch, y_sampled_batch
 
     def get_reward(self, x, n_rollouts, D):
         """
@@ -187,15 +193,12 @@ class Generator(LSTM):
                 output = tf.squeeze(tf.math.softmax(D(samples)), 1)
 
                 #
-                # reward = output[:, 1]
-
-                #
                 rewards = tf.concat([rewards, tf.expand_dims(output[:, 1], 0)], axis=0)
         
+        #
         rewards = tf.reduce_mean(tf.reshape(rewards[1:, :], [batch_size, max_length, n_rollouts]), axis=-1)
 
-
-        print(rewards)
+        return rewards
                 
 
 class SeqGAN(AdversarialModel):
@@ -251,6 +254,37 @@ class SeqGAN(AdversarialModel):
             # Calculate the loss
             loss = self.loss(y, preds)
 
+        # Calculate the gradient based on loss for each training variable
+        gradients = tape.gradient(loss, self.G.trainable_variables)
+
+        # Apply gradients using an optimizer
+        self.G_optimizer.apply_gradients(
+            zip(gradients, self.G.trainable_variables))
+
+        # Updates the generator's loss state
+        self.G_loss.update_state(loss)
+
+    @tf.function
+    def G_step(self, x, y, rewards):
+        """Performs a single batch optimization step over the generator.
+
+        Args:
+            x (tf.Tensor): A tensor containing the inputs.
+            y (tf.Tensor): A tensor containing the inputs' labels.
+            rewards (tf.Tensor): A tensor containing the rewards for the input.
+
+        """
+
+        # Using tensorflow's gradient
+        with tf.GradientTape() as tape:
+            # Calculate the predictions based on inputs
+            preds = self.G(x)
+
+            # Calculate the loss
+            loss = tf.reduce_mean(self.loss(y, preds) * rewards)
+
+        tf.print(loss)
+        
         # Calculate the gradient based on loss for each training variable
         gradients = tape.gradient(loss, self.G.trainable_variables)
 
@@ -331,7 +365,7 @@ class SeqGAN(AdversarialModel):
                 batch_size, max_length = x_batch.shape[0], x_batch.shape[1]
 
                 # Generates a batch of fake inputs
-                x_fake_batch = self.G.generate_batch(
+                x_fake_batch, _ = self.G.generate_batch(
                     batch_size, max_length, 0.5)
 
                 # Concatenates real inputs and fake inputs into a single tensor
@@ -353,7 +387,7 @@ class SeqGAN(AdversarialModel):
 
             logger.info(f'Loss(D): {self.D_loss.result().numpy()}')
 
-    def fit(self, batches, epochs=100, d_epochs=5, d_steps=3):
+    def fit(self, batches, epochs=100, d_epochs=5, d_steps=3, n_rollouts=16):
         """Trains the model.
 
         Args:
@@ -361,6 +395,7 @@ class SeqGAN(AdversarialModel):
             epochs (int): The maximum number of total training epochs.
             d_epochs (int): The maximum number of discriminator epochs per total epoch.
             d_steps (int): Amount of training steps per discriminator epoch.
+            n_rollouts (int): Number of rollouts for conducting the Monte Carlo search.
 
         """
 
@@ -374,39 +409,42 @@ class SeqGAN(AdversarialModel):
             self.G_loss.reset_states()
             self.D_loss.reset_states()
 
-            # Iterate through all possible pre-training batches
+            # Iterate through all possible training batches
             for x_batch, _ in batches:
                 # Gathering the batch size and the maximum sequence length
                 batch_size, max_length = x_batch.shape[0], x_batch.shape[1]
 
                 # Generates a batch of fake inputs
-                x_fake_batch = self.G.generate_batch(batch_size, max_length, 0.5)
+                x_fake_batch, y_fake_batch = self.G.generate_batch(batch_size, max_length, 0.5)
 
-                #
-                self.G.get_reward(x_fake_batch, 16, self.D)
+                # Gathers the rewards based on the sampled batch
+                rewards = self.G.get_reward(x_fake_batch, n_rollouts, self.D)
 
+                # Performs the optimization step over the generator
+                self.G_step(x_fake_batch, y_fake_batch, rewards)
 
-                # for _ in range(d_epochs):
-                #     # Generates a batch of fake inputs
-                #     x_fake_batch = self.G.generate_batch(
-                #         batch_size, max_length, 0.5)
+                # Iterate through all possible discriminator's epochs
+                for _ in range(d_epochs):
+                    # Generates a batch of fake inputs
+                    x_fake_batch, _ = self.G.generate_batch(
+                        batch_size, max_length, 0.5)
 
-                #     # Concatenates real inputs and fake inputs into a single tensor
-                #     x_concat_batch = tf.concat([x_batch, x_fake_batch], axis=0)
+                    # Concatenates real inputs and fake inputs into a single tensor
+                    x_concat_batch = tf.concat([x_batch, x_fake_batch], axis=0)
 
-                #     # Creates a tensor holding label 0 for real samples and label 1 for fake samples
-                #     y_concat_batch = tf.concat(
-                #         [tf.zeros(batch_size,), tf.ones(batch_size,)], axis=0)
+                    # Creates a tensor holding label 0 for real samples and label 1 for fake samples
+                    y_concat_batch = tf.concat(
+                        [tf.zeros(batch_size,), tf.ones(batch_size,)], axis=0)
 
-                #     # For a fixed amount of discriminator steps
-                #     for _ in range(d_steps):
-                #         # Performs a random samples selection of batch size
-                #         indices = np.random.choice(
-                #             x_concat_batch.shape[0], batch_size, replace=False)
+                    # For a fixed amount of discriminator steps
+                    for _ in range(d_steps):
+                        # Performs a random samples selection of batch size
+                        indices = np.random.choice(
+                            x_concat_batch.shape[0], batch_size, replace=False)
 
-                #         # Performs the optimization step over the discriminator
-                #         self.D_step(tf.gather(x_concat_batch, indices),
-                #                     tf.gather(y_concat_batch, indices))
+                        # Performs the optimization step over the discriminator
+                        self.D_step(tf.gather(x_concat_batch, indices),
+                                    tf.gather(y_concat_batch, indices))
 
             logger.info(
                 f'Loss(G): {self.G_loss.result().numpy()} | Loss(D): {self.D_loss.result().numpy()}')
