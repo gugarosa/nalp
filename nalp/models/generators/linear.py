@@ -2,17 +2,17 @@ import tensorflow as tf
 from tensorflow.keras import layers
 
 import nalp.utils.logging as l
-from nalp.core.model import Model
+from nalp.core.model import Generator
 
 logger = l.get_logger(__name__)
 
 
-class LinearGenerator(Model):
+class LinearGenerator(Generator):
     """A LinearGenerator class stands for the linear generative part of a Generative Adversarial Network.
 
     """
 
-    def __init__(self, input_shape, noise_dim, n_samplings, alpha):
+    def __init__(self, input_shape=(784,), noise_dim=100, n_samplings=3, alpha=0.01):
         """Initialization method.
 
         Args:
@@ -23,7 +23,7 @@ class LinearGenerator(Model):
 
         """
 
-        logger.info('Overriding class: Model -> LinearGenerator.')
+        logger.info('Overriding class: Generator -> LinearGenerator.')
 
         # Overrides its parent class with any custom arguments if needed
         super(LinearGenerator, self).__init__(name='G_linear')

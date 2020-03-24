@@ -1,34 +1,34 @@
 from tensorflow.keras import layers
 
 import nalp.utils.logging as l
-from nalp.models.base import Model
+from nalp.core.model import Generator
 
 logger = l.get_logger(__name__)
 
 
-class LSTM(Model):
-    """A LSTM class is the one in charge of Long Short-Term Memory implementation.
+class StackedRNNGenerator(Generator):
+    """A StackedRNNGenerator class is the one in charge of stacked Recurrent Neural Networks implementation.
 
     References:
-        S. Hochreiter, Jürgen Schmidhuber. Long short-term memory. Neural computation 9.8 (1997).
+        J. Elman. Finding structure in time. Cognitive science 14.2 (1990).
 
     """
 
-    def __init__(self, encoder, vocab_size=1, embedding_size=1, hidden_size=1):
+    def __init__(self, encoder=None, vocab_size=1, embedding_size=32, hidden_size=[64, 64]):
         """Initialization method.
 
         Args:
             encoder (IntegerEncoder): An index to vocabulary encoder.
             vocab_size (int): The size of the vocabulary.
             embedding_size (int): The size of the embedding layer.
-            hidden_size (int): The amount of hidden neurons.
+            hidden_size (list): Amount of hidden neurons per cell.
 
         """
 
-        logger.info('Overriding class: Model -> LSTM.')
+        logger.info('Overriding class: Generator -> StackedRNNGenerator.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(LSTM, self).__init__(name='lstm')
+        super(StackedRNNGenerator, self).__init__(name='G_stacked_rnn')
 
         # Creates a property for holding the used encoder
         self.encoder = encoder
@@ -37,16 +37,19 @@ class LSTM(Model):
         self.embedding = layers.Embedding(
             vocab_size, embedding_size, name='embedding')
 
-        # Creates a LSTM cell
-        self.cell = layers.LSTMCell(hidden_size, name='lstm_cell')
+        # Creating a stack of RNN cells
+        self.cells = [layers.SimpleRNNCell(size, name=f'rnn_cell{i}') for (
+            i, size) in enumerate(hidden_size)]
 
         # Creates the RNN loop itself
-        self.rnn = layers.RNN(self.cell, name='rnn_layer',
+        self.rnn = layers.RNN(self.cells, name='rnn_layer',
                               return_sequences=True,
                               stateful=True)
 
         # Creates the linear (Dense) layer
         self.linear = layers.Dense(vocab_size, name='out')
+
+        logger.debug(f'Number of cells: {len(hidden_size)}')
 
     def call(self, x):
         """Method that holds vital information whenever this class is called.

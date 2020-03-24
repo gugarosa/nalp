@@ -3,7 +3,7 @@ import tensorflow as tf
 from nalp.corpus.text import TextCorpus
 from nalp.datasets.language_modeling import LanguageModelingDataset
 from nalp.encoders.integer import IntegerEncoder
-from nalp.models.recurrent.lstm import LSTM
+from nalp.models.generators.lstm import LSTMGenerator
 
 # Creating a character TextCorpus from file
 corpus = TextCorpus(from_file='data/text/chapter1_harry.txt', type='char')
@@ -21,7 +21,7 @@ encoded_tokens = encoder.encode(corpus.tokens)
 dataset = LanguageModelingDataset(encoded_tokens, max_length=10, batch_size=64)
 
 # Creating the LSTM
-lstm = LSTM(encoder=encoder, vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
+lstm = LSTMGenerator(encoder=encoder, vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
 
 # As NALP's LSTMs are stateful, we need to build it with a fixed batch size
 lstm.build((64, None))

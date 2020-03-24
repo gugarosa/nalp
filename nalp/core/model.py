@@ -41,6 +41,7 @@ class Discriminator(tf.keras.Model):
 
         raise NotImplementedError
 
+
 class Generator(tf.keras.Model):
     """A Generator class is responsible for easily-implementing the generative part of
     a neural network, when custom training or additional sets are not needed.
@@ -291,4 +292,3 @@ class AdversarialModel(tf.keras.Model):
 
             logger.info(
                 f'Loss(G): {self.G_loss.result().numpy()} | Loss(D): {self.D_loss.result().numpy()}')
-

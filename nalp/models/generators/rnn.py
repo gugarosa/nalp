@@ -1,12 +1,12 @@
 from tensorflow.keras import layers
 
 import nalp.utils.logging as l
-from nalp.models.base import Model
+from nalp.core.model import Generator
 
 logger = l.get_logger(__name__)
 
 
-class RNNGenerator(Model):
+class RNNGenerator(Generator):
     """An RNNGenerator class is the one in charge of Recurrent Neural Networks vanilla implementation.
 
     References:
@@ -25,10 +25,10 @@ class RNNGenerator(Model):
 
         """
 
-        logger.info('Overriding class: Model -> RNNGenerator.')
+        logger.info('Overriding class: Generator -> RNNGenerator.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(RNNGenerator, self).__init__(name='rnn')
+        super(RNNGenerator, self).__init__(name='G_rnn')
 
         # Creates a property for holding the used encoder
         self.encoder = encoder

@@ -3,7 +3,7 @@ import tensorflow as tf
 from nalp.corpus.text import TextCorpus
 from nalp.datasets.language_modeling import LanguageModelingDataset
 from nalp.encoders.integer import IntegerEncoder
-from nalp.models.recurrent.gru import GRU
+from nalp.models.generators.stacked_rnn import StackedRNNGenerator
 
 # Creating a character TextCorpus from file
 corpus = TextCorpus(from_file='data/text/chapter1_harry.txt', type='char')
@@ -20,22 +20,23 @@ encoded_tokens = encoder.encode(corpus.tokens)
 # Creating Language Modeling Dataset
 dataset = LanguageModelingDataset(encoded_tokens, max_length=10, batch_size=64)
 
-# Creating the GRU
-gru = GRU(encoder=encoder, vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
+# Creating the StackedRNN
+rnn = StackedRNNGenerator(encoder=encoder, vocab_size=corpus.vocab_size,
+                          embedding_size=256, hidden_size=[128, 256, 512])
 
-# As NALP's GRUs are stateful, we need to build it with a fixed batch size
-gru.build((64, None))
+# As NALP's StackedRNNs are stateful, we need to build it with a fixed batch size
+rnn.build((64, None))
 
-# Compiling the GRU
-gru.compile(optimizer=tf.optimizers.Adam(learning_rate=0.001),
+# Compiling the StackedRNN
+rnn.compile(optimizer=tf.optimizers.Adam(learning_rate=0.001),
             loss=tf.losses.SparseCategoricalCrossentropy(from_logits=True),
             metrics=[tf.metrics.SparseCategoricalAccuracy(name='accuracy')])
 
-# Fitting the GRU
-gru.fit(dataset.batches, epochs=100)
+# Fitting the StackedRNN
+rnn.fit(dataset.batches, epochs=100)
 
-# Evaluating the GRU
-# gru.evaluate(dataset.batches)
+# Evaluating the StackedRNN
+# rnn.evaluate(dataset.batches)
 
-# Saving GRU weights
-gru.save_weights('trained/gru', save_format='tf')
+# Saving StackedRNN weights
+rnn.save_weights('trained/stacked_rnn', save_format='tf')

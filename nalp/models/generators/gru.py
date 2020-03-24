@@ -1,34 +1,34 @@
 from tensorflow.keras import layers
 
 import nalp.utils.logging as l
-from nalp.models.base import Model
+from nalp.core.model import Generator
 
 logger = l.get_logger(__name__)
 
 
-class StackedRNN(Model):
-    """A StackedRNN class is the one in charge of stacked Recurrent Neural Networks implementation.
+class GRUGenerator(Generator):
+    """A GRUGenerator class is the one in charge of Gated Recurrent Unit implementation.
 
     References:
-        J. Elman. Finding structure in time. Cognitive science 14.2 (1990).
+        K. Cho, et al. Learning phrase representations using RNN encoder-decoder for statistical machine translation. Preprint arXiv:1406.1078 (2014).
 
     """
 
-    def __init__(self, encoder, vocab_size=1, embedding_size=1, hidden_size=[1, 1]):
+    def __init__(self, encoder=None, vocab_size=1, embedding_size=32, hidden_size=64):
         """Initialization method.
 
         Args:
             encoder (IntegerEncoder): An index to vocabulary encoder.
             vocab_size (int): The size of the vocabulary.
             embedding_size (int): The size of the embedding layer.
-            hidden_size (list): Amount of hidden neurons per cell.
+            hidden_size (int): The amount of hidden neurons.
 
         """
 
-        logger.info('Overriding class: Model -> StackedRNN.')
+        logger.info('Overriding class: Generator -> GRUGenerator.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(StackedRNN, self).__init__(name='stacked_rnn')
+        super(GRUGenerator, self).__init__(name='G_gru')
 
         # Creates a property for holding the used encoder
         self.encoder = encoder
@@ -37,19 +37,16 @@ class StackedRNN(Model):
         self.embedding = layers.Embedding(
             vocab_size, embedding_size, name='embedding')
 
-        # Creating a stack of RNN cells
-        self.cells = [layers.SimpleRNNCell(size, name=f'rnn_cell{i}') for (
-            i, size) in enumerate(hidden_size)]
+        # Creates a GRU cell
+        self.cell = layers.GRUCell(hidden_size, name='gru')
 
         # Creates the RNN loop itself
-        self.rnn = layers.RNN(self.cells, name='rnn_layer',
+        self.rnn = layers.RNN(self.cell, name='rnn_layer',
                               return_sequences=True,
                               stateful=True)
 
         # Creates the linear (Dense) layer
         self.linear = layers.Dense(vocab_size, name='out')
-
-        logger.debug(f'Number of cells: {len(hidden_size)}')
 
     def call(self, x):
         """Method that holds vital information whenever this class is called.

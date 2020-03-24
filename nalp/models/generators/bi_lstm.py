@@ -1,20 +1,20 @@
 from tensorflow.keras import layers
 
 import nalp.utils.logging as l
-from nalp.models.base import Model
+from nalp.core.Generator import Generator
 
 logger = l.get_logger(__name__)
 
 
-class GRU(Model):
-    """A GRU class is the one in charge of Gated Recurrent Unit implementation.
+class BiLSTMGenerator(Generator):
+    """A BiLSTMGenerator class is the one in charge of a bi-directional Long Short-Term Memory implementation.
 
     References:
-        K. Cho, et al. Learning phrase representations using RNN encoder-decoder for statistical machine translation. Preprint arXiv:1406.1078 (2014).
+        S. Hochreiter, Jürgen Schmidhuber. Long short-term memory. Neural computation 9.8 (1997).
 
     """
 
-    def __init__(self, encoder, vocab_size=1, embedding_size=1, hidden_size=1):
+    def __init__(self, encoder=None, vocab_size=1, embedding_size=32, hidden_size=64):
         """Initialization method.
 
         Args:
@@ -25,10 +25,10 @@ class GRU(Model):
 
         """
 
-        logger.info('Overriding class: Model -> GRU.')
+        logger.info('Overriding class: Generator -> BiLSTMGenerator.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(GRU, self).__init__(name='gru')
+        super(BiLSTMGenerator, self).__init__(name='G_bi_lstm')
 
         # Creates a property for holding the used encoder
         self.encoder = encoder
@@ -37,13 +37,23 @@ class GRU(Model):
         self.embedding = layers.Embedding(
             vocab_size, embedding_size, name='embedding')
 
-        # Creates a GRU cell
-        self.cell = layers.GRUCell(hidden_size, name='gru')
+        # Creates a forward LSTM cell
+        cell_f = layers.LSTMCell(hidden_size, name='lstm_cell_f')
 
-        # Creates the RNN loop itself
-        self.rnn = layers.RNN(self.cell, name='rnn_layer',
-                              return_sequences=True,
-                              stateful=True)
+        # And a backward LSTM cell
+        cell_b = layers.LSTMCell(hidden_size, name='lstm_cell_b')
+
+        # Creates the forward RNN layer
+        forward = layers.RNN(cell_f, name='forward_rnn',
+                             return_sequences=True, stateful=True)
+
+        # Creates the backward RNN layer
+        backward = layers.RNN(cell_b, name='backward_rnn',
+                              return_sequences=True, stateful=True, go_backwards=True)
+
+        # Creates the bi-directional Layer
+        self.bidirect = layers.Bidirectional(
+            forward, backward_layer=backward, name='bidirectional')
 
         # Creates the linear (Dense) layer
         self.linear = layers.Dense(vocab_size, name='out')
@@ -62,8 +72,8 @@ class GRU(Model):
         # Firstly, we apply the embedding layer
         x = self.embedding(x)
 
-        # We need to apply the input into the first recorrent layer
-        x = self.rnn(x)
+        # Then, we pass it to the bi-directional layer
+        x = self.bidirect(x)
 
         # The input also suffers a linear combination to output correct shape
         x = self.linear(x)

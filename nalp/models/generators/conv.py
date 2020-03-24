@@ -2,12 +2,12 @@ import tensorflow as tf
 from tensorflow.keras import layers
 
 import nalp.utils.logging as l
-from nalp.models.base import Model
+from nalp.core.model import Generator
 
 logger = l.get_logger(__name__)
 
 
-class ConvGenerator(Model):
+class ConvGenerator(Generator):
     """A ConvGenerator class stands for the convolutional generative part of a Generative Adversarial Network.
 
     """
@@ -23,7 +23,7 @@ class ConvGenerator(Model):
 
         """
 
-        logger.info('Overriding class: Model -> ConvGenerator.')
+        logger.info('Overriding class: Generator -> ConvGenerator.')
 
         # Overrides its parent class with any custom arguments if needed
         super(ConvGenerator, self).__init__(name='G_conv')
