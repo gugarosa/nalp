@@ -121,29 +121,45 @@ class AdversarialModel(Model):
         # Defining the generator network
         self.G = generator
 
-    def compile(self, optimizer, loss):
+    def compile(self, g_optimizer, d_optimizer):
         """Main building method.
 
         Args:
-            optimizer (tf.optimizers): An optimizer instance.
-            loss (tf.loss): A loss instance.
+            g_optimizer (tf.keras.optimizers): An optimizer instance for the generator.
+            d_optimizer (tf.keras.optimizers): An optimizer instance for the discriminator.
 
         """
 
-        # Creates an optimizer object for the discriminator
-        self.D_optimizer = optimizer
-
         # Creates an optimizer object for the generator
-        self.G_optimizer = optimizer
+        self.G_optimizer = g_optimizer
+
+        # Creates an optimizer object for the discriminator
+        self.D_optimizer = d_optimizer
 
         # Defining the loss function
-        self.loss = loss
+        self.loss = tf.nn.sigmoid_cross_entropy_with_logits
+
+        # Defining a loss metric for the generator
+        self.G_loss = tf.metrics.Mean(name='G_loss')
 
         # Defining a loss metric for the discriminator
         self.D_loss = tf.metrics.Mean(name='D_loss')
 
-        # Defining a loss metric for the generator
-        self.G_loss = tf.metrics.Mean(name='G_loss')
+    def generator_loss(self, y_fake):
+        """Calculates the loss out of the generator architecture.
+
+        Args:
+            y_fake (tf.Tensor): A tensor containing the fake data targets.
+
+        Returns:
+            The loss based on the generator network.
+
+        """
+
+        # Calculating the generator loss
+        loss = self.loss(tf.ones_like(y_fake), y_fake)
+
+        return tf.reduce_mean(loss)
 
     def discriminator_loss(self, y, y_fake):
         """Calculates the loss out of the discriminator architecture.
@@ -163,20 +179,7 @@ class AdversarialModel(Model):
         # Calculates the fake data loss
         fake_loss = self.loss(tf.zeros_like(y_fake), y_fake)
 
-        return real_loss + fake_loss
-
-    def generator_loss(self, y_fake):
-        """Calculates the loss out of the generator architecture.
-
-        Args:
-            y_fake (tf.Tensor): A tensor containing the fake data targets.
-
-        Returns:
-            The loss based on the generator network.
-
-        """
-
-        return self.loss(tf.ones_like(y_fake), y_fake)
+        return tf.reduce_mean(real_loss) + tf.reduce_mean(fake_loss)
 
     @tf.function
     def step(self, x):

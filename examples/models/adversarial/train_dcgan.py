@@ -15,8 +15,8 @@ dcgan = DCGAN(input_shape=(28, 28, 1), noise_dim=100,
               n_samplings=3, alpha=0.3, dropout_rate=0.3)
 
 # Compiling the DCGAN
-dcgan.compile(tf.optimizers.Adam(learning_rate=0.0001),
-              tf.losses.BinaryCrossentropy(from_logits=True))
+dcgan.compile(g_optimizer=tf.optimizers.Adam(learning_rate=0.0001),
+              d_optimizer=tf.optimizers.Adam(learning_rate=0.0001))
 
 # Fitting the DCGAN
 dcgan.fit(dataset.batches, epochs=100)
