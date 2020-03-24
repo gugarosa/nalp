@@ -189,7 +189,7 @@ class Generator(LSTM):
         # Calculates the positive part of the discriminator's output
         rewards = tf.squeeze(D(x), 1)[:, 1]
 
-        # Calculating the maximum likelihood reward
+        # Calculating the maximum-likelihood reward
         rewards = tf.math.divide(rewards, 1 - rewards)
 
         # Normalizes the tensor

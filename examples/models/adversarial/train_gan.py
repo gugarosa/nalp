@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 from nalp.datasets.image import ImageDataset
-from nalp.models.adversarial.gan import GAN
+from nalp.models.gan import GAN
 
 # Loading the MNIST dataset
 (x, y), (_, _) = tf.keras.datasets.mnist.load_data()
