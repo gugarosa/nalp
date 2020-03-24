@@ -25,14 +25,14 @@ seqgan = SeqGAN(encoder=encoder, vocab_size=corpus.vocab_size, max_length=10, em
                 hidden_size=512, n_filters=[64, 128, 256], filters_size=[3, 5, 5], dropout_rate=0.25, temperature=1)
 
 # Compiling the SeqGAN
-seqgan.compile(tf.optimizers.Adam(learning_rate=0.001),
-               tf.losses.SparseCategoricalCrossentropy(from_logits=True))
+seqgan.compile(g_optimizer=tf.optimizers.Adam(learning_rate=0.001),
+               d_optimizer=tf.optimizers.Adam(learning_rate=0.001))
 
 # Pre-fitting the SeqGAN
-seqgan.pre_fit(dataset.batches, g_epochs=50, d_epochs=10, d_steps=3)
+seqgan.pre_fit(dataset.batches, g_epochs=50, d_epochs=10)
 
 # Fitting the SeqGAN
-seqgan.fit(dataset.batches, epochs=3, d_epochs=5, d_steps=3, n_rollouts=16)
+seqgan.fit(dataset.batches, epochs=3, d_epochs=5, n_rollouts=16)
 
 # Saving SeqGAN weights
 seqgan.save_weights('trained/seqgan', save_format='tf')

@@ -2,6 +2,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras import layers
 
+import nalp.utils.constants as c
 import nalp.utils.logging as l
 from nalp.models.base import AdversarialModel, Model
 from nalp.models.recurrent.lstm import LSTM
@@ -38,22 +39,33 @@ class Discriminator(Model):
 
         # Defining a list for holding the convolutional layers
         self.conv = [layers.Conv2D(n, (k, embedding_size), strides=(
-            1, 1), padding='valid') for n, k in zip(n_filters, filters_size)]
+            1, 1), padding='valid', name=f'conv_{k}') for n, k in zip(n_filters, filters_size)]
 
         # Defining a list for holding the pooling layers
-        self.pool = [layers.MaxPool1D(max_length - k + 1, 1)
+        self.pool = [layers.MaxPool1D(max_length - k + 1, 1, name=f'pool_{k}')
                      for k in filters_size]
 
         # Defining a linear layer for serving as the `highway`
-        self.highway = layers.Dense(sum(n_filters))
+        self.highway = layers.Dense(sum(n_filters), name='highway')
 
         # Defining the dropout layer
-        self.drop = layers.Dropout(dropout_rate)
+        self.drop = layers.Dropout(dropout_rate, name='drop')
 
         # And finally, defining the output layer
-        self.out = layers.Dense(2)
+        self.out = layers.Dense(2, name='out')
 
-    def call(self, x):
+    def call(self, x, training=True):
+        """Method that holds vital information whenever this class is called.
+
+        Args:
+            x (tf.Tensor): A tensorflow's tensor holding input data.
+            training (bool): Whether architecture is under training or not.
+
+        Returns:
+            The same tensor after passing through each defined layer.
+
+        """
+
         # Passing down the embedding layer
         x = self.embedding(x)
 
@@ -68,7 +80,7 @@ class Discriminator(Model):
         pools = [pool(conv) for pool, conv in zip(self.pool, convs)]
 
         # Concatenating all the pooling outputs into a single tensor
-        x = tf.concat(pools, axis=2)
+        x = tf.concat(pools, 2)
 
         # Calculating the output of the linear layer
         hw = self.highway(x)
@@ -77,7 +89,7 @@ class Discriminator(Model):
         x = tf.math.sigmoid(hw) * tf.nn.relu(hw) + (1 - tf.math.sigmoid(hw)) * x
 
         # Calculating the output with a dropout regularization
-        x = self.out(self.drop(x))
+        x = self.out(self.drop(x, training=training))
 
         return x
 
@@ -147,10 +159,10 @@ class Generator(LSTM):
             preds /= temperature
 
             # Samples a predicted batch
-            start_batch = tf.random.categorical(preds, num_samples=1)
+            start_batch = tf.random.categorical(preds, 1)
 
             # Concatenates the sampled batch with the predicted batch
-            sampled_batch = tf.concat([sampled_batch, start_batch], axis=1)
+            sampled_batch = tf.concat([sampled_batch, start_batch], 1)
 
         # Ignoring the last column to get the input sampled batch
         x_sampled_batch = sampled_batch[:, :length]
@@ -160,13 +172,13 @@ class Generator(LSTM):
 
         return x_sampled_batch, y_sampled_batch
 
-    def get_reward(self, x, n_rollouts, D):
+    def get_reward(self, x, D, n_rollouts):
         """Calculates rewards over an input using a Monte Carlo search strategy.
 
         Args:
             x (tf.Tensor): A tensor containing the inputs.
-            n_rollouts (int): Number of rollouts for conducting the Monte Carlo search.
             D (Discriminator): A Discriminator object.
+            n_rollouts (int): Number of rollouts for conducting the Monte Carlo search.
 
         """
 
@@ -192,10 +204,10 @@ class Generator(LSTM):
                 # For every possible value ranging from step to maximum length
                 for _ in range(step, max_length):
                     # Calculates the output
-                    output = tf.random.categorical(output, num_samples=1)
+                    output = tf.random.categorical(output, 1)
 
                     # Concatenates the samples with the output
-                    samples = tf.concat([samples, output], axis=1)
+                    samples = tf.concat([samples, output], 1)
 
                     # Squeezes the second dimension of the output tensor
                     output = tf.squeeze(self(output), 1)
@@ -205,11 +217,11 @@ class Generator(LSTM):
 
                 # Concatenates and accumulates the rewards tensor for every step
                 rewards = tf.concat(
-                    [rewards, tf.expand_dims(output[:, 1], 0)], axis=0)
+                    [rewards, tf.expand_dims(output[:, 1], 0)], 0)
 
         # Calculates the mean over the rewards tensor
         rewards = tf.reduce_mean(tf.reshape(
-            rewards[1:, :], [batch_size, max_length, n_rollouts]), axis=-1)
+            rewards[1:, :], [batch_size, max_length, n_rollouts]), -1)
 
         return rewards
 
@@ -245,10 +257,35 @@ class SeqGAN(AdversarialModel):
                           n_filters, filters_size, dropout_rate)
 
         # Creating the generator network
-        G = Generator(encoder, vocab_size, embedding_size, hidden_size, temperature)
+        G = Generator(encoder, vocab_size, embedding_size,
+                      hidden_size, temperature)
 
         # Overrides its parent class with any custom arguments if needed
         super(SeqGAN, self).__init__(D, G, name='seqgan')
+
+    def compile(self, g_optimizer, d_optimizer):
+        """Main building method.
+
+        Args:
+            g_optimizer (tf.keras.optimizers): An optimizer instance for the generator.
+            d_optimizer (tf.keras.optimizers): An optimizer instance for the discriminator.
+
+        """
+
+        # Creates an optimizer object for the generator
+        self.G_optimizer = g_optimizer
+
+        # Creates an optimizer object for the discriminator
+        self.D_optimizer = d_optimizer
+
+        # Defining the loss function
+        self.loss = tf.nn.sparse_softmax_cross_entropy_with_logits
+
+        # Defining a loss metric for the generator
+        self.G_loss = tf.metrics.Mean(name='G_loss')
+
+        # Defining a loss metric for the discriminator
+        self.D_loss = tf.metrics.Mean(name='D_loss')
 
     @tf.function
     def G_pre_step(self, x, y):
@@ -266,7 +303,7 @@ class SeqGAN(AdversarialModel):
             preds = self.G(x)
 
             # Calculate the loss
-            loss = self.loss(y, preds)
+            loss = tf.reduce_mean(self.loss(y, preds))
 
         # Calculate the gradient based on loss for each training variable
         gradients = tape.gradient(loss, self.G.trainable_variables)
@@ -295,7 +332,8 @@ class SeqGAN(AdversarialModel):
             preds = self.G(x)
 
             # Calculate the loss
-            loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(y, preds) * rewards)
+            loss = tf.reduce_mean(
+                tf.nn.sparse_softmax_cross_entropy_with_logits(y, preds) * rewards)
 
         # Calculate the gradient based on loss for each training variable
         gradients = tape.gradient(loss, self.G.trainable_variables)
@@ -320,10 +358,10 @@ class SeqGAN(AdversarialModel):
         # Using tensorflow's gradient
         with tf.GradientTape() as tape:
             # Calculate the predictions based on inputs
-            preds = self.D(x)
+            preds = tf.squeeze(self.D(x), 1)
 
             # Calculate the loss
-            loss = self.loss(y, preds)
+            loss = tf.reduce_mean(self.loss(y, preds))
 
         # Calculate the gradient based on loss for each training variable
         gradients = tape.gradient(loss, self.D.trainable_variables)
@@ -335,14 +373,13 @@ class SeqGAN(AdversarialModel):
         # Updates the discriminator's loss state
         self.D_loss.update_state(loss)
 
-    def pre_fit(self, batches, g_epochs=100, d_epochs=10, d_steps=3):
+    def pre_fit(self, batches, g_epochs=100, d_epochs=10):
         """Pre-trains the model.
 
         Args:
             batches (Dataset): Pre-training batches containing samples.
             g_epochs (int): The maximum number of pre-training generator epochs.
             d_epochs (int): The maximum number of pre-training discriminator epochs.
-            d_steps (int): Amount of pre-training steps per epoch for the discriminator.
 
         """
 
@@ -381,14 +418,14 @@ class SeqGAN(AdversarialModel):
                     batch_size, max_length, self.G.T)
 
                 # Concatenates real inputs and fake inputs into a single tensor
-                x_concat_batch = tf.concat([x_batch, x_fake_batch], axis=0)
+                x_concat_batch = tf.concat([x_batch, x_fake_batch], 0)
 
                 # Creates a tensor holding label 0 for real samples and label 1 for fake samples
                 y_concat_batch = tf.concat(
-                    [tf.zeros(batch_size,), tf.ones(batch_size,)], axis=0)
+                    [tf.zeros(batch_size, dtype='int32'), tf.ones(batch_size, dtype='int32')], 0)
 
                 # For a fixed amount of discriminator steps
-                for _ in range(d_steps):
+                for _ in range(c.D_STEPS):
                     # Performs a random samples selection of batch size
                     indices = np.random.choice(
                         x_concat_batch.shape[0], batch_size, replace=False)
@@ -399,14 +436,13 @@ class SeqGAN(AdversarialModel):
 
             logger.info(f'Loss(D): {self.D_loss.result().numpy()}')
 
-    def fit(self, batches, epochs=100, d_epochs=5, d_steps=3, n_rollouts=16):
+    def fit(self, batches, epochs=100, d_epochs=5, n_rollouts=16):
         """Trains the model.
 
         Args:
             batches (Dataset): Training batches containing samples.
             epochs (int): The maximum number of total training epochs.
             d_epochs (int): The maximum number of discriminator epochs per total epoch.
-            d_steps (int): Amount of training steps per discriminator epoch.
             n_rollouts (int): Number of rollouts for conducting the Monte Carlo search.
 
         """
@@ -431,7 +467,7 @@ class SeqGAN(AdversarialModel):
                     batch_size, max_length, self.G.T)
 
                 # Gathers the rewards based on the sampled batch
-                rewards = self.G.get_reward(x_fake_batch, n_rollouts, self.D)
+                rewards = self.G.get_reward(x_fake_batch, self.D, n_rollouts)
 
                 # Performs the optimization step over the generator
                 self.G_step(x_fake_batch, y_fake_batch, rewards)
@@ -443,14 +479,14 @@ class SeqGAN(AdversarialModel):
                         batch_size, max_length, self.G.T)
 
                     # Concatenates real inputs and fake inputs into a single tensor
-                    x_concat_batch = tf.concat([x_batch, x_fake_batch], axis=0)
+                    x_concat_batch = tf.concat([x_batch, x_fake_batch], 0)
 
                     # Creates a tensor holding label 0 for real samples and label 1 for fake samples
                     y_concat_batch = tf.concat(
-                        [tf.zeros(batch_size,), tf.ones(batch_size,)], axis=0)
+                        [tf.zeros(batch_size, dtype='int32'), tf.ones(batch_size, dtype='int32')], 0)
 
                     # For a fixed amount of discriminator steps
-                    for _ in range(d_steps):
+                    for _ in range(c.D_STEPS):
                         # Performs a random samples selection of batch size
                         indices = np.random.choice(
                             x_concat_batch.shape[0], batch_size, replace=False)

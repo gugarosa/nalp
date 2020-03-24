@@ -81,8 +81,7 @@ class Model(tf.keras.Model):
             preds /= temperature
 
             # Samples a predicted token
-            sampled_token = tf.random.categorical(
-                preds, num_samples=1)[-1, 0].numpy()
+            sampled_token = tf.random.categorical(preds, 1)[-1, 0].numpy()
 
             # Put the sampled token back to the current token
             start_tokens = tf.expand_dims([sampled_token], 0)
