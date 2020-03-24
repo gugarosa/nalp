@@ -56,7 +56,7 @@ class BiLSTM(Model):
             forward, backward_layer=backward, name='bidirectional')
 
         # Creates the linear (Dense) layer
-        self.linear = layers.Dense(vocab_size, name='dense')
+        self.linear = layers.Dense(vocab_size, name='out')
 
     def call(self, x):
         """Method that holds vital information whenever this class is called.

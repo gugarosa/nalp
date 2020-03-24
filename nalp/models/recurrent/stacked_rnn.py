@@ -38,7 +38,8 @@ class StackedRNN(Model):
             vocab_size, embedding_size, name='embedding')
 
         # Creating a stack of RNN cells
-        self.cells = [layers.SimpleRNNCell(size, name=f'rnn_cell{i}') for (i, size) in enumerate(hidden_size)]
+        self.cells = [layers.SimpleRNNCell(size, name=f'rnn_cell{i}') for (
+            i, size) in enumerate(hidden_size)]
 
         # Creates the RNN loop itself
         self.rnn = layers.RNN(self.cells, name='rnn_layer',
@@ -46,7 +47,7 @@ class StackedRNN(Model):
                               stateful=True)
 
         # Creates the linear (Dense) layer
-        self.linear = layers.Dense(vocab_size, name='dense')
+        self.linear = layers.Dense(vocab_size, name='out')
 
         logger.debug(f'Number of cells: {len(hidden_size)}')
 

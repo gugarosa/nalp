@@ -30,11 +30,11 @@ class Discriminator(Model):
         self.alpha = alpha
 
         # Defining a list for holding the linear layers
-        self.linear = [layers.Dense(128 * i)
+        self.linear = [layers.Dense(128 * i), name = f'linear_{i}'
                        for i in range(n_samplings, 0, -1)]
 
         # Defining the output as a logit unit that decides whether input is real or fake
-        self.out = layers.Dense(1)
+        self.out = layers.Dense(1, name='out')
 
     def call(self, x, training=True):
         """Method that holds vital information whenever this class is called.
@@ -87,10 +87,11 @@ class Generator(Model):
         self.noise_dim = noise_dim
 
         # Defining a list for holding the linear layers
-        self.linear = [layers.Dense(128 * (i + 1)) for i in range(n_samplings)]
+        self.linear = [layers.Dense(
+            128 * (i + 1), name=f'linear_{i}') for i in range(n_samplings)]
 
         # Defining the output layer with a `tanh` activation for restraining interval to [-1, 1]
-        self.out = layers.Dense(input_shape[0], activation='tanh')
+        self.out = layers.Dense(input_shape[0], activation='tanh', name='out')
 
     def call(self, x, training=True):
         """Method that holds vital information whenever this class is called.

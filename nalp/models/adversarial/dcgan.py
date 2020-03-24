@@ -32,13 +32,14 @@ class Discriminator(Model):
 
         # Defining a list for holding the convolutional layers
         self.conv = [layers.Conv2D(
-            64 * (i + 1), (5, 5), strides=(2, 2), padding='same') for i in range(n_samplings)]
+            64 * (i + 1), (5, 5), strides=(2, 2), padding='same', name=f'conv_{i}') for i in range(n_samplings)]
 
         # Defining a list for holding the dropout layers
-        self.drop = [layers.Dropout(dropout_rate) for i in range(n_samplings)]
+        self.drop = [layers.Dropout(
+            dropout_rate, name=f'drop_{i}') for i in range(n_samplings)]
 
         # Defining the output as a logit unit that decides whether input is real or fake
-        self.out = layers.Dense(1)
+        self.out = layers.Dense(1, name='out')
 
     def call(self, x, training=True):
         """Method that holds vital information whenever this class is called.
@@ -105,27 +106,27 @@ class Generator(Model):
             if i == n_samplings:
                 # Appends a linear layer with a custom amount of units
                 self.sampling.append(layers.Dense(
-                    self.filter_size ** 2 * 64 * self.sampling_factor, use_bias=False))
+                    self.filter_size ** 2 * 64 * self.sampling_factor, use_bias=False, name=f'linear_{i}'))
 
             # If it is the second upsampling
             elif i == n_samplings - 1:
                 # Appends a convolutional layer with (1, 1) strides
                 self.sampling.append(layers.Conv2DTranspose(
-                    64 * i, (5, 5), strides=(1, 1), padding='same', use_bias=False))
+                    64 * i, (5, 5), strides=(1, 1), padding='same', use_bias=False, name=f'conv_{i}'))
 
             # If it is the rest of the upsamplings
             else:
                 # Appends a convolutional layer with (2, 2) strides
                 self.sampling.append(layers.Conv2DTranspose(
-                    64 * i, (5, 5), strides=(2, 2), padding='same', use_bias=False))
+                    64 * i, (5, 5), strides=(2, 2), padding='same', use_bias=False, name=f'conv_{i}'))
 
         # Defining a list for holding the batch normalization layers
-        self.bn = [layers.BatchNormalization()
+        self.bn = [layers.BatchNormalization(name=f'bn_{i}')
                    for i in range(n_samplings, 0, -1)]
 
         # Defining the output layer, which will be a convolutional transpose layer with `n_channels` filters
         self.out = layers.Conv2DTranspose(input_shape[2], (5, 5), strides=(
-            2, 2), padding='same', use_bias=False, activation='tanh')
+            2, 2), padding='same', use_bias=False, activation='tanh', name='out')
 
     def call(self, x, training=True):
         """Method that holds vital information whenever this class is called.
