@@ -32,7 +32,7 @@ maligan.compile(g_optimizer=tf.optimizers.Adam(learning_rate=0.001),
 maligan.pre_fit(dataset.batches, g_epochs=50, d_epochs=10)
 
 # Fitting the MaliGAN
-maligan.fit(dataset.batches, epochs=3, d_epochs=5, n_rollouts=16)
+maligan.fit(dataset.batches, epochs=3, d_epochs=5)
 
 # Saving MaliGAN weights
 maligan.save_weights('trained/maligan', save_format='tf')

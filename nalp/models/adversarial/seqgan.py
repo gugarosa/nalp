@@ -192,7 +192,7 @@ class Generator(LSTM):
         rewards = tf.zeros([1, batch_size])
 
         # For every possible rollout
-        for rollout in range(n_rollouts):
+        for _ in range(n_rollouts):
             # For every possible sequence step
             for step in range(1, max_length + 1):
                 # Calculate and gathers the last step output

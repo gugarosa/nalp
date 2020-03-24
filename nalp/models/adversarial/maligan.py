@@ -174,40 +174,29 @@ class Generator(LSTM):
 
         return x_sampled_batch, y_sampled_batch
 
-    def get_reward(self, x, D, n_rollouts):
-        """Calculates rewards over an input using a Monte Carlo search strategy.
+    def get_reward(self, x, D):
+        """Calculates rewards over an input using a Maximum-Likelihood approach.
 
         Args:
             x (tf.Tensor): A tensor containing the inputs.
             D (Discriminator): A Discriminator object.
-            n_rollouts (int): Number of rollouts for conducting the Monte Carlo search.
 
         """
 
-        # Creates an empty list for holding the rewards
-        rewards = []
+        # Gathers the batch size and maximum sequence length
+        batch_size, max_length = x.shape[0], x.shape[1]
+        
+        # Calculates the positive part of the discriminator's output
+        rewards = tf.squeeze(D(x), 1)[:, 1]
 
-        # For every possible rollout
-        for rollout in range(n_rollouts):
-            # Calculates the positive part of the discriminator's output
-            output = D(x)[:, -1, 1]
-
-            # Appends the output to the rewards
-            rewards.append(output)
-
-        # Calculate its mean
-        rewards = tf.reduce_mean(rewards, 0)
-
+        # Calculating the maximum likelihood reward
         rewards = tf.math.divide(rewards, 1 - rewards)
 
         # Normalizes the tensor
         rewards = tf.math.divide(rewards, tf.math.reduce_sum(rewards))
 
-        # Subtracts the tensor from its mean
-        rewards -= tf.reduce_mean(rewards)
-
         # Broadcasts the tensor along the max_length dimensions
-        rewards = tf.broadcast_to(tf.expand_dims(rewards, 1), [4, 10])
+        rewards = tf.broadcast_to(tf.expand_dims(rewards, 1), [batch_size, max_length])
 
         return rewards
 
@@ -423,14 +412,13 @@ class MaliGAN(AdversarialModel):
 
             logger.info(f'Loss(D): {self.D_loss.result().numpy()}')
 
-    def fit(self, batches, epochs=100, d_epochs=5, n_rollouts=16):
+    def fit(self, batches, epochs=100, d_epochs=5):
         """Trains the model.
 
         Args:
             batches (Dataset): Training batches containing samples.
             epochs (int): The maximum number of total training epochs.
             d_epochs (int): The maximum number of discriminator epochs per total epoch.
-            n_rollouts (int): Number of rollouts for conducting the Monte Carlo search.
 
         """
 
@@ -454,7 +442,7 @@ class MaliGAN(AdversarialModel):
                     batch_size, max_length, self.G.T)
 
                 # Gathers the rewards based on the sampled batch
-                rewards = self.G.get_reward(x_fake_batch, self.D, n_rollouts)
+                rewards = self.G.get_reward(x_fake_batch, self.D)
 
                 # Performs the optimization step over the generator
                 self.G_step(x_fake_batch, y_fake_batch, rewards)
