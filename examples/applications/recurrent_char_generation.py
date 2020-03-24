@@ -2,7 +2,7 @@ import tensorflow as tf
 
 from nalp.corpus.text import TextCorpus
 from nalp.encoders.integer import IntegerEncoder
-from nalp.models.recurrent.rnn import RNN
+from nalp.models.generators.rnn import RNNGenerator
 
 # When generating artificial text, make sure
 # to use the same data, classes and parameters
@@ -18,7 +18,7 @@ encoder = IntegerEncoder()
 encoder.learn(corpus.vocab_index, corpus.index_vocab)
 
 # Creating the RNN
-rnn = RNN(encoder=encoder, vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
+rnn = RNNGenerator(encoder=encoder, vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
 
 # Loading pre-trained RNN weights
 rnn.load_weights('trained/rnn').expect_partial()

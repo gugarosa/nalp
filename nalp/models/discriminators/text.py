@@ -2,17 +2,17 @@ import tensorflow as tf
 from tensorflow.keras import layers
 
 import nalp.utils.logging as l
-from nalp.models.base import Model
+from nalp.core.model import Discriminator
 
 logger = l.get_logger(__name__)
 
 
-class TextDiscriminator(Model):
+class TextDiscriminator(Discriminator):
     """A TextDiscriminator class stands for the text-discriminative part of a Generative Adversarial Network.
 
     """
 
-    def __init__(self, vocab_size, max_length, embedding_size, n_filters, filters_size, dropout_rate):
+    def __init__(self, vocab_size=1, max_length=1, embedding_size=32, n_filters=[64], filters_size=[1], dropout_rate=0.25):
         """Initialization method.
 
         Args:
@@ -25,7 +25,7 @@ class TextDiscriminator(Model):
 
         """
 
-        logger.info('Overriding class: Model -> TextDiscriminator.')
+        logger.info('Overriding class: Discriminator -> TextDiscriminator.')
 
         # Overrides its parent class with any custom arguments if needed
         super(TextDiscriminator, self).__init__(name='D_text')

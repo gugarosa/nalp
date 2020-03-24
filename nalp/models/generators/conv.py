@@ -12,7 +12,7 @@ class ConvGenerator(Model):
 
     """
 
-    def __init__(self, input_shape, noise_dim, n_samplings, alpha):
+    def __init__(self, input_shape=(28, 28, 1), noise_dim=100, n_samplings=3, alpha=0.3):
         """Initialization method.
 
         Args:

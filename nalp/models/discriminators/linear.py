@@ -2,12 +2,12 @@ import tensorflow as tf
 from tensorflow.keras import layers
 
 import nalp.utils.logging as l
-from nalp.models.base import Model
+from nalp.core.model import Discriminator
 
 logger = l.get_logger(__name__)
 
 
-class LinearDiscriminator(Model):
+class LinearDiscriminator(Discriminator):
     """A LinearDiscriminator class stands for the linear discriminative part of a Generative Adversarial Network.
 
     """
@@ -21,7 +21,7 @@ class LinearDiscriminator(Model):
 
         """
 
-        logger.info('Overriding class: Model -> LinearDiscriminator.')
+        logger.info('Overriding class: Discriminator -> LinearDiscriminator.')
 
         # Overrides its parent class with any custom arguments if needed
         super(LinearDiscriminator, self).__init__(name='D_linear')

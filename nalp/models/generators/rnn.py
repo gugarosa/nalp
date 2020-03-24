@@ -6,15 +6,15 @@ from nalp.models.base import Model
 logger = l.get_logger(__name__)
 
 
-class RNN(Model):
-    """An RNN class is the one in charge of Recurrent Neural Networks vanilla implementation.
+class RNNGenerator(Model):
+    """An RNNGenerator class is the one in charge of Recurrent Neural Networks vanilla implementation.
 
     References:
         J. Elman. Finding structure in time. Cognitive science 14.2 (1990).
 
     """
 
-    def __init__(self, encoder=None, vocab_size=1, embedding_size=1, hidden_size=1):
+    def __init__(self, encoder=None, vocab_size=1, embedding_size=32, hidden_size=64):
         """Initialization method.
 
         Args:
@@ -25,10 +25,10 @@ class RNN(Model):
 
         """
 
-        logger.info('Overriding class: Model -> RNN.')
+        logger.info('Overriding class: Model -> RNNGenerator.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(RNN, self).__init__(name='rnn')
+        super(RNNGenerator, self).__init__(name='rnn')
 
         # Creates a property for holding the used encoder
         self.encoder = encoder

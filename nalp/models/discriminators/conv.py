@@ -2,18 +2,18 @@ import tensorflow as tf
 from tensorflow.keras import layers
 
 import nalp.utils.logging as l
-from nalp.models.base import Model
+from nalp.core.model import Discriminator
 
 logger = l.get_logger(__name__)
 
 
-class ConvDiscriminator(Model):
+class ConvDiscriminator(Discriminator):
     """A ConvDiscriminator class stands for the convolutional discriminative part
     of a Generative Adversarial Network.
 
     """
 
-    def __init__(self, n_samplings, alpha, dropout_rate):
+    def __init__(self, n_samplings=3, alpha=0.3, dropout_rate=0.3):
         """Initialization method.
 
         Args:
@@ -23,7 +23,7 @@ class ConvDiscriminator(Model):
 
         """
 
-        logger.info('Overriding class: Model -> ConvDiscriminator.')
+        logger.info('Overriding class: Discriminator -> ConvDiscriminator.')
 
         # Overrides its parent class with any custom arguments if needed
         super(ConvDiscriminator, self).__init__(name='D_conv')
