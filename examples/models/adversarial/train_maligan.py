@@ -22,17 +22,17 @@ dataset = LanguageModelingDataset(encoded_tokens, max_length=10, batch_size=4)
 
 # Creating the MaliGAN
 maligan = MaliGAN(encoder=encoder, vocab_size=corpus.vocab_size, max_length=10, embedding_size=256,
-                hidden_size=512, n_filters=[64, 128, 256], filters_size=[3, 5, 5], dropout_rate=0.25, temperature=1)
+                  hidden_size=512, n_filters=[64, 128, 256], filters_size=[3, 5, 5], dropout_rate=0.25, temperature=1)
 
 # Compiling the MaliGAN
-maligan.compile(tf.optimizers.Adam(learning_rate=0.001),
-               tf.losses.SparseCategoricalCrossentropy(from_logits=True))
+maligan.compile(g_optimizer=tf.optimizers.Adam(learning_rate=0.001),
+                d_optimizer=tf.optimizers.Adam(learning_rate=0.001))
 
 # Pre-fitting the MaliGAN
-maligan.pre_fit(dataset.batches, g_epochs=50, d_epochs=10, d_steps=3)
+maligan.pre_fit(dataset.batches, g_epochs=50, d_epochs=10)
 
 # Fitting the MaliGAN
-maligan.fit(dataset.batches, epochs=3, d_epochs=5, d_steps=3, n_rollouts=16)
+maligan.fit(dataset.batches, epochs=3, d_epochs=5, n_rollouts=16)
 
 # Saving MaliGAN weights
 maligan.save_weights('trained/maligan', save_format='tf')
