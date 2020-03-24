@@ -1,240 +1,25 @@
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras import layers
 
 import nalp.utils.constants as c
 import nalp.utils.logging as l
-from nalp.models.base import AdversarialModel, Model
-from nalp.models.recurrent.lstm import LSTM
+from nalp.core.model import Adversarial
+from nalp.models.discriminators.text import TextDiscriminator
+from nalp.models.generators.lstm import LSTMGenerator
 
 logger = l.get_logger(__name__)
 
 
-class Discriminator(Model):
-    """A Discriminator class stands for the discriminative part of a Sequence Generative Adversarial Network.
-
-    """
-
-    def __init__(self, vocab_size, max_length, embedding_size, n_filters, filters_size, dropout_rate):
-        """Initialization method.
-
-        Args:
-            vocab_size (int): The size of the vocabulary.
-            max_length (int): Maximum length of the sequences.
-            embedding_size (int): The size of the embedding layer.
-            n_filters (list): Number of filters to be applied.
-            filters_size (list): Size of filters to be applied.
-            dropout_rate (float): Dropout activation rate.
-
-        """
-
-        logger.info('Overriding class: Model -> Discriminator.')
-
-        # Overrides its parent class with any custom arguments if needed
-        super(Discriminator, self).__init__(name='D_seqgan')
-
-        # Creates an embedding layer
-        self.embedding = layers.Embedding(
-            vocab_size, embedding_size, name='embedding')
-
-        # Defining a list for holding the convolutional layers
-        self.conv = [layers.Conv2D(n, (k, embedding_size), strides=(
-            1, 1), padding='valid', name=f'conv_{k}') for n, k in zip(n_filters, filters_size)]
-
-        # Defining a list for holding the pooling layers
-        self.pool = [layers.MaxPool1D(max_length - k + 1, 1, name=f'pool_{k}')
-                     for k in filters_size]
-
-        # Defining a linear layer for serving as the `highway`
-        self.highway = layers.Dense(sum(n_filters), name='highway')
-
-        # Defining the dropout layer
-        self.drop = layers.Dropout(dropout_rate, name='drop')
-
-        # And finally, defining the output layer
-        self.out = layers.Dense(2, name='out')
-
-    def call(self, x, training=True):
-        """Method that holds vital information whenever this class is called.
-
-        Args:
-            x (tf.Tensor): A tensorflow's tensor holding input data.
-            training (bool): Whether architecture is under training or not.
-
-        Returns:
-            The same tensor after passing through each defined layer.
-
-        """
-
-        # Passing down the embedding layer
-        x = self.embedding(x)
-
-        # Expanding the last dimension
-        x = tf.expand_dims(x, -1)
-
-        # Passing down the convolutional layers following a ReLU activation
-        # and removal of third dimension
-        convs = [tf.squeeze(tf.nn.relu(conv(x)), 2) for conv in self.conv]
-
-        # Passing down the pooling layers per convolutional layer
-        pools = [pool(conv) for pool, conv in zip(self.pool, convs)]
-
-        # Concatenating all the pooling outputs into a single tensor
-        x = tf.concat(pools, 2)
-
-        # Calculating the output of the linear layer
-        hw = self.highway(x)
-
-        # Calculating the `highway` layer
-        x = tf.math.sigmoid(hw) * tf.nn.relu(hw) + (1 - tf.math.sigmoid(hw)) * x
-
-        # Calculating the output with a dropout regularization
-        x = self.out(self.drop(x, training=training))
-
-        return x
-
-
-class Generator(LSTM):
-    """A Generator class stands for the generator part of a Sequence Generative Adversarial Network.
-
-    """
-
-    def __init__(self, encoder, vocab_size, embedding_size, hidden_size, temperature):
-        """Initialization method.
-
-        Args:
-            encoder (IntegerEncoder): An index to vocabulary encoder.
-            vocab_size (int): The size of the vocabulary.
-            embedding_size (int): The size of the embedding layer.
-            hidden_size (int): The amount of hidden neurons.
-            temperature (float): Temperature value to sample the token.
-
-        """
-
-        logger.info('Overriding class: LSTM -> Generator.')
-
-        # Overrides its parent class with any custom arguments if needed
-        super(Generator, self).__init__(encoder=encoder, vocab_size=vocab_size,
-                                        embedding_size=embedding_size, hidden_size=hidden_size)
-
-        # Defining a property for holding the vocabulary size
-        self.vocab_size = vocab_size
-
-        # Defining a property for holding the temperature
-        self.T = temperature
-
-    def generate_batch(self, batch_size=1, length=1, temperature=1.0):
-        """Generates a batch of tokens by feeding to the network the
-        current token (t) and predicting the next token (t+1).
-
-        Args:
-            batch_size (int): Size of the batch to be generated.
-            length (int): Length of generated tokens.
-            temperature (float): A temperature value to sample the token.
-
-        Returns:
-            A (batch_size, length) tensor of generated tokens.
-
-        """
-
-        # Generating an uniform tensor between 0 and vocab_size
-        start_batch = tf.random.uniform(
-            [batch_size, 1], 0, self.vocab_size, dtype='int64')
-
-        # Creating an empty tensor for the sampled batch
-        sampled_batch = tf.zeros([batch_size, 1], dtype='int64')
-
-        # Resetting the network states
-        self.reset_states()
-
-        # For every possible generation
-        for i in range(length):
-            # Predicts the current token
-            preds = self(start_batch)
-
-            # Removes the second dimension of the tensor
-            preds = tf.squeeze(preds, 1)
-
-            # Regularize the prediction with the temperature
-            preds /= temperature
-
-            # Samples a predicted batch
-            start_batch = tf.random.categorical(preds, 1)
-
-            # Concatenates the sampled batch with the predicted batch
-            sampled_batch = tf.concat([sampled_batch, start_batch], 1)
-
-        # Ignoring the last column to get the input sampled batch
-        x_sampled_batch = sampled_batch[:, :length]
-
-        # Ignoring the first column to get the input sampled batch
-        y_sampled_batch = sampled_batch[:, 1:]
-
-        return x_sampled_batch, y_sampled_batch
-
-    def get_reward(self, x, D, n_rollouts):
-        """Calculates rewards over an input using a Monte Carlo search strategy.
-
-        Args:
-            x (tf.Tensor): A tensor containing the inputs.
-            D (Discriminator): A Discriminator object.
-            n_rollouts (int): Number of rollouts for conducting the Monte Carlo search.
-
-        """
-
-        # Gathers the batch size and maximum sequence length
-        batch_size, max_length = x.shape[0], x.shape[1]
-
-        # Defines an index as zero
-        idx = 0
-
-        # Creates an empty tensor for holding the rewards
-        rewards = tf.zeros([1, batch_size])
-
-        # For every possible rollout
-        for _ in range(n_rollouts):
-            # For every possible sequence step
-            for step in range(1, max_length + 1):
-                # Calculate and gathers the last step output
-                output = self(x)[:, -1, :]
-
-                # Gathers the input upon to the current step
-                samples = x[:, :step]
-
-                # For every possible value ranging from step to maximum length
-                for _ in range(step, max_length):
-                    # Calculates the output
-                    output = tf.random.categorical(output, 1)
-
-                    # Concatenates the samples with the output
-                    samples = tf.concat([samples, output], 1)
-
-                    # Squeezes the second dimension of the output tensor
-                    output = tf.squeeze(self(output), 1)
-
-                # Calculates the softmax over the discriminator output and removes the second dimension
-                output = tf.squeeze(tf.math.softmax(D(samples)), 1)
-
-                # Concatenates and accumulates the rewards tensor for every step
-                rewards = tf.concat(
-                    [rewards, tf.expand_dims(output[:, 1], 0)], 0)
-
-        # Calculates the mean over the rewards tensor
-        rewards = tf.reduce_mean(tf.reshape(
-            rewards[1:, :], [batch_size, max_length, n_rollouts]), -1)
-
-        return rewards
-
-
-class SeqGAN(AdversarialModel):
-    """A SeqGAN class is the one in charge of Sequence Generative Adversarial Networks implementation.
+class MaliGAN(Adversarial):
+    """A MaliGAN class is the one in charge of Maximum-Likelihood Augmented Discrete
+    Generative Adversarial Networks implementation.
 
     References:
-        L. Yu, et al. Seqgan: Sequence generative adversarial nets with policy gradient. 31th AAAI Conference on Artificial Intelligence (2017).
+        T. Che, et al. Maximum-likelihood augmented discrete generative adversarial networks. Preprint arXiv:1702.07983 (2017).
 
     """
 
-    def __init__(self, encoder=None, vocab_size=1, max_length=1, embedding_size=1, hidden_size=1, n_filters=[64], filters_size=[1], dropout_rate=0.25, temperature=1):
+    def __init__(self, encoder=None, vocab_size=1, max_length=1, embedding_size=32, hidden_size=64, n_filters=[64], filters_size=[1], dropout_rate=0.25, temperature=1):
         """Initialization method.
 
         Args:
@@ -250,18 +35,23 @@ class SeqGAN(AdversarialModel):
 
         """
 
-        logger.info('Overriding class: AdversarialModel -> SeqGAN.')
+        logger.info('Overriding class: Adversarial -> MaliGAN.')
 
         # Creating the discriminator network
-        D = Discriminator(vocab_size, max_length, embedding_size,
-                          n_filters, filters_size, dropout_rate)
+        D = TextDiscriminator(
+            vocab_size, max_length, embedding_size, n_filters, filters_size, dropout_rate)
 
         # Creating the generator network
-        G = Generator(encoder, vocab_size, embedding_size,
-                      hidden_size, temperature)
+        G = LSTMGenerator(encoder, vocab_size, embedding_size, hidden_size)
 
         # Overrides its parent class with any custom arguments if needed
-        super(SeqGAN, self).__init__(D, G, name='seqgan')
+        super(MaliGAN, self).__init__(D, G, name='maligan')
+
+        # Defining a property for holding the vocabulary size
+        self.vocab_size = vocab_size
+
+        # Defining a property for holding the temperature
+        self.T = temperature
 
     def compile(self, g_optimizer, d_optimizer):
         """Main building method.
@@ -286,6 +76,82 @@ class SeqGAN(AdversarialModel):
 
         # Defining a loss metric for the discriminator
         self.D_loss = tf.metrics.Mean(name='D_loss')
+
+    def generate_batch(self, batch_size=1, length=1):
+        """Generates a batch of tokens by feeding to the network the
+        current token (t) and predicting the next token (t+1).
+
+        Args:
+            batch_size (int): Size of the batch to be generated.
+            length (int): Length of generated tokens.
+            temperature (float): A temperature value to sample the token.
+
+        Returns:
+            A (batch_size, length) tensor of generated tokens.
+
+        """
+
+        # Generating an uniform tensor between 0 and vocab_size
+        start_batch = tf.random.uniform(
+            [batch_size, 1], 0, self.vocab_size, dtype='int64')
+
+        # Creating an empty tensor for the sampled batch
+        sampled_batch = tf.zeros([batch_size, 1], dtype='int64')
+
+        # Resetting the network states
+        self.G.reset_states()
+
+        # For every possible generation
+        for i in range(length):
+            # Predicts the current token
+            preds = self.G(start_batch)
+
+            # Removes the second dimension of the tensor
+            preds = tf.squeeze(preds, 1)
+
+            # Regularize the prediction with the temperature
+            preds /= self.T
+
+            # Samples a predicted batch
+            start_batch = tf.random.categorical(preds, 1)
+
+            # Concatenates the sampled batch with the predicted batch
+            sampled_batch = tf.concat([sampled_batch, start_batch], 1)
+
+        # Ignoring the last column to get the input sampled batch
+        x_sampled_batch = sampled_batch[:, :length]
+
+        # Ignoring the first column to get the input sampled batch
+        y_sampled_batch = sampled_batch[:, 1:]
+
+        return x_sampled_batch, y_sampled_batch
+
+    def get_reward(self, x):
+        """Calculates rewards over an input using a Maximum-Likelihood approach.
+
+        Args:
+            x (tf.Tensor): A tensor containing the inputs.
+
+        """
+
+        # Gathers the batch size and maximum sequence length
+        batch_size, max_length = x.shape[0], x.shape[1]
+
+        # Calculates the positive part of the discriminator's output
+        rewards = tf.squeeze(self.D(x), 1)[:, 1]
+
+        # Calculating the maximum-likelihood reward
+        rewards = tf.math.divide(rewards, 1 - rewards)
+
+        # Normalizes the tensor
+        rewards = tf.math.divide(rewards, tf.math.reduce_sum(rewards))
+
+        # Broadcasts the tensor along the max_length dimensions
+        rewards = tf.broadcast_to(tf.expand_dims(
+            rewards, 1), [batch_size, max_length])
+
+        return rewards
+
 
     @tf.function
     def G_pre_step(self, x, y):
@@ -373,7 +239,7 @@ class SeqGAN(AdversarialModel):
         # Updates the discriminator's loss state
         self.D_loss.update_state(loss)
 
-    def pre_fit(self, batches, g_epochs=100, d_epochs=10):
+    def pre_fit(self, batches, g_epochs=50, d_epochs=10):
         """Pre-trains the model.
 
         Args:
@@ -414,8 +280,7 @@ class SeqGAN(AdversarialModel):
                 batch_size, max_length = x_batch.shape[0], x_batch.shape[1]
 
                 # Generates a batch of fake inputs
-                x_fake_batch, _ = self.G.generate_batch(
-                    batch_size, max_length, self.G.T)
+                x_fake_batch, _ = self.generate_batch(batch_size, max_length)
 
                 # Concatenates real inputs and fake inputs into a single tensor
                 x_concat_batch = tf.concat([x_batch, x_fake_batch], 0)
@@ -436,14 +301,13 @@ class SeqGAN(AdversarialModel):
 
             logger.info(f'Loss(D): {self.D_loss.result().numpy()}')
 
-    def fit(self, batches, epochs=100, d_epochs=5, n_rollouts=16):
+    def fit(self, batches, epochs=10, d_epochs=5):
         """Trains the model.
 
         Args:
             batches (Dataset): Training batches containing samples.
             epochs (int): The maximum number of total training epochs.
             d_epochs (int): The maximum number of discriminator epochs per total epoch.
-            n_rollouts (int): Number of rollouts for conducting the Monte Carlo search.
 
         """
 
@@ -463,11 +327,11 @@ class SeqGAN(AdversarialModel):
                 batch_size, max_length = x_batch.shape[0], x_batch.shape[1]
 
                 # Generates a batch of fake inputs
-                x_fake_batch, y_fake_batch = self.G.generate_batch(
-                    batch_size, max_length, self.G.T)
+                x_fake_batch, y_fake_batch = self.generate_batch(
+                    batch_size, max_length)
 
                 # Gathers the rewards based on the sampled batch
-                rewards = self.G.get_reward(x_fake_batch, self.D, n_rollouts)
+                rewards = self.get_reward(x_fake_batch)
 
                 # Performs the optimization step over the generator
                 self.G_step(x_fake_batch, y_fake_batch, rewards)
@@ -475,8 +339,8 @@ class SeqGAN(AdversarialModel):
                 # Iterate through all possible discriminator's epochs
                 for _ in range(d_epochs):
                     # Generates a batch of fake inputs
-                    x_fake_batch, _ = self.G.generate_batch(
-                        batch_size, max_length, self.G.T)
+                    x_fake_batch, _ = self.generate_batch(
+                        batch_size, max_length)
 
                     # Concatenates real inputs and fake inputs into a single tensor
                     x_concat_batch = tf.concat([x_batch, x_fake_batch], 0)

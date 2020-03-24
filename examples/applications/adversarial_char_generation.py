@@ -2,7 +2,7 @@ import tensorflow as tf
 
 from nalp.corpus.text import TextCorpus
 from nalp.encoders.integer import IntegerEncoder
-from nalp.models.adversarial.seqgan import SeqGAN
+from nalp.models.seqgan import SeqGAN
 
 # When generating artificial text, make sure
 # to use the same data, classes and parameters

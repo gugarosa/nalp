@@ -5,7 +5,7 @@ from mido import Message, MidiFile, MidiTrack
 from nalp.corpus.audio import AudioCorpus
 from nalp.datasets.language_modeling import LanguageModelingDataset
 from nalp.encoders.integer import IntegerEncoder
-from nalp.models.recurrent.rnn import RNN
+from nalp.models.generators.rnn import RNNGenerator
 
 # Creating an AudioCorpus from file
 corpus = AudioCorpus(from_file='data/audio/sample.mid')
@@ -23,7 +23,7 @@ encoded_tokens = encoder.encode(corpus.tokens)
 dataset = LanguageModelingDataset(encoded_tokens, max_length=100, batch_size=64)
 
 # Creating the RNN
-rnn = RNN(encoder=encoder, vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
+rnn = RNNGenerator(encoder=encoder, vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
 
 # As NALP's RNNs are stateful, we need to build it with a fixed batch size
 rnn.build((64, None))
@@ -40,7 +40,7 @@ rnn.fit(dataset.batches, epochs=25)
 rnn.save_weights('trained/audio_rnn', save_format='tf')
 
 # Re-creating the RNN
-rnn = RNN(encoder=encoder, vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
+rnn = RNNGenerator(encoder=encoder, vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
 
 # Loading pre-trained RNN weights
 rnn.load_weights('trained/audio_rnn').expect_partial()

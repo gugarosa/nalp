@@ -12,7 +12,7 @@ class LinearDiscriminator(Discriminator):
 
     """
 
-    def __init__(self, n_samplings, alpha):
+    def __init__(self, n_samplings=3, alpha=0.01):
         """Initialization method.
 
         Args:
