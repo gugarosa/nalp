@@ -1,0 +1,13 @@
+nalp.models.discriminators
+===========================
+
+Pre-defined discriminator architectures.
+
+.. toctree::
+    nalp.models.discriminators.conv
+    nalp.models.discriminators.linear
+    nalp.models.discriminators.text
+
+.. autoapimodule:: nalp.models.discriminators
+   :members:
+   :show-inheritance:

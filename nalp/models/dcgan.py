@@ -1,11 +1,11 @@
 import nalp.utils.logging as l
-from nalp.core.model import AdversarialModel
+from nalp.core.model import Adversarial
 from nalp.models.discriminators.conv import ConvDiscriminator
 from nalp.models.generators.conv import ConvGenerator
 
 logger = l.get_logger(__name__)
 
-class DCGAN(AdversarialModel):
+class DCGAN(Adversarial):
     """A DCGAN class is the one in charge of Deep Convolutional Generative Adversarial Networks implementation.
 
     References:
@@ -25,7 +25,7 @@ class DCGAN(AdversarialModel):
 
         """
 
-        logger.info('Overriding class: AdversarialModel -> DCGAN.')
+        logger.info('Overriding class: Adversarial -> DCGAN.')
 
         # Creating the discriminator network
         D = ConvDiscriminator(n_samplings, alpha, dropout_rate)

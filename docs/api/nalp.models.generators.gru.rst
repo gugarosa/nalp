@@ -1,7 +1,7 @@
-nalp.models.recurrent.gru
+nalp.models.generators.gru
 ===========================
 
-.. autoapiclass:: nalp.models.recurrent.gru.GRU
+.. autoapiclass:: nalp.models.generators.gru.GRUGenerator
     :members:
     :private-members:
     :special-members:

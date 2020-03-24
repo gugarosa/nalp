@@ -132,9 +132,8 @@ class Generator(tf.keras.Model):
         return text
 
 
-class AdversarialModel(tf.keras.Model):
-    """An AdversarialModel class is responsible for customly implementing
-    Generative Adversarial Networks.
+class Adversarial(tf.keras.Model):
+    """An Adversarial class is responsible for customly implementing Generative Adversarial Networks.
 
     """
 
@@ -142,14 +141,14 @@ class AdversarialModel(tf.keras.Model):
         """Initialization method.
 
         Args:
-            discriminator (Model): Network's discriminator architecture.
-            generator (Model): Network's generator architecture.
+            discriminator (Discriminator): Network's discriminator architecture.
+            generator (Generator): Network's generator architecture.
             name (str): The model's identifier string.
 
         """
 
         # Overrides its parent class with any custom arguments if needed
-        super(AdversarialModel, self).__init__(name=name)
+        super(Adversarial, self).__init__(name=name)
 
         # Defining the discriminator network
         self.D = discriminator

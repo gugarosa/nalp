@@ -43,6 +43,7 @@ NALP is based on the following structure, and you should pay attention to its tr
         - corpus
         - dataset
         - encoder
+        - model
     - corpus
         - audio
         - text
@@ -53,18 +54,22 @@ NALP is based on the following structure, and you should pay attention to its tr
         - integer
         - word2vec
     - models
-        - adversarial
-            - dcgan
-            - gan
-            - maligan
-            - seqgan
-        - base
-        - recurrent
+        - discriminators
+            - conv
+            - linear
+            - text
+        - generators
             - bi_lstm
+            - conv
             - gru
+            - linear
             - lstm
             - rnn
             - stacked_rnn
+        - dcgan
+        - gan
+        - maligan
+        - seqgan
     - utils
         - constants
         - loader

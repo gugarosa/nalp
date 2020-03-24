@@ -1,7 +1,7 @@
-nalp.models.recurrent.lstm
+nalp.models.generators.rnn
 ===========================
 
-.. autoapiclass:: nalp.models.recurrent.lstm.LSTM
+.. autoapiclass:: nalp.models.generators.rnn.RNNGenerator
     :members:
     :private-members:
     :special-members:

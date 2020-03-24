@@ -7,6 +7,7 @@ The core is the core. Essentially, it is the parent of everything. You should fi
     nalp.core.corpus
     nalp.core.dataset
     nalp.core.encoder
+    nalp.core.model
 
 .. autoapimodule:: nalp.core
    :members:

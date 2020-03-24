@@ -1,12 +1,12 @@
 import nalp.utils.logging as l
-from nalp.core.model import AdversarialModel
+from nalp.core.model import Adversarial
 from nalp.models.discriminators.linear import LinearDiscriminator
 from nalp.models.generators.linear import LinearGenerator
 
 logger = l.get_logger(__name__)
 
 
-class GAN(AdversarialModel):
+class GAN(Adversarial):
     """A GAN class is the one in charge of naïve Generative Adversarial Networks implementation.
 
     References:
@@ -25,7 +25,7 @@ class GAN(AdversarialModel):
 
         """
 
-        logger.info('Overriding class: AdversarialModel -> GAN.')
+        logger.info('Overriding class: Adversarial -> GAN.')
 
         # Creating the discriminator network
         D = LinearDiscriminator(n_samplings, alpha)
