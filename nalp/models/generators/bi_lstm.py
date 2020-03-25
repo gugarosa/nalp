@@ -1,7 +1,8 @@
+import tensorflow as tf
 from tensorflow.keras import layers
 
 import nalp.utils.logging as l
-from nalp.core.Generator import Generator
+from nalp.core.model import Generator
 
 logger = l.get_logger(__name__)
 
@@ -40,20 +41,16 @@ class BiLSTMGenerator(Generator):
         # Creates a forward LSTM cell
         cell_f = layers.LSTMCell(hidden_size, name='lstm_cell_f')
 
-        # And a backward LSTM cell
-        cell_b = layers.LSTMCell(hidden_size, name='lstm_cell_b')
-
-        # Creates the forward RNN layer
-        forward = layers.RNN(cell_f, name='forward_rnn',
+        # And a orward RNN layer
+        self.forward = layers.RNN(cell_f, name='forward_rnn',
                              return_sequences=True, stateful=True)
 
-        # Creates the backward RNN layer
-        backward = layers.RNN(cell_b, name='backward_rnn',
-                              return_sequences=True, stateful=True, go_backwards=True)
+        # Creates a backward LSTM cell
+        cell_b = layers.LSTMCell(hidden_size, name='lstm_cell_b')
 
-        # Creates the bi-directional Layer
-        self.bidirect = layers.Bidirectional(
-            forward, backward_layer=backward, name='bidirectional')
+        # And a backward RNN layer
+        self.backward = layers.RNN(cell_b, name='backward_rnn',
+                              return_sequences=True, stateful=True, go_backwards=True)
 
         # Creates the linear (Dense) layer
         self.linear = layers.Dense(vocab_size, name='out')
@@ -72,8 +69,14 @@ class BiLSTMGenerator(Generator):
         # Firstly, we apply the embedding layer
         x = self.embedding(x)
 
-        # Then, we pass it to the bi-directional layer
-        x = self.bidirect(x)
+        # Then, we pass it to the forward layer
+        x_f = self.forward(x)
+
+        # We also pass it to the backward layer
+        x_b = self.backward(x)
+
+        # Then, we concatenate both layers
+        x = tf.concat([x_f, x_b], -1)
 
         # The input also suffers a linear combination to output correct shape
         x = self.linear(x)
