@@ -70,14 +70,10 @@ class WGAN(Adversarial):
             y = self.D(x)
 
             # Calculates the discriminator loss upon D(x) and D(G(z))
-            D_loss = tf.reduce_mean(y) - tf.reduce_mean(y_fake)
+            D_loss = -tf.reduce_mean(y) + tf.reduce_mean(y_fake)
 
         # Calculate the gradients based on discriminator's loss for each training variable
         D_gradients = tape.gradient(D_loss, self.D.trainable_variables)
-
-        # Clips the gradients
-        D_gradients = [tf.clip_by_value(
-            g, -self.clip, self.clip) for g in D_gradients]
 
         # Applies the discriminator's gradients using an optimizer
         self.D_optimizer.apply_gradients(
@@ -85,6 +81,9 @@ class WGAN(Adversarial):
 
         # Updates the discriminator's loss state
         self.D_loss.update_state(D_loss)
+
+        # Clips the weights
+        [w.assign(tf.clip_by_value(w, -self.clip, self.clip)) for w in self.D.trainable_variables]
 
     @tf.function
     def G_step(self, x):
