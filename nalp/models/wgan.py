@@ -9,14 +9,16 @@ logger = l.get_logger(__name__)
 
 
 class WGAN(Adversarial):
-    """A WGAN class is the one in charge of Wasserstein Generative Adversarial Networks implementation.
+    """A WGAN class is the one in charge of Wasserstein Generative Adversarial Networks implementation with
+    weight clipping or gradient penalty algorithms.
 
     References:
         M. Arjovsky, S. Chintala, L. Bottou. Wasserstein gan. Preprint arXiv:1701.07875 (2017).
+        I. Gulrajani, et al. Improved training of wasserstein gans. Advances in neural information processing systems (2017).
 
     """
 
-    def __init__(self, input_shape=(28, 28, 1), noise_dim=100, n_samplings=3, alpha=0.3, clip=0.01, dropout_rate=0.3):
+    def __init__(self, input_shape=(28, 28, 1), noise_dim=100, n_samplings=3, alpha=0.3, dropout_rate=0.3, type='wc', clip=0.01, penalty=10):
         """Initialization method.
 
         Args:
@@ -24,8 +26,10 @@ class WGAN(Adversarial):
             noise_dim (int): Amount of noise dimensions for the Generator.
             n_samplings (int): Number of down/up samplings to perform.
             alpha (float): LeakyReLU activation threshold.
-            clip (float): Clipping value for the Lipschitz constrain.
             dropout_rate (float): Dropout activation rate.
+            type (str): Whether should use weight clipping (wc) or gradient penalty (gp).
+            clip (float): Clipping value for the Lipschitz constrain.
+            penalty (int): Coefficient for the gradient penalty.
 
         """
 
@@ -40,11 +44,55 @@ class WGAN(Adversarial):
         # Overrides its parent class with any custom arguments if needed
         super(WGAN, self).__init__(D, G, name='wgan')
 
+        # Defining the type of penalization to be used
+        self.type = type
+
         # Defining the clipping value as a property for further usage
         self.clip = clip
 
+        # Defining the gradient penalty coefficient as a property for further usage
+        self.penalty_lambda = penalty
+
         logger.info(
-            f'Input: {input_shape} | Noise: {noise_dim} | Number of Samplings: {n_samplings} | Activation Rate: {alpha} | Clip: {clip} | Dropout Rate: {dropout_rate}.')
+            f'Input: {input_shape} | Noise: {noise_dim} | Number of Samplings: {n_samplings} | Activation Rate: {alpha} | Dropout Rate: {dropout_rate} | Type: {type}.')
+
+    def gradient_penalty(self, x, x_fake):
+        """Performs the gradient penalty procedure.
+
+        Args:
+            x (tf.Tensor): A tensor containing the real inputs.
+            x_fake (tf.Tensor): A tensor containing the fake inputs.
+
+        Returns:
+            The penalization to be applied over the loss function.
+
+        """
+
+        # Samples an uniform random number
+        e = tf.random.uniform([x.shape[0], 1, 1, 1])
+
+        # Calculates the penalized input
+        x_penalty = x * e + (1 - e) * x_fake
+
+        # Using tensorflow's gradient
+        with tf.GradientTape() as tape:
+            # Watches the penalized input
+            tape.watch(x_penalty)
+
+            # Samples the score from the penalized input
+            y_penalty = self.D(x_penalty)
+
+        # Calculates the penalization gradients
+        penalty_gradients = tape.gradient(y_penalty, x_penalty)
+
+        # Calculates the norm of the penalization gradients
+        penalty_gradients_norm = tf.sqrt(tf.reduce_sum(
+            tf.square(penalty_gradients), [1, 2, 3]))
+
+        # Calculates the gradient penalty
+        penalty = tf.reduce_mean((penalty_gradients_norm - 1) ** 2)
+
+        return penalty
 
     @tf.function
     def D_step(self, x):
@@ -63,14 +111,22 @@ class WGAN(Adversarial):
             # Generates new data, e.g., G(z)
             x_fake = self.G(z)
 
-            # Samples fake targets from the discriminator, e.g., D(G(z))
+            # Samples fake scores from the discriminator, e.g., D(G(z))
             y_fake = self.D(x_fake)
 
-            # Samples real targets from the discriminator, e.g., D(x)
+            # Samples real scores from the discriminator, e.g., D(x)
             y = self.D(x)
 
             # Calculates the discriminator loss upon D(x) and D(G(z))
             D_loss = -tf.reduce_mean(y) + tf.reduce_mean(y_fake)
+
+            # Checks if WGAN is using gradient penalty
+            if self.type == 'gp':
+                # Calculates the penalization score
+                penalty = self.gradient_penalty(x, x_fake)
+
+                # Sums the gradient penalty over the discriminator loss
+                D_loss += penalty * self.penalty_lambda
 
         # Calculate the gradients based on discriminator's loss for each training variable
         D_gradients = tape.gradient(D_loss, self.D.trainable_variables)
@@ -82,8 +138,11 @@ class WGAN(Adversarial):
         # Updates the discriminator's loss state
         self.D_loss.update_state(D_loss)
 
-        # Clips the weights
-        [w.assign(tf.clip_by_value(w, -self.clip, self.clip)) for w in self.D.trainable_variables]
+        # Checks if WGAN is using weight clipping
+        if self.type == 'wc':
+            # Clips the weights
+            [w.assign(tf.clip_by_value(w, -self.clip, self.clip))
+             for w in self.D.trainable_variables]
 
     @tf.function
     def G_step(self, x):
