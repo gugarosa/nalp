@@ -10,6 +10,7 @@ Each neural network architecture is defined in this package. From naïve RNNs to
     nalp.models.generators
     nalp.models.maligan
     nalp.models.seqgan
+    nalp.models.wgan
 
 .. autoapimodule:: nalp.models
    :members:

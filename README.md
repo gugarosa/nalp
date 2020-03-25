@@ -70,6 +70,7 @@ NALP is based on the following structure, and you should pay attention to its tr
         - gan
         - maligan
         - seqgan
+        - wgan
     - utils
         - constants
         - loader
