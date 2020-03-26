@@ -68,6 +68,7 @@ NALP is based on the following structure, and you should pay attention to its tr
             - stacked_rnn
         - dcgan
         - gan
+        - gsgan
         - maligan
         - seqgan
         - wgan
@@ -75,6 +76,7 @@ NALP is based on the following structure, and you should pay attention to its tr
         - constants
         - loader
         - logging
+        - math
         - preprocess
 ```
 

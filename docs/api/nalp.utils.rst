@@ -7,6 +7,7 @@ This is an utilities package. Common things shared across the application should
     nalp.utils.constants
     nalp.utils.loader
     nalp.utils.logging
+    nalp.utils.math
     nalp.utils.preprocess
 
 .. autoapimodule:: nalp.utils

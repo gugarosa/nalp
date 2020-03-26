@@ -8,6 +8,7 @@ Each neural network architecture is defined in this package. From naïve RNNs to
     nalp.models.discriminators
     nalp.models.gan
     nalp.models.generators
+    nalp.models.gsgan
     nalp.models.maligan
     nalp.models.seqgan
     nalp.models.wgan
