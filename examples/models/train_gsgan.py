@@ -28,20 +28,8 @@ gsgan = GSGAN(encoder=encoder, vocab_size=corpus.vocab_size, max_length=10, embe
 gsgan.compile(g_optimizer=tf.optimizers.Adam(learning_rate=0.001),
                d_optimizer=tf.optimizers.Adam(learning_rate=0.001))
 
-# As NALP's RNNs are stateful, we need to build it with a fixed batch size
-gsgan.G.build((4, 10))
-
-# Compiling the RNN
-gsgan.G.compile(optimizer=tf.optimizers.Adam(learning_rate=0.001),
-            loss=tf.losses.SparseCategoricalCrossentropy(from_logits=True),
-            metrics=[tf.metrics.SparseCategoricalAccuracy(name='accuracy')])
-
-# Pre-fitting the GSGAN
-# gsgan.pre_fit(dataset.batches, g_epochs=50, d_epochs=10)
-gsgan.G.fit(dataset.batches, epochs=100)
-
-# # Fitting the GSGAN
-# gsgan.fit(dataset.batches, epochs=10, d_epochs=5, n_rollouts=16)
+# Fitting the GSGAN
+gsgan.fit(dataset.batches, epochs=10)
 
 # # Saving GSGAN weights
 # gsgan.save_weights('trained/gsgan', save_format='tf')

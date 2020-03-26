@@ -5,3 +5,7 @@ BUFFER_SIZE = 100000
 # A discriminator steps constant defines the maximum number
 # of sampling steps that the discriminator should be trained on
 D_STEPS = 3
+
+# A epsilon constants defined a small value for avoiding
+# unwanted mathematical errors, such as division by zero or log(0)
+EPSILON = 1e-20
