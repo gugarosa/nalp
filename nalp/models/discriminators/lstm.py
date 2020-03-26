@@ -1,55 +1,50 @@
 from tensorflow.keras import layers
 
 import nalp.utils.logging as l
-from nalp.core.model import Generator
+from nalp.core.model import Discriminator
 
 logger = l.get_logger(__name__)
 
 
-class StackedRNNGenerator(Generator):
-    """A StackedRNNGenerator class is the one in charge of stacked Recurrent Neural Networks implementation.
+class LSTMDiscriminator(Discriminator):
+    """A LSTMDiscriminator class is the one in charge of a discriminative Long Short-Term Memory implementation.
 
     References:
-        J. Elman. Finding structure in time. Cognitive science 14.2 (1990).
+        S. Hochreiter, Jürgen Schmidhuber. Long short-term memory. Neural computation 9.8 (1997).
 
     """
 
-    def __init__(self, encoder=None, vocab_size=1, embedding_size=32, hidden_size=[64, 64]):
+    def __init__(self, encoder=None, vocab_size=1, embedding_size=32, hidden_size=64):
         """Initialization method.
 
         Args:
             encoder (IntegerEncoder): An index to vocabulary encoder.
             vocab_size (int): The size of the vocabulary.
             embedding_size (int): The size of the embedding layer.
-            hidden_size (list): Amount of hidden neurons per cell.
+            hidden_size (int): The amount of hidden neurons.
 
         """
 
-        logger.info('Overriding class: Generator -> StackedRNNGenerator.')
+        logger.info('Overriding class: Discriminator -> LSTMDiscriminator.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(StackedRNNGenerator, self).__init__(name='G_stacked_rnn')
+        super(LSTMDiscriminator, self).__init__(name='D_lstm')
 
         # Creates a property for holding the used encoder
         self.encoder = encoder
 
         # Creates an embedding layer
-        self.embedding = layers.Embedding(
-            vocab_size, embedding_size, name='embedding')
+        self.embedding = layers.Dense(embedding_size, name='embedding')
 
-        # Creating a stack of RNN cells
-        self.cells = [layers.SimpleRNNCell(size, name=f'rnn_cell{i}') for (
-            i, size) in enumerate(hidden_size)]
+        # Creates a LSTM cell
+        self.cell = layers.LSTMCell(hidden_size, name='lstm_cell')
 
         # Creates the RNN loop itself
-        self.rnn = layers.RNN(self.cells, name='rnn_layer',
-                              return_sequences=True,
+        self.rnn = layers.RNN(self.cell, name='rnn_layer',
                               stateful=True)
 
-        # Creates the linear (Dense) layer
-        self.linear = layers.Dense(vocab_size, name='out')
-
-        logger.debug(f'Number of cells: {len(hidden_size)}')
+        # And finally, defining the output layer
+        self.out = layers.Dense(1, name='out')
 
     def call(self, x):
         """Method that holds vital information whenever this class is called.
@@ -69,6 +64,6 @@ class StackedRNNGenerator(Generator):
         x = self.rnn(x)
 
         # The input also suffers a linear combination to output correct shape
-        x = self.linear(x)
+        x = self.out(x)
 
         return x

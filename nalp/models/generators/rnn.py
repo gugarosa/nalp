@@ -62,7 +62,7 @@ class RNNGenerator(Generator):
         # Firstly, we apply the embedding layer
         x = self.embedding(x)
 
-        # We need to apply the input into the first recorrent layer
+        # We need to apply the input into the first recurrent layer
         x = self.rnn(x)
 
         # The input also suffers a linear combination to output correct shape
