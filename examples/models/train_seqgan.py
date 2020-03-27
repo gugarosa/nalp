@@ -6,7 +6,7 @@ from nalp.encoders.integer import IntegerEncoder
 from nalp.models.seqgan import SeqGAN
 
 # Creating a character TextCorpus from file
-corpus = TextCorpus(from_file='data/text/chapter1_harry.txt', type='word')
+corpus = TextCorpus(from_file='data/text/chapter1_harry.txt', type='char')
 
 # Creating an IntegerEncoder
 encoder = IntegerEncoder()
@@ -18,7 +18,7 @@ encoder.learn(corpus.vocab_index, corpus.index_vocab)
 encoded_tokens = encoder.encode(corpus.tokens)
 
 # Creating Language Modeling Dataset
-dataset = LanguageModelingDataset(encoded_tokens, max_length=10, batch_size=4)
+dataset = LanguageModelingDataset(encoded_tokens, max_length=10, batch_size=64)
 
 # Creating the SeqGAN
 seqgan = SeqGAN(encoder=encoder, vocab_size=corpus.vocab_size, max_length=10, embedding_size=256,

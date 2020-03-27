@@ -36,7 +36,7 @@ class GumbelLSTMGenerator(LSTMGenerator):
             encoder, vocab_size, embedding_size, hidden_size)
 
         # Defining a property to hold the Gumbel-Softmax temperature parameter
-        self.tau = tau
+        self.tau = 3.5
 
     def call(self, x):
         """Method that holds vital information whenever this class is called.
@@ -50,7 +50,7 @@ class GumbelLSTMGenerator(LSTMGenerator):
         """
 
         # # Firstly, we apply the embedding layer
-        # x = self.embedding(x)
+        x = self.embedding(x)
 
         # # We need to apply the input into the first recurrent layer
         x = self.rnn(x)
@@ -61,10 +61,14 @@ class GumbelLSTMGenerator(LSTMGenerator):
         # Adding a sampled Gumbel distribution to the output
         x += m.gumbel_distribution(x.shape)
 
+        token = tf.argmax(x, -1)
 
-        x = tf.nn.softmax(1 / (x * self.tau))
 
-        return x
+        x = tf.nn.softmax(x * self.tau)
+
+        return x, token
+
+
 
 
 class GSGAN(Adversarial):
@@ -133,6 +137,46 @@ class GSGAN(Adversarial):
         # Defining a loss metric for the discriminator
         self.D_loss = tf.metrics.Mean(name='D_loss')
 
+    def generate_batch(self, batch_size=1, length=1):
+        """Generates a batch of tokens by feeding to the network the
+        current token (t) and predicting the next token (t+1).
+
+        Args:
+            batch_size (int): Size of the batch to be generated.
+            length (int): Length of generated tokens.
+            temperature (float): A temperature value to sample the token.
+
+        Returns:
+            A (batch_size, length) tensor of generated tokens.
+
+        """
+
+        # Generating an uniform tensor between 0 and vocab_size
+        start_batch = tf.random.uniform(
+            [batch_size, 1], 0, self.vocab_size, dtype='int64')
+
+        # Creating an empty tensor for the sampled batch
+        sampled_batch = tf.zeros([batch_size, 1], dtype='int64')
+
+        # Resetting the network states
+        # self.G.reset_states()
+
+        # For every possible generation
+        for i in range(length):
+            # Predicts the current token
+            _, token = self.G(start_batch)
+
+            # Samples a predicted batch
+            start_batch = token
+
+            # Concatenates the sampled batch with the predicted batch
+            sampled_batch = tf.concat([sampled_batch, token], 1)
+
+        # Ignoring the last column to get the input sampled batch
+        x_sampled_batch = sampled_batch[:, :length]
+
+        return x_sampled_batch
+
     def discriminator_loss(self, y, y_fake):
         """Calculates the loss out of the discriminator architecture.
 
@@ -179,12 +223,12 @@ class GSGAN(Adversarial):
         """
 
         # Defines a random noise signal as the generator's input
-        z = tf.random.normal([x.shape[0], x.shape[1], 256])
+        z = self.generate_batch(x.shape[0], x.shape[1])
 
         # Using tensorflow's gradient
         with tf.GradientTape() as G_tape, tf.GradientTape() as D_tape:
             # Generates new data, e.g., G(z)
-            x_fake = self.G(z)
+            x_fake, x_fake_probs = self.G(z)
 
             # x_fake = tf.nn.softmax(tf.divide(1, x_fake), -1)
 
@@ -193,7 +237,11 @@ class GSGAN(Adversarial):
             # Samples fake targets from the discriminator, e.g., D(G(z))
             y_fake = self.D(x_fake)
 
-            x = tf.one_hot(x, 223)
+            x = tf.one_hot(x, 43, 0.9, (1 - 0.9) / (43 - 1))
+
+            x += m.gumbel_distribution(x.shape)
+
+            x = tf.nn.softmax(x * self.G.tau)
 
             # print(x.shape)
 
@@ -249,6 +297,8 @@ class GSGAN(Adversarial):
             for x_batch, y_batch in batches:
                 # Performs the optimization step
                 self.step(x_batch, y_batch)
+
+            self.G.tau -= 0.1
 
             logger.info(
                 f'Loss(G): {self.G_loss.result().numpy()} | Loss(D): {self.D_loss.result().numpy()}')
