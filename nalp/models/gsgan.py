@@ -36,7 +36,7 @@ class GumbelLSTMGenerator(LSTMGenerator):
             encoder, vocab_size, embedding_size, hidden_size)
 
         # Defining a property to hold the Gumbel-Softmax temperature parameter
-        self.tau = 3.5
+        self.tau = 5
 
     def call(self, x):
         """Method that holds vital information whenever this class is called.
@@ -56,17 +56,18 @@ class GumbelLSTMGenerator(LSTMGenerator):
         x = self.rnn(x)
 
         # The input also suffers a linear combination to output correct shape
-        x = self.linear(x)
+        l = self.linear(x)
 
         # Adding a sampled Gumbel distribution to the output
-        x += m.gumbel_distribution(x.shape)
+        x = l + m.gumbel_distribution(l.shape)
 
-        token = tf.argmax(x, -1)
+        token = tf.stop_gradient(tf.argmax(x, -1))
 
+        # l = tf.stop_gradient(l)
 
         x = tf.nn.softmax(x * self.tau)
 
-        return x, token
+        return x, token, l
 
 
 
@@ -113,7 +114,7 @@ class GSGAN(Adversarial):
         # Defining a property for holding the temperature
         self.T = temperature
 
-    def compile(self, g_optimizer, d_optimizer):
+    def compile(self, p_optimizer, g_optimizer, d_optimizer):
         """Main building method.
 
         Args:
@@ -121,6 +122,8 @@ class GSGAN(Adversarial):
             d_optimizer (tf.keras.optimizers): An optimizer instance for the discriminator.
 
         """
+
+        self.P_optimizer = p_optimizer
 
         # Creates an optimizer object for the generator
         self.G_optimizer = g_optimizer
@@ -155,16 +158,21 @@ class GSGAN(Adversarial):
         start_batch = tf.random.uniform(
             [batch_size, 1], 0, self.vocab_size, dtype='int64')
 
-        # Creating an empty tensor for the sampled batch
-        sampled_batch = tf.zeros([batch_size, 1], dtype='int64')
+        preds = tf.zeros([batch_size, 0, self.vocab_size])
+
+        # Copying the sampled batch with the start batch tokens
+        sampled_batch = start_batch
 
         # Resetting the network states
-        # self.G.reset_states()
+        self.G.reset_states()
 
         # For every possible generation
         for i in range(length):
             # Predicts the current token
-            _, token = self.G(start_batch)
+            pred, token, _ = self.G(start_batch)
+
+            #
+            preds = tf.concat([preds, pred], 1)
 
             # Samples a predicted batch
             start_batch = token
@@ -175,7 +183,7 @@ class GSGAN(Adversarial):
         # Ignoring the last column to get the input sampled batch
         x_sampled_batch = sampled_batch[:, :length]
 
-        return x_sampled_batch
+        return x_sampled_batch, preds
 
     def discriminator_loss(self, y, y_fake):
         """Calculates the loss out of the discriminator architecture.
@@ -214,6 +222,34 @@ class GSGAN(Adversarial):
         return tf.reduce_mean(loss)
 
     @tf.function
+    def G_pre_step(self, x, y):
+        """Performs a single batch optimization pre-fitting step over the generator.
+
+        Args:
+            x (tf.Tensor): A tensor containing the inputs.
+            y (tf.Tensor): A tensor containing the inputs' labels.
+
+        """
+
+        # Using tensorflow's gradient
+        with tf.GradientTape() as tape:
+            # Calculate the predictions based on inputs
+            _, _, preds = self.G(x)
+
+            # Calculate the loss
+            loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(y, preds))
+
+        # Calculate the gradient based on loss for each training variable
+        gradients = tape.gradient(loss, self.G.trainable_variables)
+
+        # Apply gradients using an optimizer
+        self.P_optimizer.apply_gradients(
+            zip(gradients, self.G.trainable_variables))
+
+        # Updates the generator's loss state
+        self.G_loss.update_state(loss)
+
+    @tf.function
     def step(self, x, y):
         """Performs a single batch optimization step.
 
@@ -223,25 +259,28 @@ class GSGAN(Adversarial):
         """
 
         # Defines a random noise signal as the generator's input
-        z = self.generate_batch(x.shape[0], x.shape[1])
+        
 
         # Using tensorflow's gradient
         with tf.GradientTape() as G_tape, tf.GradientTape() as D_tape:
             # Generates new data, e.g., G(z)
-            x_fake, x_fake_probs = self.G(z)
+            # x_fake, x_fake_probs = self.G(z)
+            x_fake, preds = self.generate_batch(x.shape[0], x.shape[1])
+
+            # x_fake = tf.one_hot(x_fake, 43)
 
             # x_fake = tf.nn.softmax(tf.divide(1, x_fake), -1)
 
             # print(x_fake.shape)
 
             # Samples fake targets from the discriminator, e.g., D(G(z))
-            y_fake = self.D(x_fake)
+            y_fake = self.D(preds)
 
             x = tf.one_hot(x, 43, 0.9, (1 - 0.9) / (43 - 1))
 
-            x += m.gumbel_distribution(x.shape)
+            # x += m.gumbel_distribution(x.shape)
 
-            x = tf.nn.softmax(x * self.G.tau)
+            # x = tf.nn.softmax(x * self.G.tau)
 
             # print(x.shape)
 
@@ -257,8 +296,14 @@ class GSGAN(Adversarial):
         # # Calculate the gradients based on generator's loss for each training variable
         G_gradients = G_tape.gradient(G_loss, self.G.trainable_variables)
 
+        G_gradients = [(tf.clip_by_norm(grad, 5))
+                                  for grad in G_gradients]
+
         # # Calculate the gradients based on discriminator's loss for each training variable
         D_gradients = D_tape.gradient(D_loss, self.D.trainable_variables)
+
+        D_gradients = [(tf.clip_by_norm(grad, 5))
+                                  for grad in D_gradients]
 
         # Applies the generator's gradients using an optimizer
         self.G_optimizer.apply_gradients(
@@ -273,6 +318,32 @@ class GSGAN(Adversarial):
 
         # # Updates the discriminator's loss state
         self.D_loss.update_state(D_loss)
+
+    def pre_fit(self, batches, epochs=100):
+        """Pre-trains the model.
+
+        Args:
+            batches (Dataset): Pre-training batches containing samples.
+            g_epochs (int): The maximum number of pre-training generator epochs.
+            d_epochs (int): The maximum number of pre-training discriminator epochs.
+
+        """
+
+        logger.info('Pre-fitting generator ...')
+
+        # Iterate through all generator epochs
+        for e in range(epochs):
+            logger.info(f'Epoch {e+1}/{epochs}')
+
+            # Resetting state to further append losses
+            self.G_loss.reset_states()
+
+            # Iterate through all possible pre-training batches
+            for x_batch, y_batch in batches:
+                # Performs the optimization step over the generator
+                self.G_pre_step(x_batch, y_batch)
+
+            logger.info(f'Loss(G): {self.G_loss.result().numpy()}')
 
     def fit(self, batches, epochs=100):
         """Trains the model.
@@ -298,7 +369,7 @@ class GSGAN(Adversarial):
                 # Performs the optimization step
                 self.step(x_batch, y_batch)
 
-            self.G.tau -= 0.1
+            self.G.tau -= (5 - 1) / epochs
 
             logger.info(
                 f'Loss(G): {self.G_loss.result().numpy()} | Loss(D): {self.D_loss.result().numpy()}')

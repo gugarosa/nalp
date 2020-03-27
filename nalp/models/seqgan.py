@@ -94,8 +94,8 @@ class SeqGAN(Adversarial):
         start_batch = tf.random.uniform(
             [batch_size, 1], 0, self.vocab_size, dtype='int64')
 
-        # Creating an empty tensor for the sampled batch
-        sampled_batch = tf.zeros([batch_size, 1], dtype='int64')
+        # Copying the sampled batch with the start batch tokens
+        sampled_batch = start_batch
 
         # Resetting the network states
         self.G.reset_states()

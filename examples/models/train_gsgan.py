@@ -25,15 +25,24 @@ gsgan = GSGAN(encoder=encoder, vocab_size=corpus.vocab_size, max_length=10, embe
                 hidden_size=512, n_filters=[64, 128, 256], filters_size=[3, 5, 5], dropout_rate=0.25, temperature=1)
 
 # Compiling the GSGAN
-gsgan.compile(g_optimizer=tf.optimizers.Adam(learning_rate=0.001),
+gsgan.compile(p_optimizer=tf.optimizers.Adam(learning_rate=0.01), g_optimizer=tf.optimizers.Adam(learning_rate=0.001),
                d_optimizer=tf.optimizers.Adam(learning_rate=0.001))
 
+# gsgan.G.build((64, 10))
+gsgan.pre_fit(dataset.batches, epochs=100)
+
+x, preds = gsgan.generate_batch(64, 10)
+
+for i in range(10):
+    print(''.join(encoder.decode(x.numpy()[i])))
+
 # Fitting the GSGAN
-gsgan.fit(dataset.batches, epochs=25)
+gsgan.fit(dataset.batches, epochs=100)
 
-preds = gsgan.generate_batch(64, 10)
+x, preds = gsgan.generate_batch(64, 10)
 
-print(''.join(encoder.decode(preds.numpy()[0])))
+for i in range(10):
+    print(''.join(encoder.decode(x.numpy()[i])))
 
 # # Saving GSGAN weights
 # gsgan.save_weights('trained/gsgan', save_format='tf')
