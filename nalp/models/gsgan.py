@@ -17,7 +17,7 @@ class GumbelLSTMGenerator(LSTMGenerator):
 
     """
 
-    def __init__(self, encoder=None, vocab_size=1, embedding_size=32, hidden_size=64, tau=1):
+    def __init__(self, encoder=None, vocab_size=1, embedding_size=32, hidden_size=64, tau=5):
         """Initialization method.
 
         Args:
@@ -36,7 +36,7 @@ class GumbelLSTMGenerator(LSTMGenerator):
             encoder, vocab_size, embedding_size, hidden_size)
 
         # Defining a property to hold the Gumbel-Softmax temperature parameter
-        self.tau = 5
+        self.tau = tau
 
     def call(self, x):
         """Method that holds vital information whenever this class is called.
@@ -45,32 +45,29 @@ class GumbelLSTMGenerator(LSTMGenerator):
             x (tf.Tensor): A tensorflow's tensor holding input data.
 
         Returns:
-            The same tensor after passing through each defined layer.
+            Softmax outputs, predicted token and logit-based predictions.
 
         """
 
-        # # Firstly, we apply the embedding layer
+        # Firstly, we apply the embedding layer
         x = self.embedding(x)
 
-        # # We need to apply the input into the first recurrent layer
+        # We need to apply the input into the first recurrent layer
         x = self.rnn(x)
 
         # The input also suffers a linear combination to output correct shape
-        l = self.linear(x)
+        x = self.linear(x)
 
         # Adding a sampled Gumbel distribution to the output
-        x = l + m.gumbel_distribution(l.shape)
+        x_g = x + m.gumbel_distribution(x.shape)
 
-        token = tf.stop_gradient(tf.argmax(x, -1))
+        # Sampling an argmax token from the Gumbel-based output
+        y_g = tf.stop_gradient(tf.argmax(x_g, -1))
 
-        # l = tf.stop_gradient(l)
+        # Applying the softmax over the Gumbel-based output
+        x_g = tf.nn.softmax(x_g / self.tau)
 
-        x = tf.nn.softmax(x * self.tau)
-
-
-        return x, token, l
-
-
+        return x_g, y_g, x
 
 
 class GSGAN(Adversarial):
@@ -81,7 +78,7 @@ class GSGAN(Adversarial):
 
     """
 
-    def __init__(self, encoder=None, vocab_size=1, max_length=1, embedding_size=32, hidden_size=64, n_filters=[64], filters_size=[1], dropout_rate=0.25, temperature=1):
+    def __init__(self, encoder=None, vocab_size=1, max_length=1, embedding_size=32, hidden_size=64, tau=5):
         """Initialization method.
 
         Args:
@@ -90,10 +87,7 @@ class GSGAN(Adversarial):
             max_length (int): Maximum length of the sequences for the discriminator.
             embedding_size (int): The size of the embedding layer for both discriminator and generator.
             hidden_size (int): The amount of hidden neurons for the generator.
-            n_filters (list): Number of filters to be applied in the discriminator.
-            filters_size (list): Size of filters to be applied in the discriminator.
-            dropout_rate (float): Dropout activation rate.
-            temperature (float): Temperature value to sample the token.
+            tau (float): Gumbel-Softmax temperature parameter.
 
         """
 
@@ -104,16 +98,13 @@ class GSGAN(Adversarial):
 
         # Creating the generator network
         G = GumbelLSTMGenerator(encoder, vocab_size,
-                                embedding_size, hidden_size, tau=1)
+                                embedding_size, hidden_size, tau)
 
         # Overrides its parent class with any custom arguments if needed
         super(GSGAN, self).__init__(D, G, name='GSGAN')
 
         # Defining a property for holding the vocabulary size
         self.vocab_size = vocab_size
-
-        # Defining a property for holding the temperature
-        self.T = temperature
 
     def compile(self, pre_optimizer, g_optimizer, d_optimizer):
         """Main building method.
@@ -143,24 +134,23 @@ class GSGAN(Adversarial):
         # Defining a loss metric for the discriminator
         self.D_loss = tf.metrics.Mean(name='D_loss')
 
-    def generate_batch(self, batch_size=1, length=1):
+    def generate_batch(self, x):
         """Generates a batch of tokens by feeding to the network the
         current token (t) and predicting the next token (t+1).
 
-        Args:
-            batch_size (int): Size of the batch to be generated.
-            length (int): Length of generated tokens.
-            temperature (float): A temperature value to sample the token.
-
         Returns:
-            A (batch_size, length) tensor of generated tokens.
+            A (batch_size, length) tensor of generated tokens and a
+            (batch_size, length, vocab_size) tensor of predictions.
 
         """
 
-        # Generating an uniform tensor between 0 and vocab_size
-        start_batch = tf.random.uniform(
-            [batch_size, 1], 0, self.vocab_size, dtype='int64')
+        #
+        batch_size, length = x.shape[0], x.shape[1]
 
+        #
+        start_batch = tf.expand_dims(x[:, 0], -1)
+
+        # Creating an empty tensor for holding the Gumbel-Softmax predictions
         preds = tf.zeros([batch_size, 0, self.vocab_size])
 
         # Copying the sampled batch with the start batch tokens
@@ -172,21 +162,57 @@ class GSGAN(Adversarial):
         # For every possible generation
         for i in range(length):
             # Predicts the current token
-            pred, token, _ = self.G(start_batch)
+            pred, start_batch, _ = self.G(start_batch)
 
-            #
+            # Concatenates the predictions with the tensor
             preds = tf.concat([preds, pred], 1)
 
-            # Samples a predicted batch
-            start_batch = token
+            # Concatenates the sampled batch with the predicted batch
+            sampled_batch = tf.concat([sampled_batch, start_batch], 1)
+
+        # Ignoring the first column to get the target sampled batch
+        sampled_batch = sampled_batch[:, 1:]
+
+        return sampled_batch, preds
+
+    def generate_batch2(self, batch_size, length):
+        """Generates a batch of tokens by feeding to the network the
+        current token (t) and predicting the next token (t+1).
+
+        Returns:
+            A (batch_size, length) tensor of generated tokens and a
+            (batch_size, length, vocab_size) tensor of predictions.
+
+        """
+
+        # Generating an uniform tensor between 0 and vocab_size
+        start_batch = tf.random.uniform(
+            [batch_size, 1], 0, self.vocab_size, dtype='int64')
+
+        # Creating an empty tensor for holding the Gumbel-Softmax predictions
+        preds = tf.zeros([batch_size, 0, self.vocab_size])
+
+        # Copying the sampled batch with the start batch tokens
+        sampled_batch = start_batch
+
+        # Resetting the network states
+        self.G.reset_states()
+
+        # For every possible generation
+        for i in range(length):
+            # Predicts the current token
+            pred, start_batch, _ = self.G(start_batch)
+
+            # Concatenates the predictions with the tensor
+            preds = tf.concat([preds, pred], 1)
 
             # Concatenates the sampled batch with the predicted batch
-            sampled_batch = tf.concat([sampled_batch, token], 1)
+            sampled_batch = tf.concat([sampled_batch, start_batch], 1)
 
         # Ignoring the last column to get the input sampled batch
-        x_sampled_batch = sampled_batch[:, :length]
+        sampled_batch = sampled_batch[:, :length]
 
-        return x_sampled_batch, preds
+        return sampled_batch, preds
 
     def discriminator_loss(self, y, y_fake):
         """Calculates the loss out of the discriminator architecture.
@@ -236,11 +262,12 @@ class GSGAN(Adversarial):
 
         # Using tensorflow's gradient
         with tf.GradientTape() as tape:
-            # Calculate the predictions based on inputs
-            _, _, preds = self.G(x)
+            # Calculate the logit-based predictions based on inputs
+            _, _, logits = self.G(x)
 
             # Calculate the loss
-            loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(y, preds))
+            loss = tf.reduce_mean(
+                tf.nn.sparse_softmax_cross_entropy_with_logits(y, logits))
 
         # Calculate the gradient based on loss for each training variable
         gradients = tape.gradient(loss, self.G.trainable_variables)
@@ -261,74 +288,52 @@ class GSGAN(Adversarial):
 
         """
 
-        # Defines a random noise signal as the generator's input
-        
-
         # Using tensorflow's gradient
         with tf.GradientTape() as G_tape, tf.GradientTape() as D_tape:
             # Generates new data, e.g., G(z)
-            # x_fake, x_fake_probs = self.G(z)
-            x_fake, preds = self.generate_batch(x.shape[0], x.shape[1])
-
-            # x_fake = tf.one_hot(x_fake, 43)
-
-            # x_fake = tf.nn.softmax(tf.divide(1, x_fake), -1)
-
-            # print(x_fake.shape)
+            _, x_fake_probs = self.generate_batch(x)
 
             # Samples fake targets from the discriminator, e.g., D(G(z))
-            y_fake = self.D(preds)
+            y_fake = self.D(x_fake_probs)
 
-            x = tf.one_hot(x, 43)
-
-            # x += m.gumbel_distribution(x.shape)
-
-            # x = tf.nn.softmax(x * self.G.tau)
-
-            # print(x.shape)
+            # Extends the target tensor to an one-hot encoding representation
+            target = tf.one_hot(y, self.vocab_size)
 
             # Samples real targets from the discriminator, e.g., D(x)
-            y = self.D(x)
+            y_real = self.D(y)
 
             # Calculates the discriminator loss upon D(x) and D(G(z))
-            D_loss = self.discriminator_loss(y, y_fake)
+            D_loss = self.discriminator_loss(y_real, y_fake)
 
             # Calculates the generator loss upon D(G(z))
             G_loss = self.generator_loss(y_fake)
 
-        # # Calculate the gradients based on generator's loss for each training variable
-        G_gradients = G_tape.gradient(G_loss, self.G.trainable_variables)
-
-        G_gradients = [(tf.clip_by_norm(grad, 5))
-                                  for grad in G_gradients]
-
-        # # Calculate the gradients based on discriminator's loss for each training variable
+        # Calculate the gradients based on discriminator's loss for each training variable
         D_gradients = D_tape.gradient(D_loss, self.D.trainable_variables)
 
-        D_gradients = [(tf.clip_by_norm(grad, 5))
-                                  for grad in D_gradients]
+        # Calculate the gradients based on generator's loss for each training variable
+        G_gradients = G_tape.gradient(G_loss, self.G.trainable_variables)
+
+        # Applies the discriminator's gradients using an optimizer
+        self.D_optimizer.apply_gradients(
+            zip(D_gradients, self.D.trainable_variables))
 
         # Applies the generator's gradients using an optimizer
         self.G_optimizer.apply_gradients(
             zip(G_gradients, self.G.trainable_variables))
 
-        # # Applies the discriminator's gradients using an optimizer
-        self.D_optimizer.apply_gradients(
-            zip(D_gradients, self.D.trainable_variables))
+        # Updates the discriminator's loss state
+        self.D_loss.update_state(D_loss)
 
         # Updates the generator's loss state
         self.G_loss.update_state(G_loss)
-
-        # # Updates the discriminator's loss state
-        self.D_loss.update_state(D_loss)
 
     def pre_fit(self, batches, epochs=100):
         """Pre-trains the model.
 
         Args:
             batches (Dataset): Pre-training batches containing samples.
-            g_epochs (int): The maximum number of pre-training generator epochs.
-            d_epochs (int): The maximum number of pre-training discriminator epochs.
+            epochs (int): The maximum number of pre-training epochs.
 
         """
 
@@ -372,7 +377,8 @@ class GSGAN(Adversarial):
                 # Performs the optimization step
                 self.step(x_batch, y_batch)
 
-            self.G.tau -= (5 - 1) / epochs
+            # Annealing the Gumbel-Softmax temperature
+            self.G.tau -= 5 / epochs
 
             logger.info(
-                f'Loss(G): {self.G_loss.result().numpy()} | Loss(D): {self.D_loss.result().numpy()}')
+                f'Loss(G): {self.G_loss.result().numpy()} | Loss(D): {self.D_loss.result().numpy()} | Tau: {self.G.tau}.')

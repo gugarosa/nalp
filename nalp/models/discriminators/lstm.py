@@ -44,8 +44,6 @@ class LSTMDiscriminator(Discriminator):
                               return_sequences=True,
                               stateful=True)
 
-        self.linear = layers.Dense(100, activation='tanh')
-
         # And finally, defining the output layer
         self.out = layers.Dense(1, name='out')
 
@@ -65,8 +63,6 @@ class LSTMDiscriminator(Discriminator):
 
         # We need to apply the input into the first recurrent layer
         x = self.rnn(x)
-
-        x = self.linear(x)
 
         # The input also suffers a linear combination to output correct shape
         x = self.out(x)

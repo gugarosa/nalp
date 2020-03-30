@@ -196,7 +196,7 @@ class Adversarial(tf.keras.Model):
 
         return tf.reduce_mean(loss)
 
-    def discriminator_loss(self, y, y_fake):
+    def discriminator_loss(self, y_real, y_fake):
         """Calculates the loss out of the discriminator architecture.
 
         Args:
@@ -209,7 +209,7 @@ class Adversarial(tf.keras.Model):
         """
 
         # Calculates the real data loss
-        real_loss = self.loss(tf.ones_like(y), y)
+        real_loss = self.loss(tf.ones_like(y_real), y_real)
 
         # Calculates the fake data loss
         fake_loss = self.loss(tf.zeros_like(y_fake), y_fake)
@@ -237,13 +237,13 @@ class Adversarial(tf.keras.Model):
             y_fake = self.D(x_fake)
 
             # Samples real targets from the discriminator, e.g., D(x)
-            y = self.D(x)
+            y_real = self.D(x)
 
             # Calculates the generator loss upon D(G(z))
             G_loss = self.generator_loss(y_fake)
 
             # Calculates the discriminator loss upon D(x) and D(G(z))
-            D_loss = self.discriminator_loss(y, y_fake)
+            D_loss = self.discriminator_loss(y_real, y_fake)
 
         # Calculate the gradients based on generator's loss for each training variable
         G_gradients = G_tape.gradient(G_loss, self.G.trainable_variables)

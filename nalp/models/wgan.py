@@ -115,10 +115,10 @@ class WGAN(Adversarial):
             y_fake = self.D(x_fake)
 
             # Samples real scores from the discriminator, e.g., D(x)
-            y = self.D(x)
+            y_real = self.D(x)
 
             # Calculates the discriminator loss upon D(x) and D(G(z))
-            D_loss = -tf.reduce_mean(y) + tf.reduce_mean(y_fake)
+            D_loss = -tf.reduce_mean(y_real) + tf.reduce_mean(y_fake)
 
             # Checks if WGAN is using gradient penalty
             if self.type == 'gp':

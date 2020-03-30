@@ -21,8 +21,8 @@ encoded_tokens = encoder.encode(corpus.tokens)
 dataset = LanguageModelingDataset(encoded_tokens, max_length=10, batch_size=64)
 
 # Creating the GSGAN
-gsgan = GSGAN(encoder=encoder, vocab_size=corpus.vocab_size, max_length=10, embedding_size=256,
-              hidden_size=512, n_filters=[64, 128, 256], filters_size=[3, 5, 5], dropout_rate=0.25, temperature=1)
+gsgan = GSGAN(encoder=encoder, vocab_size=corpus.vocab_size,
+              max_length=10, embedding_size=256, hidden_size=512, tau=5)
 
 # Compiling the GSGAN
 gsgan.compile(pre_optimizer=tf.optimizers.Adam(learning_rate=0.01),
@@ -32,7 +32,7 @@ gsgan.compile(pre_optimizer=tf.optimizers.Adam(learning_rate=0.01),
 # gsgan.G.build((64, 10))
 gsgan.pre_fit(dataset.batches, epochs=100)
 
-x, preds = gsgan.generate_batch(64, 10)
+x, preds = gsgan.generate_batch2(64, 10)
 
 for i in range(10):
     print(''.join(encoder.decode(x.numpy()[i])))
@@ -40,7 +40,7 @@ for i in range(10):
 # Fitting the GSGAN
 gsgan.fit(dataset.batches, epochs=200)
 
-x, preds = gsgan.generate_batch(64, 10)
+x, preds = gsgan.generate_batch2(64, 10)
 
 for i in range(10):
     print(''.join(encoder.decode(x.numpy()[i])))
