@@ -25,7 +25,8 @@ maligan = MaliGAN(encoder=encoder, vocab_size=corpus.vocab_size, max_length=10, 
                   hidden_size=512, n_filters=[64, 128, 256], filters_size=[3, 5, 5], dropout_rate=0.25, temperature=1)
 
 # Compiling the MaliGAN
-maligan.compile(g_optimizer=tf.optimizers.Adam(learning_rate=0.001),
+maligan.compile(pre_optimizer=tf.optimizers.Adam(learning_rate=0.01),
+                g_optimizer=tf.optimizers.Adam(learning_rate=0.001),
                 d_optimizer=tf.optimizers.Adam(learning_rate=0.001))
 
 # Pre-fitting the MaliGAN

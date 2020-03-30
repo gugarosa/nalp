@@ -53,14 +53,18 @@ class MaliGAN(Adversarial):
         # Defining a property for holding the temperature
         self.T = temperature
 
-    def compile(self, g_optimizer, d_optimizer):
+    def compile(self, pre_optimizer, g_optimizer, d_optimizer):
         """Main building method.
 
         Args:
+            pre_optimizer (tf.keras.optimizers): An optimizer instance for pre-training the generator.
             g_optimizer (tf.keras.optimizers): An optimizer instance for the generator.
             d_optimizer (tf.keras.optimizers): An optimizer instance for the discriminator.
 
         """
+
+        # Creates an optimizer object for pre-training the generator
+        self.P_optimizer = pre_optimizer
 
         # Creates an optimizer object for the generator
         self.G_optimizer = g_optimizer
@@ -95,8 +99,8 @@ class MaliGAN(Adversarial):
         start_batch = tf.random.uniform(
             [batch_size, 1], 0, self.vocab_size, dtype='int64')
 
-        # Creating an empty tensor for the sampled batch
-        sampled_batch = tf.zeros([batch_size, 1], dtype='int64')
+        # Copying the sampled batch with the start batch tokens
+        sampled_batch = start_batch
 
         # Resetting the network states
         self.G.reset_states()
@@ -152,7 +156,6 @@ class MaliGAN(Adversarial):
 
         return rewards
 
-
     @tf.function
     def G_pre_step(self, x, y):
         """Performs a single batch optimization pre-fitting step over the generator.
@@ -175,7 +178,7 @@ class MaliGAN(Adversarial):
         gradients = tape.gradient(loss, self.G.trainable_variables)
 
         # Apply gradients using an optimizer
-        self.G_optimizer.apply_gradients(
+        self.P_optimizer.apply_gradients(
             zip(gradients, self.G.trainable_variables))
 
         # Updates the generator's loss state
@@ -198,8 +201,7 @@ class MaliGAN(Adversarial):
             preds = self.G(x)
 
             # Calculate the loss
-            loss = tf.reduce_mean(
-                tf.nn.sparse_softmax_cross_entropy_with_logits(y, preds) * rewards)
+            loss = tf.reduce_mean(self.loss(y, preds) * rewards)
 
         # Calculate the gradient based on loss for each training variable
         gradients = tape.gradient(loss, self.G.trainable_variables)
