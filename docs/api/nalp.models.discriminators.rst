@@ -6,6 +6,7 @@ Pre-defined discriminator architectures.
 .. toctree::
     nalp.models.discriminators.conv
     nalp.models.discriminators.linear
+    nalp.models.discriminators.lstm
     nalp.models.discriminators.text
 
 .. autoapimodule:: nalp.models.discriminators

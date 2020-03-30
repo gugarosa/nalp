@@ -1,73 +1,11 @@
 import tensorflow as tf
 
 import nalp.utils.logging as l
-import nalp.utils.math as m
 from nalp.core.model import Adversarial
 from nalp.models.discriminators.lstm import LSTMDiscriminator
-from nalp.models.generators.lstm import LSTMGenerator
+from nalp.models.generators.gumbel_lstm import GumbelLSTMGenerator
 
 logger = l.get_logger(__name__)
-
-
-class GumbelLSTMGenerator(LSTMGenerator):
-    """A GumbelLSTMGenerator class is the one in charge of a generative Gumbel-based Long Short-Term Memory implementation.
-
-    References:
-        E. Jang, S. Gu, B. Poole. Categorical reparameterization with gumbel-softmax. Preprint arXiv:1611.01144 (2016).
-
-    """
-
-    def __init__(self, encoder=None, vocab_size=1, embedding_size=32, hidden_size=64, tau=5):
-        """Initialization method.
-
-        Args:
-            encoder (IntegerEncoder): An index to vocabulary encoder.
-            vocab_size (int): The size of the vocabulary.
-            embedding_size (int): The size of the embedding layer.
-            hidden_size (int): The amount of hidden neurons.
-            tau (float): Gumbel-Softmax temperature parameter.
-
-        """
-
-        logger.info('Overriding class: LSTMGenerator -> GumbelLSTMGenerator.')
-
-        # Overrides its parent class with any custom arguments if needed
-        super(GumbelLSTMGenerator, self).__init__(
-            encoder, vocab_size, embedding_size, hidden_size)
-
-        # Defining a property to hold the Gumbel-Softmax temperature parameter
-        self.tau = tau
-
-    def call(self, x):
-        """Method that holds vital information whenever this class is called.
-
-        Args:
-            x (tf.Tensor): A tensorflow's tensor holding input data.
-
-        Returns:
-            Softmax outputs, predicted token and logit-based predictions.
-
-        """
-
-        # Firstly, we apply the embedding layer
-        x = self.embedding(x)
-
-        # We need to apply the input into the first recurrent layer
-        x = self.rnn(x)
-
-        # The input also suffers a linear combination to output correct shape
-        x = self.linear(x)
-
-        # Adding a sampled Gumbel distribution to the output
-        x_g = x + m.gumbel_distribution(x.shape)
-
-        # Sampling an argmax token from the Gumbel-based output
-        y_g = tf.stop_gradient(tf.argmax(x_g, -1))
-
-        # Applying the softmax over the Gumbel-based output
-        x_g = tf.nn.softmax(x_g / self.tau)
-
-        return x_g, y_g, x
 
 
 class GSGAN(Adversarial):
@@ -138,16 +76,19 @@ class GSGAN(Adversarial):
         """Generates a batch of tokens by feeding to the network the
         current token (t) and predicting the next token (t+1).
 
+        Args:
+            x (tf.Tensor): A tensor containing the inputs.
+
         Returns:
             A (batch_size, length) tensor of generated tokens and a
             (batch_size, length, vocab_size) tensor of predictions.
 
         """
 
-        #
-        batch_size, length = x.shape[0], x.shape[1]
+        # Gathers the batch size and maximum sequence length
+        batch_size, max_length = x.shape[0], x.shape[1]
 
-        #
+        # Gathering the first token from the input tensor and expanding its last dimension
         start_batch = tf.expand_dims(x[:, 0], -1)
 
         # Creating an empty tensor for holding the Gumbel-Softmax predictions
@@ -160,7 +101,7 @@ class GSGAN(Adversarial):
         self.G.reset_states()
 
         # For every possible generation
-        for i in range(length):
+        for i in range(max_length):
             # Predicts the current token
             pred, start_batch, _ = self.G(start_batch)
 
@@ -175,50 +116,11 @@ class GSGAN(Adversarial):
 
         return sampled_batch, preds
 
-    def generate_batch2(self, batch_size, length):
-        """Generates a batch of tokens by feeding to the network the
-        current token (t) and predicting the next token (t+1).
-
-        Returns:
-            A (batch_size, length) tensor of generated tokens and a
-            (batch_size, length, vocab_size) tensor of predictions.
-
-        """
-
-        # Generating an uniform tensor between 0 and vocab_size
-        start_batch = tf.random.uniform(
-            [batch_size, 1], 0, self.vocab_size, dtype='int64')
-
-        # Creating an empty tensor for holding the Gumbel-Softmax predictions
-        preds = tf.zeros([batch_size, 0, self.vocab_size])
-
-        # Copying the sampled batch with the start batch tokens
-        sampled_batch = start_batch
-
-        # Resetting the network states
-        self.G.reset_states()
-
-        # For every possible generation
-        for i in range(length):
-            # Predicts the current token
-            pred, start_batch, _ = self.G(start_batch)
-
-            # Concatenates the predictions with the tensor
-            preds = tf.concat([preds, pred], 1)
-
-            # Concatenates the sampled batch with the predicted batch
-            sampled_batch = tf.concat([sampled_batch, start_batch], 1)
-
-        # Ignoring the last column to get the input sampled batch
-        sampled_batch = sampled_batch[:, :length]
-
-        return sampled_batch, preds
-
-    def discriminator_loss(self, y, y_fake):
+    def discriminator_loss(self, y_real, y_fake):
         """Calculates the loss out of the discriminator architecture.
 
         Args:
-            y (tf.Tensor): A tensor containing the real data targets.
+            y_real (tf.Tensor): A tensor containing the real data targets.
             y_fake (tf.Tensor): A tensor containing the fake data targets.
 
         Returns:
@@ -227,7 +129,7 @@ class GSGAN(Adversarial):
         """
 
         # Calculates the real data loss
-        real_loss = self.loss(tf.ones_like(y), y)
+        real_loss = self.loss(tf.ones_like(y_real), y_real)
 
         # Calculates the fake data loss
         fake_loss = self.loss(tf.zeros_like(y_fake), y_fake)
@@ -285,27 +187,28 @@ class GSGAN(Adversarial):
 
         Args:
             x (tf.Tensor): A tensor containing the inputs.
+            y (tf.Tensor): A tensor containing the inputs' labels.
 
         """
 
         # Using tensorflow's gradient
         with tf.GradientTape() as G_tape, tf.GradientTape() as D_tape:
-            # Generates new data, e.g., G(z)
+            # Generates new data, e.g., G(x)
             _, x_fake_probs = self.generate_batch(x)
 
-            # Samples fake targets from the discriminator, e.g., D(G(z))
+            # Samples fake targets from the discriminator, e.g., D(G(x))
             y_fake = self.D(x_fake_probs)
 
             # Extends the target tensor to an one-hot encoding representation
-            target = tf.one_hot(y, self.vocab_size)
+            y = tf.one_hot(y, self.vocab_size)
 
             # Samples real targets from the discriminator, e.g., D(x)
             y_real = self.D(y)
 
-            # Calculates the discriminator loss upon D(x) and D(G(z))
+            # Calculates the discriminator loss upon D(x) and D(G(x))
             D_loss = self.discriminator_loss(y_real, y_fake)
 
-            # Calculates the generator loss upon D(G(z))
+            # Calculates the generator loss upon D(G(x))
             G_loss = self.generator_loss(y_fake)
 
         # Calculate the gradients based on discriminator's loss for each training variable
@@ -377,8 +280,8 @@ class GSGAN(Adversarial):
                 # Performs the optimization step
                 self.step(x_batch, y_batch)
 
-            # Annealing the Gumbel-Softmax temperature
-            self.G.tau -= 5 / epochs
+            # Exponentially annealing the Gumbel-Softmax temperature
+            self.G.tau = 5 ** ((epochs - e) / epochs)
 
             logger.info(
-                f'Loss(G): {self.G_loss.result().numpy()} | Loss(D): {self.D_loss.result().numpy()} | Tau: {self.G.tau}.')
+                f'Loss(G): {self.G_loss.result().numpy()} | Loss(D): {self.D_loss.result().numpy()}')

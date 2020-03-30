@@ -200,7 +200,7 @@ class Adversarial(tf.keras.Model):
         """Calculates the loss out of the discriminator architecture.
 
         Args:
-            y (tf.Tensor): A tensor containing the real data targets.
+            y_real (tf.Tensor): A tensor containing the real data targets.
             y_fake (tf.Tensor): A tensor containing the fake data targets.
 
         Returns:

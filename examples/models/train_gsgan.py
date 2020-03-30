@@ -29,21 +29,11 @@ gsgan.compile(pre_optimizer=tf.optimizers.Adam(learning_rate=0.01),
               g_optimizer=tf.optimizers.Adam(learning_rate=0.001),
               d_optimizer=tf.optimizers.Adam(learning_rate=0.001))
 
-# gsgan.G.build((64, 10))
+# Pre-fitting the GSGAN
 gsgan.pre_fit(dataset.batches, epochs=100)
 
-x, preds = gsgan.generate_batch2(64, 10)
-
-for i in range(10):
-    print(''.join(encoder.decode(x.numpy()[i])))
-
 # Fitting the GSGAN
-gsgan.fit(dataset.batches, epochs=200)
+gsgan.fit(dataset.batches, epochs=100)
 
-x, preds = gsgan.generate_batch2(64, 10)
-
-for i in range(10):
-    print(''.join(encoder.decode(x.numpy()[i])))
-
-# # Saving GSGAN weights
-# gsgan.save_weights('trained/gsgan', save_format='tf')
+# Saving GSGAN weights
+gsgan.save_weights('trained/gsgan', save_format='tf')

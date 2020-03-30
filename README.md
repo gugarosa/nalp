@@ -57,11 +57,13 @@ NALP is based on the following structure, and you should pay attention to its tr
         - discriminators
             - conv
             - linear
+            - lstm
             - text
         - generators
             - bi_lstm
             - conv
             - gru
+            - gumbel_lstm
             - linear
             - lstm
             - rnn

@@ -25,7 +25,7 @@ seqgan = SeqGAN(encoder=encoder, vocab_size=corpus.vocab_size, max_length=10, em
 seqgan.load_weights('trained/seqgan').expect_partial()
 
 # Now, for the inference step, we build with a batch size equals to 1
-seqgan.G.build((1, None))
+seqgan.G.build((1, 10))
 
 # Defining an start string to generate the text
 start_string = 'Mr. and Mrs. Dursley'
