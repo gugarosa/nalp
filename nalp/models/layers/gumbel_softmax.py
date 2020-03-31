@@ -28,7 +28,8 @@ class GumbelSoftmax(layers.Layer):
     """A GumbelSoftmax class is the one in charge of a Gumbel-Softmax layer implementation.
 
     References:
-        E. Jang, S. Gu, B. Poole. Categorical reparameterization with gumbel-softmax. Preprint arXiv:1611.01144 (2016).
+        E. Jang, S. Gu, B. Poole. Categorical reparameterization with gumbel-softmax.
+        Preprint arXiv:1611.01144 (2016).
 
     """
 

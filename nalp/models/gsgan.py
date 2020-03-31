@@ -12,8 +12,7 @@ class GSGAN(Adversarial):
     """A GSGAN class is the one in charge of Gumbel-Softmax Generative Adversarial Networks implementation.
 
     References:
-        M. Kusner, J. Hernández-Lobato.
-        Gans for sequences of discrete elements with the gumbel-softmax distribution.
+        M. Kusner, J. Hernández-Lobato. Gans for sequences of discrete elements with the gumbel-softmax distribution.
         Preprint arXiv:1611.04051 (2016).
 
     """
@@ -169,8 +168,7 @@ class GSGAN(Adversarial):
             logits, _, _ = self.G(x)
 
             # Calculate the loss
-            loss = tf.reduce_mean(
-                tf.nn.sparse_softmax_cross_entropy_with_logits(y, logits))
+            loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(y, logits))
 
         # Calculate the gradient based on loss for each training variable
         gradients = tape.gradient(loss, self.G.trainable_variables)

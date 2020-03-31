@@ -70,10 +70,12 @@ NALP is based on the following structure, and you should pay attention to its tr
             - stacked_rnn
         - layers
             - gumbel_softmax
+            - relational_memory_cell
         - dcgan
         - gan
         - gsgan
         - maligan
+        - relgan
         - seqgan
         - wgan
     - utils

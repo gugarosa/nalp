@@ -11,6 +11,7 @@ Each neural network architecture is defined in this package. From naïve RNNs to
     nalp.models.gsgan
     nalp.models.layers
     nalp.models.maligan
+    nalp.models.relgan
     nalp.models.seqgan
     nalp.models.wgan
 
