@@ -4,16 +4,20 @@ class Dataset:
 
     """
 
-    def __init__(self, encoded_tokens):
+    def __init__(self, encoded_tokens, shuffle=True):
         """Initialization method.
 
         Args:
             encoded_tokens (np.array): An array of encoded tokens.
+            shuffle (bool): Whether batches should be shuffled or not.
 
         """
 
         # Creating a property to hold the encoded tokens
         self.encoded_tokens = encoded_tokens
+
+        # Creating a property to whether data should be shuffled or not
+        self.shuffle = shuffle
 
         # Creating a property to hold the further batches
         self.batches = None
@@ -29,6 +33,18 @@ class Dataset:
     @encoded_tokens.setter
     def encoded_tokens(self, encoded_tokens):
         self._encoded_tokens = encoded_tokens
+
+    @property
+    def shuffle(self):
+        """bool: Whether data should be shuffled or not.
+
+        """
+
+        return self._shuffle
+
+    @shuffle.setter
+    def shuffle(self, shuffle):
+        self._shuffle = shuffle
 
     @property
     def batches(self):

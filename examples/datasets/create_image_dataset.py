@@ -6,8 +6,8 @@ from nalp.datasets.image import ImageDataset
 (x, y), (_, _) = tf.keras.datasets.mnist.load_data()
 
 # Creating an Image Dataset
-dataset = ImageDataset(x, batch_size=256, shape=(
-    x.shape[0], 784), normalize=True)
+dataset = ImageDataset(x, batch_size=256, shape=(x.shape[0], 784),
+                       normalize=True, shuffle=True)
 
 # Iterating over one batch
 for input_batch in dataset.batches.take(1):

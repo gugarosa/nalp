@@ -13,7 +13,7 @@ class ImageDataset(Dataset):
 
     """
 
-    def __init__(self, images, batch_size=256, shape=None, normalize=True):
+    def __init__(self, images, batch_size=256, shape=None, normalize=True, shuffle=True):
         """Initialization method.
 
         Args:
@@ -21,6 +21,7 @@ class ImageDataset(Dataset):
             batch_size (int): Size of batches.
             shape (tuple): A tuple containing the shape if the array should be forced to reshape.
             normalize (bool): Whether images should be normalized between -1 and 1.
+            shuffle (bool): Whether batches should be shuffled or not.
 
         """
 
@@ -30,14 +31,14 @@ class ImageDataset(Dataset):
         processed_images = self._preprocess(images, shape, normalize)
 
         # Overrides its parent class with any custom arguments if needed
-        super(ImageDataset, self).__init__(processed_images)
+        super(ImageDataset, self).__init__(processed_images, shuffle)
 
         # Building up the dataset class
         self._build(processed_images, batch_size)
 
         # Debugging some important information
         logger.debug(
-            f'Size: {shape} | Batch size: {batch_size} | Normalization: {normalize}.')
+            f'Size: {shape} | Batch size: {batch_size} | Normalization: {normalize} | Shuffle: {shuffle}.')
 
         logger.info('Class overrided.')
 
@@ -80,6 +81,14 @@ class ImageDataset(Dataset):
 
         """
 
-        # Creating the dataset from shuffled and batched data
-        self.batches = data.Dataset.from_tensor_slices(
-            processed_images).shuffle(c.BUFFER_SIZE).batch(batch_size)
+        # Checks if data should be shuffled
+        if self.shuffle:
+            # Creating the dataset from shuffled and batched data
+            self.batches = data.Dataset.from_tensor_slices(
+                processed_images).shuffle(c.BUFFER_SIZE).batch(batch_size)
+
+        # If should not be shuffled
+        else:
+            # Creating the dataset from batched data
+            self.batches = data.Dataset.from_tensor_slices(
+                processed_images).batch(batch_size)

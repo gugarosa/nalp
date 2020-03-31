@@ -13,20 +13,21 @@ class LanguageModelingDataset(Dataset):
 
     """
 
-    def __init__(self, encoded_tokens, max_length=1, batch_size=64):
+    def __init__(self, encoded_tokens, max_length=1, batch_size=64, shuffle=True):
         """Initialization method.
 
         Args:
             encoded_tokens (np.array): An array of encoded tokens.
             max_length (int): Maximum sequences' length.
             batch_size (int): Size of batches.
+            shuffle (bool): Whether batches should be shuffled or not.
 
         """
 
         logger.info('Overriding class: Dataset -> LanguageModelingDataset.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(LanguageModelingDataset, self).__init__(encoded_tokens)
+        super(LanguageModelingDataset, self).__init__(encoded_tokens, shuffle)
 
         # Creating the sequences
         sequences = self._create_sequences(encoded_tokens, max_length)
@@ -39,7 +40,7 @@ class LanguageModelingDataset(Dataset):
 
         # Debugging some important information
         logger.debug(
-            f'Batches: {data.experimental.cardinality(self.batches)} | Batch size: {batch_size}.')
+            f'Batches: {data.experimental.cardinality(self.batches)} | Batch size: {batch_size} | Shuffle: {shuffle}.')
 
         logger.info('Class overrided.')
 
@@ -95,6 +96,14 @@ class LanguageModelingDataset(Dataset):
 
         """
 
-        # Creating the dataset from shuffled and batched data
-        self.batches = mapped_sequences.shuffle(
-            c.BUFFER_SIZE).batch(batch_size, drop_remainder=True)
+        # Checks if data should be shuffled
+        if self.shuffle:
+            # Creating the dataset from shuffled and batched data
+            self.batches = mapped_sequences.shuffle(
+                c.BUFFER_SIZE).batch(batch_size, drop_remainder=True)
+
+        # If should not be shuffled
+        else:
+            # Creating the dataset from batched data
+            self.batches = mapped_sequences.batch(
+                batch_size, drop_remainder=True)
