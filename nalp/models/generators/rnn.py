@@ -42,7 +42,7 @@ class RNNGenerator(Generator):
 
         # Creates the RNN loop itself
         self.rnn = layers.RNN(self.cell, name='rnn_layer',
-                              
+                              return_sequences=True,
                               stateful=True)
 
         # Creates the linear (Dense) layer
