@@ -1,17 +1,14 @@
 import tensorflow as tf
 
 import nalp.utils.logging as l
-import nalp.utils.math as m
 from nalp.models.generators.lstm import LSTMGenerator
+from nalp.models.layers.gumbel_softmax import GumbelSoftmax
 
 logger = l.get_logger(__name__)
 
 
 class GumbelLSTMGenerator(LSTMGenerator):
     """A GumbelLSTMGenerator class is the one in charge of a generative Gumbel-based Long Short-Term Memory implementation.
-
-    References:
-        E. Jang, S. Gu, B. Poole. Categorical reparameterization with gumbel-softmax. Preprint arXiv:1611.01144 (2016).
 
     """
 
@@ -36,6 +33,9 @@ class GumbelLSTMGenerator(LSTMGenerator):
         # Defining a property to hold the Gumbel-Softmax temperature parameter
         self.tau = tau
 
+        # Creates a Gumbel-Softmax layer
+        self.gumbel = GumbelSoftmax()
+
     def call(self, x):
         """Method that holds vital information whenever this class is called.
 
@@ -43,7 +43,7 @@ class GumbelLSTMGenerator(LSTMGenerator):
             x (tf.Tensor): A tensorflow's tensor holding input data.
 
         Returns:
-            Softmax outputs, predicted token and logit-based predictions.
+            Logit-based predictions, Gumbel-Softmax outputs and predicted token.
 
         """
 
@@ -56,16 +56,10 @@ class GumbelLSTMGenerator(LSTMGenerator):
         # The input also suffers a linear combination to output correct shape
         x = self.linear(x)
 
-        # Adding a sampled Gumbel distribution to the output
-        x_g = x + m.gumbel_distribution(x.shape)
+        # Lastly, we apply the Gumbel-Softmax layer
+        x_g, y_g = self.gumbel(x, self.tau)
 
-        # Sampling an argmax token from the Gumbel-based output
-        y_g = tf.stop_gradient(tf.argmax(x_g, -1))
-
-        # Applying the softmax over the Gumbel-based output
-        x_g = tf.nn.softmax(x_g * self.tau)
-
-        return x_g, y_g, x
+        return x, x_g, y_g
 
     def generate_text(self, start, length=100, temperature=1.0):
         """Generates text by feeding to the network the
@@ -101,7 +95,7 @@ class GumbelLSTMGenerator(LSTMGenerator):
         # For every possible generation
         for i in range(length):
             # Predicts the current token
-            preds, _, _ = self(start_tokens)
+            _, preds, _ = self(start_tokens)
 
             # Removes the first dimension of the tensor
             preds = tf.squeeze(preds, 0)

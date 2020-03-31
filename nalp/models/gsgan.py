@@ -12,7 +12,9 @@ class GSGAN(Adversarial):
     """A GSGAN class is the one in charge of Gumbel-Softmax Generative Adversarial Networks implementation.
 
     References:
-        M. Kusner, J. Hernández-Lobato. Gans for sequences of discrete elements with the gumbel-softmax distribution. Preprint arXiv:1611.04051 (2016).
+        M. Kusner, J. Hernández-Lobato.
+        Gans for sequences of discrete elements with the gumbel-softmax distribution.
+        Preprint arXiv:1611.04051 (2016).
 
     """
 
@@ -35,8 +37,7 @@ class GSGAN(Adversarial):
         D = LSTMDiscriminator(encoder, vocab_size, embedding_size, hidden_size)
 
         # Creating the generator network
-        G = GumbelLSTMGenerator(encoder, vocab_size,
-                                embedding_size, hidden_size, tau)
+        G = GumbelLSTMGenerator(encoder, vocab_size,embedding_size, hidden_size, tau)
 
         # Overrides its parent class with any custom arguments if needed
         super(GSGAN, self).__init__(D, G, name='GSGAN')
@@ -92,7 +93,7 @@ class GSGAN(Adversarial):
         start_batch = tf.expand_dims(x[:, 0], -1)
 
         # Creating an empty tensor for holding the Gumbel-Softmax predictions
-        preds = tf.zeros([batch_size, 0, self.vocab_size])
+        sampled_preds = tf.zeros([batch_size, 0, self.vocab_size])
 
         # Copying the sampled batch with the start batch tokens
         sampled_batch = start_batch
@@ -103,10 +104,10 @@ class GSGAN(Adversarial):
         # For every possible generation
         for i in range(max_length):
             # Predicts the current token
-            pred, start_batch, _ = self.G(start_batch)
+            _, preds, start_batch = self.G(start_batch)
 
             # Concatenates the predictions with the tensor
-            preds = tf.concat([preds, pred], 1)
+            sampled_preds = tf.concat([sampled_preds, preds], 1)
 
             # Concatenates the sampled batch with the predicted batch
             sampled_batch = tf.concat([sampled_batch, start_batch], 1)
@@ -114,7 +115,7 @@ class GSGAN(Adversarial):
         # Ignoring the first column to get the target sampled batch
         sampled_batch = sampled_batch[:, 1:]
 
-        return sampled_batch, preds
+        return sampled_batch, sampled_preds
 
     def discriminator_loss(self, y_real, y_fake):
         """Calculates the loss out of the discriminator architecture.
@@ -165,7 +166,7 @@ class GSGAN(Adversarial):
         # Using tensorflow's gradient
         with tf.GradientTape() as tape:
             # Calculate the logit-based predictions based on inputs
-            _, _, logits = self.G(x)
+            logits, _, _ = self.G(x)
 
             # Calculate the loss
             loss = tf.reduce_mean(
