@@ -47,7 +47,7 @@ class GumbelSoftmax(layers.Layer):
         # Defining a property for holding the intended axis
         self.axis = axis
 
-    def call(self, x, tau):
+    def call(self, inputs, tau):
         """Method that holds vital information whenever this class is called.
 
         Args:
@@ -60,7 +60,7 @@ class GumbelSoftmax(layers.Layer):
         """
 
         # Adds a sampled Gumbel distribution to the input
-        x += gumbel_distribution(x.shape)
+        x = inputs + gumbel_distribution(inputs.shape)
 
         # Applying the softmax over the Gumbel-based input
         x = tf.nn.softmax(x * tau, axis=self.axis)

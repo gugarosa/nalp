@@ -30,7 +30,7 @@ rnn.build((1, None))
 start_string = 'Mr.'
 
 # Generating artificial text
-text = rnn.generate_text(start=start_string, length=1000, temperature=0.5)
+text = rnn.generate_text(start=start_string, length=1000, temperature=1)
 
 # Outputting the text
 print(start_string + ''.join(text))
