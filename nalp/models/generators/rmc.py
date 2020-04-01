@@ -39,7 +39,7 @@ class RMCGenerator(Generator):
             vocab_size, embedding_size, name='embedding')
 
         # Creates a relational memory cell
-        self.cell = RelationalMemoryCell(hidden_size, name='rmc_cell')
+        self.cell = RelationalMemoryCell(name='rmc_cell')
 
         # Creates the RNN loop itself
         self.rnn = layers.RNN(self.cell, name='rnn_layer',
