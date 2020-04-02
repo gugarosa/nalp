@@ -8,21 +8,27 @@ logger = l.get_logger(__name__)
 
 
 class RMCGenerator(Generator):
-    """An RMCGenerator class is the one in charge of Relational Memory Core Recurrent Neural Networks vanilla implementation.
+    """An RMCGenerator class is the one in charge of Relational Recurrent Neural Networks vanilla implementation.
 
     References:
-        
+        A. Santoro, et al. Relational recurrent neural networks.
+        Advances in neural information processing systems (2018).
 
     """
 
-    def __init__(self, encoder=None, vocab_size=1, embedding_size=32, hidden_size=64):
+    def __init__(self, encoder=None, vocab_size=1, embedding_size=32,
+                 n_slots=3, n_heads=5, head_size=10, n_blocks=1, n_layers=3):
         """Initialization method.
 
         Args:
             encoder (IntegerEncoder): An index to vocabulary encoder.
             vocab_size (int): The size of the vocabulary.
             embedding_size (int): The size of the embedding layer.
-            hidden_size (int): The amount of hidden neurons.
+            n_slots (int): Number of memory slots.
+            n_heads (int): Number of attention heads.
+            head_size (int): Size of each attention head.
+            n_blocks (int): Number of feed-forward networks.
+            n_layers (int): Amout of layers per feed-forward network.
 
         """
 
@@ -39,7 +45,8 @@ class RMCGenerator(Generator):
             vocab_size, embedding_size, name='embedding')
 
         # Creates a relational memory cell
-        self.cell = RelationalMemoryCell(name='rmc_cell')
+        self.cell = RelationalMemoryCell(
+            n_slots, n_heads, head_size, n_blocks, n_layers, name='rmc_cell')
 
         # Creates the RNN loop itself
         self.rnn = layers.RNN(self.cell, name='rnn_layer',

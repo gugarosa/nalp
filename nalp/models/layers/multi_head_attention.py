@@ -45,6 +45,10 @@ def scaled_dot_product_attention(q, k, v, mask):
 class MultiHeadAttention(layers.Layer):
     """A MultiHeadAttention class is the one in charge of a Multi-Head Attention layer implementation.
 
+    References:
+        A.Vaswani, et al. Attention is all you need.
+        Advances in neural information processing systems (2017).
+
     """
 
     def __init__(self, n_features, n_heads, **kwargs):
@@ -144,3 +148,20 @@ class MultiHeadAttention(layers.Layer):
         output = self.out(concat_attn)
 
         return output, attn_weights
+
+    def get_config(self):
+        """Gets the configuration of the layer for further serialization.
+
+        """
+
+        # Defining a dictionary holding the configuration
+        config = {
+            'n_features': self.n_features,
+            'n_heads': self.n_heads,
+            'depth': self.depth
+        }
+
+        # Overring the base configuration
+        base_config = super(MultiHeadAttention, self).get_config()
+
+        return dict(list(base_config.items()) + list(config.items()))

@@ -1,49 +1,79 @@
 import tensorflow as tf
-from tensorflow.keras.layers import AbstractRNNCell, Dense, LayerNormalization, dot
-from tensorflow.python.keras.utils import tf_utils
+from tensorflow.keras.layers import (AbstractRNNCell, Dense,
+                                     LayerNormalization, dot)
+from tensorflow.python.framework import constant_op, dtypes
 from tensorflow.python.keras import activations
-from tensorflow.python.keras import constraints
-from tensorflow.python.keras import initializers
-from tensorflow.python.keras import regularizers
 from tensorflow.python.keras import backend as K
-
-from tensorflow.python.framework import constant_op
-from tensorflow.python.framework import dtypes
+from tensorflow.python.keras import constraints, initializers, regularizers
+from tensorflow.python.keras.utils import tf_utils
 from tensorflow.python.layers import base as base_layer
-from tensorflow.python.ops import array_ops
-from tensorflow.python.ops import init_ops
-from tensorflow.python.ops import math_ops
-from tensorflow.python.ops import nn_ops
+from tensorflow.python.ops import array_ops, init_ops, math_ops, nn_ops
 from tensorflow.python.platform import tf_logging as logging
-
-from tensorflow.python.ops.rnn_cell_impl import LayerRNNCell, LSTMStateTuple
-
 
 from nalp.models.layers.multi_head_attention import MultiHeadAttention
 
+
 class RelationalMemoryCell(AbstractRNNCell):
-    """
+    """A RelationalMemoryCell class is the one in charge of a Relational Memory cell implementation.
+
+    References:
+        A. Santoro, et al. Relational recurrent neural networks.
+        Advances in neural information processing systems (2018).
+
     """
 
-    def __init__(self, n_slots=5, n_heads=8, head_size=20, n_blocks=1, n_layers=5, forget_bias=1.0, activation='tanh', **kwargs):
-        """
+    def __init__(self, n_slots, n_heads, head_size, n_blocks=1, n_layers=3,
+                 activation='tanh', recurrent_activation='hard_sigmoid', forget_bias=1.0,
+                 kernel_initializer='glorot_uniform', recurrent_initializer='orthogonal', bias_initializer='zeros',
+                 kernel_regularizer=None, recurrent_regularizer=None, bias_regularizer=None,
+                 kernel_constraint=None, recurrent_constraint=None, bias_constraint=None,**kwargs):
+        """Initialization method.
+
+        Args:
+
         """
 
+        # Overrides its parent class with any custom arguments if needed
         super(RelationalMemoryCell, self).__init__(**kwargs)
-
+        
+        # Number of memory slots and their sizes
         self.n_slots = n_slots
         self.slot_size = n_heads * head_size
 
+        # Number of attention heads and their sizes
         self.n_heads = n_heads
         self.head_size = head_size
 
+        # Number of feed-forward network blocks and their sizes
         self.n_blocks = n_blocks
         self.n_layers = n_layers
 
-        self.forget_bias = forget_bias
-        self.activation = math_ops.tanh
+        # Activation functions
+        self.activation = activations.get(activation)
+        self.recurrent_activation = activations.get(recurrent_activation)
 
+        # Forget gate bias value
+        self.forget_bias = forget_bias
+
+        # Initializers
+        self.kernel_initializer = initializers.get(kernel_initializer)
+        self.recurrent_initializer = initializers.get(recurrent_initializer)
+        self.bias_initializer = initializers.get(bias_initializer)
+
+        # Regularizers
+        self.kernel_regularizer = regularizers.get(kernel_regularizer)
+        self.recurrent_regularizer = regularizers.get(recurrent_regularizer)
+        self.bias_regularizer = regularizers.get(bias_regularizer)
+
+        # Constraints
+        self.kernel_constraint = constraints.get(kernel_constraint)
+        self.recurrent_constraint = constraints.get(recurrent_constraint)
+        self.bias_constraint = constraints.get(bias_constraint)
+
+        # Number of outputted units
         self.units = self.slot_size * n_slots
+
+        # Number of outputted units from the gates
         self.n_gates = 2 * self.slot_size
 
 
@@ -66,20 +96,38 @@ class RelationalMemoryCell(AbstractRNNCell):
 
     
     def build(self, input_shape):
+        """Builds up the cell according to its input shape.
 
+        Args:
+            input_shape (tf.Tensor): Tensor holding the input shape.
+            
+        """
+        
+        # Defining a property to hold the `W` matrices
         self.kernel = self.add_weight(
             shape=(self.slot_size, self.n_gates),
-            name='kernel'
+            name='kernel',
+            initializer=self.kernel_initializer,
+            regularizer=self.kernel_regularizer,
+            constraint=self.kernel_constraint,
         )
 
+        # Defining a property to hold the `U` matrices
         self.recurrent_kernel = self.add_weight(
             shape=(self.slot_size, self.n_gates),
-            name='recurrent_kernel'
+            name='recurrent_kernel',
+            initializer=self.recurrent_initializer,
+            regularizer=self.recurrent_regularizer,
+            constraint=self.recurrent_constraint,
         )
 
+        # Defining a property to hold the `b` vectors
         self.bias = self.add_weight(
             shape=(self.n_gates,),
-            name='bias'
+            name='bias',
+            initializer=self.bias_initializer,
+            regularizer=self.bias_regularizer,
+            constraint=self.bias_constraint,
         )
 
         self.built = True
@@ -107,7 +155,14 @@ class RelationalMemoryCell(AbstractRNNCell):
         return memory
 
     def call(self, inputs, states):
-        """
+        """Method that holds vital information whenever this class is called.
+
+        Args:
+            inputs (tf.Tensor): An input tensor.
+            states (list): A list holding previous states and memories.
+
+        Returns:
+            Output states as well as current state and memory.
 
         """
 
