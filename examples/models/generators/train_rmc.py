@@ -23,13 +23,13 @@ dataset = LanguageModelingDataset(
 
 # Creating the RMC
 rmc = RMCGenerator(encoder=encoder, vocab_size=corpus.vocab_size, embedding_size=256,
-                   n_slots=3, n_heads=5, head_size=10, n_blocks=1, n_layers=3)
+                   n_slots=5, n_heads=5, head_size=25, n_blocks=1, n_layers=3)
 
 # As NALP's RMCs are stateful, we need to build it with a fixed batch size
 rmc.build((64, None))
 
 # Compiling the RMC
-rmc.compile(optimizer=tf.optimizers.Adam(learning_rate=0.001),
+rmc.compile(optimizer=tf.optimizers.Adam(learning_rate=0.01),
             loss=tf.losses.SparseCategoricalCrossentropy(from_logits=True),
             metrics=[tf.metrics.SparseCategoricalAccuracy(name='accuracy')])
 

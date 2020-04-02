@@ -62,4 +62,3 @@ class LinearGenerator(Generator):
         x = self.out(x)
 
         return x
-

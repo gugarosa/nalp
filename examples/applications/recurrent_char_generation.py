@@ -18,7 +18,8 @@ encoder = IntegerEncoder()
 encoder.learn(corpus.vocab_index, corpus.index_vocab)
 
 # Creating the RNN
-rnn = RMCGenerator(encoder=encoder, vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)
+rnn = RMCGenerator(encoder=encoder, vocab_size=corpus.vocab_size, embedding_size=256,
+                   n_slots=5, n_heads=5, head_size=25, n_blocks=1, n_layers=3)
 
 # Loading pre-trained RNN weights
 rnn.load_weights('trained/rmc').expect_partial()
