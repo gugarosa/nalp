@@ -1,5 +1,5 @@
 import tensorflow as tf
-from tensorflow.keras import layers
+from tensorflow.keras.layers import Layer
 
 import nalp.utils.constants as c
 
@@ -24,7 +24,7 @@ def gumbel_distribution(input_shape):
     return gumbel_dist
 
 
-class GumbelSoftmax(layers.Layer):
+class GumbelSoftmax(Layer):
     """A GumbelSoftmax class is the one in charge of a Gumbel-Softmax layer implementation.
 
     References:

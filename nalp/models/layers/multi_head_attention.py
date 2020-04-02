@@ -1,5 +1,5 @@
 import tensorflow as tf
-from tensorflow.keras import layers
+from tensorflow.keras.layers import Dense, Layer
 
 import nalp.utils.constants as c
 
@@ -42,7 +42,7 @@ def scaled_dot_product_attention(q, k, v, mask):
     return output, attention_weights
 
 
-class MultiHeadAttention(layers.Layer):
+class MultiHeadAttention(Layer):
     """A MultiHeadAttention class is the one in charge of a Multi-Head Attention layer implementation.
 
     References:
@@ -76,16 +76,16 @@ class MultiHeadAttention(layers.Layer):
         self.depth = n_features // self.n_heads
 
         # Creates a linear layer for holding the `q` matrix
-        self.w_q = layers.Dense(n_features)
+        self.w_q = Dense(n_features)
 
         # Creates a linear layer for holding the `k` matrix
-        self.w_k = layers.Dense(n_features)
+        self.w_k = Dense(n_features)
 
         # Creates a linear layer for holding the `v` matrix
-        self.w_v = layers.Dense(n_features)
+        self.w_v = Dense(n_features)
 
         # Creating the final linear layer
-        self.out = layers.Dense(n_features)
+        self.out = Dense(n_features)
 
     def _split_heads(self, x):
         """Split the last tensor dimension into (n_heads, depth) and transposes its result.

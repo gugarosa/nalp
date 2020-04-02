@@ -223,7 +223,7 @@ class RelationalMemoryCell(AbstractRNNCell):
         x_i += tf.tensordot(h_prev, rk_i, axes=[[-1], [0]])
 
         # Splitting up the bias into forget and input gates biases
-        b_f, b_i = tf.split(self.bias, num_or_size_splits=2, axis=0)
+        b_f, b_i = tf.split(self.bias, 2, axis=0)
 
         # Adding the forget and input gate bias
         x_f = tf.nn.bias_add(x_f, b_f)
@@ -291,7 +291,7 @@ class RelationalMemoryCell(AbstractRNNCell):
             'n_layers' self.n_layers,
             'activation': activations.serialize(self.activation),
             'recurrent_activation': activations.serialize(self.recurrent_activation),
-            'forget_bias': self.forget_bias
+            'forget_bias': self.forget_bias,
             'kernel_initializer': initializers.serialize(self.kernel_initializer),
             'recurrent_initializer': initializers.serialize(self.recurrent_initializer),
             'bias_initializer': initializers.serialize(self.bias_initializer),
