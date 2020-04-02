@@ -244,15 +244,68 @@ class RelationalMemoryCell(AbstractRNNCell):
 
         return h, [h, m]
 
-    # def get_config(self):
-    #     """Gets the configuration of the layer for further serialization.
+    def get_initial_state(self, batch_size):
+        """Gets the cell initial state by creating an identity matrix.
 
-    #     """
+        Args:
+            batch_size (int): Size of the batch.
 
-    #     # Defining a dictionary holding the configuration
-    #     config = {'axis': self.axis}
+        """
 
-    #     # Overring the base configuration
-    #     base_config = super(GumbelSoftmax, self).get_config()
+        # Creates an identity matrix
+        states = tf.eye(self.n_slots, batch_shape=[batch_size])
+        
+        # If the slot size is bigger than number of slots
+        if self.slot_size > self.n_slots:
+            # Calculates its difference
+            diff = self.slot_size - self.n_slots
 
-    #     return dict(list(base_config.items()) + list(config.items()))
+            # Creates a new tensor for padding
+            padding = tf.zeros((batch_size, self.n_slots, diff))
+
+            # Concatenates the initial states with the padding
+            states = tf.concat([states, padding], -1)
+        
+        # If the slot size is smaller than number of slots
+        elif self.slot_size < self.n_slots:
+            # Just gather the tensor until the desired size
+            states = states[:, :, :self.slot_size]
+
+        # Reshapes to a flatten output
+        states = tf.reshape(states, (states.shape[0], -1))
+
+        return states, states
+
+    def get_config(self):
+        """Gets the configuration of the layer for further serialization.
+
+        """
+
+        # Defining a dictionary holding the configuration
+        config = {
+            'n_slots': self.n_slots,
+            'slot_size': self.slot_size,
+            'n_heads': self.n_heads,
+            'head_size': self.head_size,
+            'n_blocks': self.n_blocks,
+            'n_layers' self.n_layers,
+            'activation': activations.serialize(self.activation),
+            'recurrent_activation': activations.serialize(self.recurrent_activation),
+            'forget_bias': self.forget_bias
+            'kernel_initializer': initializers.serialize(self.kernel_initializer),
+            'recurrent_initializer': initializers.serialize(self.recurrent_initializer),
+            'bias_initializer': initializers.serialize(self.bias_initializer),
+            'kernel_regularizer': regularizers.serialize(self.kernel_regularizer),
+            'recurrent_regularizer': regularizers.serialize(self.recurrent_regularizer),
+            'bias_regularizer': regularizers.serialize(self.bias_regularizer),
+            'kernel_constraint': constraints.serialize(self.kernel_constraint),
+            'recurrent_constraint': constraints.serialize(self.recurrent_constraint),
+            'bias_constraint': constraints.serialize(self.bias_constraint),
+            'units': self.units,
+            'n_gates': self.n_gates
+        }
+
+        # Overring the base configuration
+        base_config = super(RelationalMemoryCell, self).get_config()
+
+        return dict(list(base_config.items()) + list(config.items()))

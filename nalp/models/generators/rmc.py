@@ -1,3 +1,4 @@
+import tensorflow as tf
 from tensorflow.keras import layers
 
 import nalp.utils.logging as l
@@ -67,11 +68,16 @@ class RMCGenerator(Generator):
 
         """
 
+        # Checks if the input tensor has a batch size
+        if x.shape[0] is not None:
+            # If yes, applies as a property
+            self.batch_size = x.shape[0]
+
         # Firstly, we apply the embedding layer
         x = self.embedding(x)
 
         # We need to apply the input into the first recurrent layer
-        x = self.rnn(x)
+        x = self.rnn(x, initial_state=self.cell.get_initial_state(self.batch_size))
 
         # The input also suffers a linear combination to output correct shape
         x = self.linear(x)
