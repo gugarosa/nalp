@@ -10,6 +10,7 @@ Pre-defined generator architectures.
     nalp.models.generators.gumbel_lstm
     nalp.models.generators.linear
     nalp.models.generators.lstm
+    nalp.models.generators.rmc
     nalp.models.generators.rnn
     nalp.models.generators.stacked_rnn
 

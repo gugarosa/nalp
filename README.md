@@ -66,10 +66,12 @@ NALP is based on the following structure, and you should pay attention to its tr
             - gumbel_lstm
             - linear
             - lstm
+            - rmc
             - rnn
             - stacked_rnn
         - layers
             - gumbel_softmax
+            - multi_head_attention
             - relational_memory_cell
         - dcgan
         - gan
