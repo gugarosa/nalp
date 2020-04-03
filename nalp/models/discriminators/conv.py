@@ -1,5 +1,5 @@
 import tensorflow as tf
-from tensorflow.keras import layers
+from tensorflow.keras.layers import Conv2D, Dense, Dropout
 
 import nalp.utils.logging as l
 from nalp.core.model import Discriminator
@@ -32,15 +32,26 @@ class ConvDiscriminator(Discriminator):
         self.alpha = alpha
 
         # Defining a list for holding the convolutional layers
-        self.conv = [layers.Conv2D(
+        self.conv = [Conv2D(
             64 * (i + 1), (5, 5), strides=(2, 2), padding='same', name=f'conv_{i}') for i in range(n_samplings)]
 
         # Defining a list for holding the dropout layers
-        self.drop = [layers.Dropout(
-            dropout_rate, name=f'drop_{i}') for i in range(n_samplings)]
+        self.drop = [Dropout(dropout_rate, name=f'drop_{i}') for i in range(n_samplings)]
 
         # Defining the output as a logit unit that decides whether input is real or fake
-        self.out = layers.Dense(1, name='out')
+        self.out = Dense(1, name='out')
+
+    @property
+    def alpha(self):
+        """float: LeakyReLU activation threshold.
+
+        """
+
+        return self._alpha
+
+    @alpha.setter
+    def alpha(self, alpha):
+        self._alpha = alpha
 
     def call(self, x, training=True):
         """Method that holds vital information whenever this class is called.

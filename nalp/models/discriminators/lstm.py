@@ -1,4 +1,4 @@
-from tensorflow.keras import layers
+from tensorflow.keras.layers import RNN, Dense, LSTMCell
 
 import nalp.utils.logging as l
 from nalp.core.model import Discriminator
@@ -30,18 +30,18 @@ class LSTMDiscriminator(Discriminator):
         super(LSTMDiscriminator, self).__init__(name='D_lstm')
 
         # Creates an embedding layer
-        self.embedding = layers.Dense(embedding_size, name='embedding')
+        self.embedding = Dense(embedding_size, name='embedding')
 
         # Creates a LSTM cell
-        self.cell = layers.LSTMCell(hidden_size, name='lstm_cell')
+        self.cell = LSTMCell(hidden_size, name='lstm_cell')
 
         # Creates the RNN loop itself
-        self.rnn = layers.RNN(self.cell, name='rnn_layer',
+        self.rnn = RNN(self.cell, name='rnn_layer',
                               return_sequences=True,
                               stateful=True)
 
         # And finally, defining the output layer
-        self.out = layers.Dense(1, name='out')
+        self.out = Dense(1, name='out')
 
     def call(self, x):
         """Method that holds vital information whenever this class is called.

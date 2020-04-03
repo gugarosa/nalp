@@ -1,5 +1,5 @@
 import tensorflow as tf
-from tensorflow.keras import layers
+from tensorflow.keras.layers import Dense
 
 import nalp.utils.logging as l
 from nalp.core.model import Discriminator
@@ -30,11 +30,23 @@ class LinearDiscriminator(Discriminator):
         self.alpha = alpha
 
         # Defining a list for holding the linear layers
-        self.linear = [layers.Dense(
+        self.linear = [Dense(
             128 * i, name=f'linear_{i}') for i in range(n_samplings, 0, -1)]
 
         # Defining the output as a logit unit that decides whether input is real or fake
-        self.out = layers.Dense(1, name='out')
+        self.out = Dense(1, name='out')
+
+    @property
+    def alpha(self):
+        """float: LeakyReLU activation threshold.
+
+        """
+
+        return self._alpha
+
+    @alpha.setter
+    def alpha(self, alpha):
+        self._alpha = alpha
 
     def call(self, x, training=True):
         """Method that holds vital information whenever this class is called.
