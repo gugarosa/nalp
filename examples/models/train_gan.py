@@ -14,8 +14,8 @@ dataset = ImageDataset(x, batch_size=256, shape=(
 gan = GAN(input_shape=(784,), noise_dim=100, n_samplings=3, alpha=0.01)
 
 # Compiling the GAN
-gan.compile(g_optimizer=tf.optimizers.Adam(learning_rate=0.0001),
-            d_optimizer=tf.optimizers.Adam(learning_rate=0.0001))
+gan.compile(d_optimizer=tf.optimizers.Adam(learning_rate=0.0001),
+            g_optimizer=tf.optimizers.Adam(learning_rate=0.0001))
 
 # Fitting the GAN
 gan.fit(dataset.batches, epochs=150)

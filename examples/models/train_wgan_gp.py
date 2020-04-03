@@ -15,11 +15,11 @@ wgan = WGAN(input_shape=(28, 28, 1), noise_dim=100, n_samplings=3,
             alpha=0.3, dropout_rate=0.3, type='gp', penalty=10)
 
 # Compiling the WGAN
-wgan.compile(g_optimizer=tf.optimizers.RMSprop(learning_rate=0.00005),
-             d_optimizer=tf.optimizers.RMSprop(learning_rate=0.00005))
+wgan.compile(d_optimizer=tf.optimizers.RMSprop(learning_rate=0.00005),
+             g_optimizer=tf.optimizers.RMSprop(learning_rate=0.00005))
 
 # Fitting the WGAN
 wgan.fit(dataset.batches, epochs=100, critic_steps=5)
 
 # Saving WGAN weights
-wgan.save_weights('trained/wgan', save_format='tf')
+wgan.save_weights('trained/wgan_gp', save_format='tf')

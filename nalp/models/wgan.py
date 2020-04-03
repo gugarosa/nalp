@@ -18,7 +18,8 @@ class WGAN(Adversarial):
 
     """
 
-    def __init__(self, input_shape=(28, 28, 1), noise_dim=100, n_samplings=3, alpha=0.3, dropout_rate=0.3, type='wc', clip=0.01, penalty=10):
+    def __init__(self, input_shape=(28, 28, 1), noise_dim=100, n_samplings=3, alpha=0.3, dropout_rate=0.3,
+                 type='wc', clip=0.01, penalty=10):
         """Initialization method.
 
         Args:
@@ -53,10 +54,46 @@ class WGAN(Adversarial):
         # Defining the gradient penalty coefficient as a property for further usage
         self.penalty_lambda = penalty
 
-        logger.info(
-            f'Input: {input_shape} | Noise: {noise_dim} | Number of Samplings: {n_samplings} | Activation Rate: {alpha} | Dropout Rate: {dropout_rate} | Type: {type}.')
+        logger.info(f'Input: {input_shape} | Noise: {noise_dim} | Number of Samplings: {n_samplings} | '
+                    f'Activation Rate: {alpha} | Dropout Rate: {dropout_rate} | Type: {type}.')
 
-    def gradient_penalty(self, x, x_fake):
+    @property
+    def type(self):
+        """str: Whether should use weight clipping (wc) or gradient penalty (gp).
+
+        """
+
+        return self._type
+
+    @type.setter
+    def type(self, type):
+        self._type = type
+
+    @property
+    def clip(self):
+        """float: Clipping value for the Lipschitz constrain.
+
+        """
+
+        return self._clip
+
+    @clip.setter
+    def clip(self, clip):
+        self._clip = clip
+
+    @property
+    def penalty_lambda(self):
+        """int: Coefficient for the gradient penalty.
+
+        """
+
+        return self._penalty_lambda
+
+    @penalty_lambda.setter
+    def penalty_lambda(self, penalty_lambda):
+        self._penalty_lambda = penalty_lambda
+
+    def _gradient_penalty(self, x, x_fake):
         """Performs the gradient penalty procedure.
 
         Args:
@@ -123,7 +160,7 @@ class WGAN(Adversarial):
             # Checks if WGAN is using gradient penalty
             if self.type == 'gp':
                 # Calculates the penalization score
-                penalty = self.gradient_penalty(x, x_fake)
+                penalty = self._gradient_penalty(x, x_fake)
 
                 # Sums the gradient penalty over the discriminator loss
                 D_loss += penalty * self.penalty_lambda

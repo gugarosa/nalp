@@ -9,7 +9,9 @@ class DCGAN(Adversarial):
     """A DCGAN class is the one in charge of Deep Convolutional Generative Adversarial Networks implementation.
 
     References:
-        A. Radford, L. Metz, S. Chintala. Unsupervised representation learning with deep convolutional generative adversarial networks. Preprint arXiv:1511.06434 (2015).
+        A. Radford, L. Metz, S. Chintala.
+        Unsupervised representation learning with deep convolutional generative adversarial networks.
+        Preprint arXiv:1511.06434 (2015).
 
     """
 
@@ -36,5 +38,5 @@ class DCGAN(Adversarial):
         # Overrides its parent class with any custom arguments if needed
         super(DCGAN, self).__init__(D, G, name='dcgan')
 
-        logger.info(
-            f'Input: {input_shape} | Noise: {noise_dim} | Number of Samplings: {n_samplings} | Activation Rate: {alpha} | Dropout Rate: {dropout_rate}.')
+        logger.info(f'Input: {input_shape} | Noise: {noise_dim} | Number of Samplings: {n_samplings} | '
+                    f'Activation Rate: {alpha} | Dropout Rate: {dropout_rate}.')

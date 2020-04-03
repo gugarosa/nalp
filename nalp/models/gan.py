@@ -10,7 +10,8 @@ class GAN(Adversarial):
     """A GAN class is the one in charge of naïve Generative Adversarial Networks implementation.
 
     References:
-        I. Goodfellow, et al. Generative adversarial nets. Advances in neural information processing systems (2014).
+        I. Goodfellow, et al. Generative adversarial nets.
+        Advances in neural information processing systems (2014).
 
     """
 
@@ -36,5 +37,5 @@ class GAN(Adversarial):
         # Overrides its parent class with any custom arguments if needed
         super(GAN, self).__init__(D, G, name='gan')
 
-        logger.info(
-            f'Input: {input_shape} | Noise: {noise_dim} | Number of Samplings: {n_samplings} | Activation Rate: {alpha}.')
+        logger.info(f'Input: {input_shape} | Noise: {noise_dim} | Number of Samplings: {n_samplings} | '
+                    f'Activation Rate: {alpha}.')
