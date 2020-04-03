@@ -27,14 +27,14 @@ relgan = RelGAN(encoder=encoder, vocab_size=corpus.vocab_size, max_length=10,
 
 # Compiling the GSGAN
 relgan.compile(pre_optimizer=tf.optimizers.Adam(learning_rate=0.01),
-               g_optimizer=tf.optimizers.Adam(learning_rate=0.001),
-               d_optimizer=tf.optimizers.Adam(learning_rate=0.001))
+               g_optimizer=tf.optimizers.Adam(learning_rate=0.0001),
+               d_optimizer=tf.optimizers.Adam(learning_rate=0.0001))
 
 # Pre-fitting the RelGAN
-relgan.pre_fit(dataset.batches, epochs=100)
+relgan.pre_fit(dataset.batches, epochs=200)
 
 # Fitting the RelGAN
-relgan.fit(dataset.batches, epochs=100)
+relgan.fit(dataset.batches, epochs=50)
 
 # Saving RelGAN weights
 relgan.save_weights('trained/relgan', save_format='tf')
