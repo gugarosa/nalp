@@ -14,7 +14,8 @@ class SeqGAN(Adversarial):
     """A SeqGAN class is the one in charge of Sequence Generative Adversarial Networks implementation.
 
     References:
-        L. Yu, et al. Seqgan: Sequence generative adversarial nets with policy gradient. 31th AAAI Conference on Artificial Intelligence (2017).
+        L. Yu, et al. Seqgan: Sequence generative adversarial nets with policy gradient.
+        31th AAAI Conference on Artificial Intelligence (2017).
 
     """
 
@@ -53,33 +54,57 @@ class SeqGAN(Adversarial):
         # Defining a property for holding the temperature
         self.T = temperature
 
-    def compile(self, pre_optimizer, g_optimizer, d_optimizer):
+    @property
+    def vocab_size(self):
+        """int: The size of the vocabulary.
+
+        """
+
+        return self._vocab_size
+
+    @vocab_size.setter
+    def vocab_size(self, vocab_size):
+        self._vocab_size = vocab_size
+
+    @property
+    def T(self):
+        """float: Temperature value to sample the token.
+
+        """
+
+        return self._T
+
+    @T.setter
+    def T(self, T):
+        self._T = T
+
+    def compile(self, pre_optimizer, d_optimizer, g_optimizer):
         """Main building method.
 
         Args:
             pre_optimizer (tf.keras.optimizers): An optimizer instance for pre-training the generator.
-            g_optimizer (tf.keras.optimizers): An optimizer instance for the generator.
             d_optimizer (tf.keras.optimizers): An optimizer instance for the discriminator.
+            g_optimizer (tf.keras.optimizers): An optimizer instance for the generator.
 
         """
 
         # Creates an optimizer object for pre-training the generator
         self.P_optimizer = pre_optimizer
 
-        # Creates an optimizer object for the generator
-        self.G_optimizer = g_optimizer
-
         # Creates an optimizer object for the discriminator
         self.D_optimizer = d_optimizer
+
+        # Creates an optimizer object for the generator
+        self.G_optimizer = g_optimizer
 
         # Defining the loss function
         self.loss = tf.nn.sparse_softmax_cross_entropy_with_logits
 
-        # Defining a loss metric for the generator
-        self.G_loss = tf.metrics.Mean(name='G_loss')
-
         # Defining a loss metric for the discriminator
         self.D_loss = tf.metrics.Mean(name='D_loss')
+
+        # Defining a loss metric for the generator
+        self.G_loss = tf.metrics.Mean(name='G_loss')
 
     def generate_batch(self, batch_size=1, length=1):
         """Generates a batch of tokens by feeding to the network the
@@ -130,7 +155,7 @@ class SeqGAN(Adversarial):
 
         return x_sampled_batch, y_sampled_batch
 
-    def get_reward(self, x, n_rollouts):
+    def _get_reward(self, x, n_rollouts):
         """Calculates rewards over an input using a Monte Carlo search strategy.
 
         Args:
@@ -363,7 +388,7 @@ class SeqGAN(Adversarial):
                     batch_size, max_length)
 
                 # Gathers the rewards based on the sampled batch
-                rewards = self.get_reward(x_fake_batch, n_rollouts)
+                rewards = self._get_reward(x_fake_batch, n_rollouts)
 
                 # Performs the optimization step over the generator
                 self.G_step(x_fake_batch, y_fake_batch, rewards)

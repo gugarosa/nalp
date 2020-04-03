@@ -26,8 +26,8 @@ seqgan = SeqGAN(encoder=encoder, vocab_size=corpus.vocab_size, max_length=10, em
 
 # Compiling the SeqGAN
 seqgan.compile(pre_optimizer=tf.optimizers.Adam(learning_rate=0.01),
-               g_optimizer=tf.optimizers.Adam(learning_rate=0.001),
-               d_optimizer=tf.optimizers.Adam(learning_rate=0.001))
+               d_optimizer=tf.optimizers.Adam(learning_rate=0.001),
+               g_optimizer=tf.optimizers.Adam(learning_rate=0.001))
 
 # Pre-fitting the SeqGAN
 seqgan.pre_fit(dataset.batches, g_epochs=50, d_epochs=10)

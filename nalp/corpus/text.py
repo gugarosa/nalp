@@ -68,7 +68,7 @@ class TextCorpus(Corpus):
 
     @property
     def vocab_size(self):
-        """int: The size of the vocabulary
+        """int: The size of the vocabulary.
 
         """
 

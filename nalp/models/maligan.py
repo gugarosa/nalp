@@ -15,11 +15,13 @@ class MaliGAN(Adversarial):
     Generative Adversarial Networks implementation.
 
     References:
-        T. Che, et al. Maximum-likelihood augmented discrete generative adversarial networks. Preprint arXiv:1702.07983 (2017).
+        T. Che, et al. Maximum-likelihood augmented discrete generative adversarial networks.
+        Preprint arXiv:1702.07983 (2017).
 
     """
 
-    def __init__(self, encoder=None, vocab_size=1, max_length=1, embedding_size=32, hidden_size=64, n_filters=[64], filters_size=[1], dropout_rate=0.25, temperature=1):
+    def __init__(self, encoder=None, vocab_size=1, max_length=1, embedding_size=32, hidden_size=64,
+                 n_filters=[64], filters_size=[1], dropout_rate=0.25, temperature=1):
         """Initialization method.
 
         Args:
@@ -53,33 +55,57 @@ class MaliGAN(Adversarial):
         # Defining a property for holding the temperature
         self.T = temperature
 
-    def compile(self, pre_optimizer, g_optimizer, d_optimizer):
+    @property
+    def vocab_size(self):
+        """int: The size of the vocabulary.
+
+        """
+
+        return self._vocab_size
+
+    @vocab_size.setter
+    def vocab_size(self, vocab_size):
+        self._vocab_size = vocab_size
+
+    @property
+    def T(self):
+        """float: Temperature value to sample the token.
+
+        """
+
+        return self._T
+
+    @T.setter
+    def T(self, T):
+        self._T = T
+
+    def compile(self, pre_optimizer, d_optimizer, g_optimizer):
         """Main building method.
 
         Args:
             pre_optimizer (tf.keras.optimizers): An optimizer instance for pre-training the generator.
-            g_optimizer (tf.keras.optimizers): An optimizer instance for the generator.
             d_optimizer (tf.keras.optimizers): An optimizer instance for the discriminator.
+            g_optimizer (tf.keras.optimizers): An optimizer instance for the generator.
 
         """
 
         # Creates an optimizer object for pre-training the generator
         self.P_optimizer = pre_optimizer
 
-        # Creates an optimizer object for the generator
-        self.G_optimizer = g_optimizer
-
         # Creates an optimizer object for the discriminator
         self.D_optimizer = d_optimizer
+
+        # Creates an optimizer object for the generator
+        self.G_optimizer = g_optimizer
 
         # Defining the loss function
         self.loss = tf.nn.sparse_softmax_cross_entropy_with_logits
 
-        # Defining a loss metric for the generator
-        self.G_loss = tf.metrics.Mean(name='G_loss')
-
         # Defining a loss metric for the discriminator
         self.D_loss = tf.metrics.Mean(name='D_loss')
+
+        # Defining a loss metric for the generator
+        self.G_loss = tf.metrics.Mean(name='G_loss')
 
     def generate_batch(self, batch_size=1, length=1):
         """Generates a batch of tokens by feeding to the network the
@@ -130,7 +156,7 @@ class MaliGAN(Adversarial):
 
         return x_sampled_batch, y_sampled_batch
 
-    def get_reward(self, x):
+    def _get_reward(self, x):
         """Calculates rewards over an input using a Maximum-Likelihood approach.
 
         Args:
@@ -333,7 +359,7 @@ class MaliGAN(Adversarial):
                     batch_size, max_length)
 
                 # Gathers the rewards based on the sampled batch
-                rewards = self.get_reward(x_fake_batch)
+                rewards = self._get_reward(x_fake_batch)
 
                 # Performs the optimization step over the generator
                 self.G_step(x_fake_batch, y_fake_batch, rewards)

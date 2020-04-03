@@ -26,8 +26,8 @@ gsgan = GSGAN(encoder=encoder, vocab_size=corpus.vocab_size,
 
 # Compiling the GSGAN
 gsgan.compile(pre_optimizer=tf.optimizers.Adam(learning_rate=0.01),
-              g_optimizer=tf.optimizers.Adam(learning_rate=0.001),
-              d_optimizer=tf.optimizers.Adam(learning_rate=0.001))
+              d_optimizer=tf.optimizers.Adam(learning_rate=0.001),
+              g_optimizer=tf.optimizers.Adam(learning_rate=0.001))
 
 # Pre-fitting the GSGAN
 gsgan.pre_fit(dataset.batches, epochs=100)

@@ -27,8 +27,8 @@ relgan = RelGAN(encoder=encoder, vocab_size=corpus.vocab_size, max_length=10,
 
 # Compiling the GSGAN
 relgan.compile(pre_optimizer=tf.optimizers.Adam(learning_rate=0.01),
-               g_optimizer=tf.optimizers.Adam(learning_rate=0.0001),
-               d_optimizer=tf.optimizers.Adam(learning_rate=0.0001))
+               d_optimizer=tf.optimizers.Adam(learning_rate=0.0001),
+               g_optimizer=tf.optimizers.Adam(learning_rate=0.0001))
 
 # Pre-fitting the RelGAN
 relgan.pre_fit(dataset.batches, epochs=200)

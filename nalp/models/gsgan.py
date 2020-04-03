@@ -44,33 +44,45 @@ class GSGAN(Adversarial):
         # Defining a property for holding the vocabulary size
         self.vocab_size = vocab_size
 
-    def compile(self, pre_optimizer, g_optimizer, d_optimizer):
+    @property
+    def vocab_size(self):
+        """int: The size of the vocabulary.
+
+        """
+
+        return self._vocab_size
+
+    @vocab_size.setter
+    def vocab_size(self, vocab_size):
+        self._vocab_size = vocab_size
+
+    def compile(self, pre_optimizer, d_optimizer, g_optimizer):
         """Main building method.
 
         Args:
             pre_optimizer (tf.keras.optimizers): An optimizer instance for pre-training the generator.
-            g_optimizer (tf.keras.optimizers): An optimizer instance for the generator.
             d_optimizer (tf.keras.optimizers): An optimizer instance for the discriminator.
+            g_optimizer (tf.keras.optimizers): An optimizer instance for the generator.
 
         """
 
         # Creates an optimizer object for pre-training the generator
         self.P_optimizer = pre_optimizer
 
-        # Creates an optimizer object for the generator
-        self.G_optimizer = g_optimizer
-
         # Creates an optimizer object for the discriminator
         self.D_optimizer = d_optimizer
+
+        # Creates an optimizer object for the generator
+        self.G_optimizer = g_optimizer
 
         # Defining the loss function
         self.loss = tf.nn.sigmoid_cross_entropy_with_logits
 
-        # Defining a loss metric for the generator
-        self.G_loss = tf.metrics.Mean(name='G_loss')
-
         # Defining a loss metric for the discriminator
         self.D_loss = tf.metrics.Mean(name='D_loss')
+
+        # Defining a loss metric for the generator
+        self.G_loss = tf.metrics.Mean(name='G_loss')
 
     def generate_batch(self, x):
         """Generates a batch of tokens by feeding to the network the
@@ -116,7 +128,7 @@ class GSGAN(Adversarial):
 
         return sampled_batch, sampled_preds
 
-    def discriminator_loss(self, y_real, y_fake):
+    def _discriminator_loss(self, y_real, y_fake):
         """Calculates the loss out of the discriminator architecture.
 
         Args:
@@ -136,7 +148,7 @@ class GSGAN(Adversarial):
 
         return tf.reduce_mean(real_loss) + tf.reduce_mean(fake_loss)
 
-    def generator_loss(self, y_fake):
+    def _generator_loss(self, y_fake):
         """Calculates the loss out of the generator architecture.
 
         Args:
@@ -205,10 +217,10 @@ class GSGAN(Adversarial):
             y_real = self.D(y)
 
             # Calculates the discriminator loss upon D(x) and D(G(x))
-            D_loss = self.discriminator_loss(y_real, y_fake)
+            D_loss = self._discriminator_loss(y_real, y_fake)
 
             # Calculates the generator loss upon D(G(x))
-            G_loss = self.generator_loss(y_fake)
+            G_loss = self._generator_loss(y_fake)
 
         # Calculate the gradients based on discriminator's loss for each training variable
         D_gradients = D_tape.gradient(D_loss, self.D.trainable_variables)
