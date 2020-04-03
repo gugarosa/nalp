@@ -288,7 +288,7 @@ class RelationalMemoryCell(AbstractRNNCell):
             'n_heads': self.n_heads,
             'head_size': self.head_size,
             'n_blocks': self.n_blocks,
-            'n_layers' self.n_layers,
+            'n_layers': self.n_layers,
             'activation': activations.serialize(self.activation),
             'recurrent_activation': activations.serialize(self.recurrent_activation),
             'forget_bias': self.forget_bias,

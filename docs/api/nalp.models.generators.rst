@@ -8,6 +8,7 @@ Pre-defined generator architectures.
     nalp.models.generators.conv
     nalp.models.generators.gru
     nalp.models.generators.gumbel_lstm
+    nalp.models.generators.gumbel_rmc
     nalp.models.generators.linear
     nalp.models.generators.lstm
     nalp.models.generators.rmc

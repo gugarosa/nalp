@@ -4,7 +4,7 @@ import tensorflow as tf
 import nalp.utils.constants as c
 import nalp.utils.logging as l
 from nalp.core.model import Adversarial
-from nalp.models.discriminators.text import TextDiscriminator
+from nalp.models.discriminators.text import EmbeddedTextDiscriminator
 from nalp.models.generators.lstm import LSTMGenerator
 
 logger = l.get_logger(__name__)
@@ -18,7 +18,8 @@ class SeqGAN(Adversarial):
 
     """
 
-    def __init__(self, encoder=None, vocab_size=1, max_length=1, embedding_size=32, hidden_size=64, n_filters=[64], filters_size=[1], dropout_rate=0.25, temperature=1):
+    def __init__(self, encoder=None, vocab_size=1, max_length=1, embedding_size=32, hidden_size=64,
+                 n_filters=[64], filters_size=[1], dropout_rate=0.25, temperature=1):
         """Initialization method.
 
         Args:
@@ -37,7 +38,7 @@ class SeqGAN(Adversarial):
         logger.info('Overriding class: Adversarial -> SeqGAN.')
 
         # Creating the discriminator network
-        D = TextDiscriminator(
+        D = EmbeddedTextDiscriminator(
             vocab_size, max_length, embedding_size, n_filters, filters_size, dropout_rate)
 
         # Creating the generator network

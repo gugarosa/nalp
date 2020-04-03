@@ -33,10 +33,10 @@ class GSGAN(Adversarial):
         logger.info('Overriding class: Adversarial -> GSGAN.')
 
         # Creating the discriminator network
-        D = LSTMDiscriminator(encoder, vocab_size, embedding_size, hidden_size)
+        D = LSTMDiscriminator(vocab_size, embedding_size, hidden_size)
 
         # Creating the generator network
-        G = GumbelLSTMGenerator(encoder, vocab_size,embedding_size, hidden_size, tau)
+        G = GumbelLSTMGenerator(encoder, vocab_size, embedding_size, hidden_size, tau)
 
         # Overrides its parent class with any custom arguments if needed
         super(GSGAN, self).__init__(D, G, name='GSGAN')

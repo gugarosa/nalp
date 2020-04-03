@@ -4,7 +4,7 @@ import tensorflow as tf
 import nalp.utils.constants as c
 import nalp.utils.logging as l
 from nalp.core.model import Adversarial
-from nalp.models.discriminators.text import TextDiscriminator
+from nalp.models.discriminators.text import EmbeddedTextDiscriminator
 from nalp.models.generators.lstm import LSTMGenerator
 
 logger = l.get_logger(__name__)
@@ -38,7 +38,7 @@ class MaliGAN(Adversarial):
         logger.info('Overriding class: Adversarial -> MaliGAN.')
 
         # Creating the discriminator network
-        D = TextDiscriminator(
+        D = EmbeddedTextDiscriminator(
             vocab_size, max_length, embedding_size, n_filters, filters_size, dropout_rate)
 
         # Creating the generator network

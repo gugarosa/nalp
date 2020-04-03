@@ -14,11 +14,10 @@ class LSTMDiscriminator(Discriminator):
 
     """
 
-    def __init__(self, encoder=None, vocab_size=1, embedding_size=32, hidden_size=64):
+    def __init__(self, vocab_size=1, embedding_size=32, hidden_size=64):
         """Initialization method.
 
         Args:
-            encoder (IntegerEncoder): An index to vocabulary encoder.
             vocab_size (int): The size of the vocabulary.
             embedding_size (int): The size of the embedding layer.
             hidden_size (int): The amount of hidden neurons.
@@ -29,9 +28,6 @@ class LSTMDiscriminator(Discriminator):
 
         # Overrides its parent class with any custom arguments if needed
         super(LSTMDiscriminator, self).__init__(name='D_lstm')
-
-        # Creates a property for holding the used encoder
-        self.encoder = encoder
 
         # Creates an embedding layer
         self.embedding = layers.Dense(embedding_size, name='embedding')

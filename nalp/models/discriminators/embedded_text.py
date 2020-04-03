@@ -7,8 +7,8 @@ from nalp.core.model import Discriminator
 logger = l.get_logger(__name__)
 
 
-class TextDiscriminator(Discriminator):
-    """A TextDiscriminator class stands for the text-discriminative part of a Generative Adversarial Network.
+class EmbeddedTextDiscriminator(Discriminator):
+    """A EmbeddedTextDiscriminator class stands for the text-discriminative part of a Generative Adversarial Network.
 
     """
 
@@ -25,13 +25,14 @@ class TextDiscriminator(Discriminator):
 
         """
 
-        logger.info('Overriding class: Discriminator -> TextDiscriminator.')
+        logger.info('Overriding class: Discriminator -> EmbeddedTextDiscriminator.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(TextDiscriminator, self).__init__(name='D_text')
+        super(EmbeddedTextDiscriminator, self).__init__(name='D_text')
 
         # Creates an embedding layer
-        self.embedding = layers.Dense(embedding_size, name='embedding')
+        self.embedding = layers.Embedding(
+            vocab_size, embedding_size, name='embedding')
 
         # Defining a list for holding the convolutional layers
         self.conv = [layers.Conv2D(n, (k, embedding_size), strides=(

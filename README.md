@@ -56,6 +56,7 @@ NALP is based on the following structure, and you should pay attention to its tr
     - models
         - discriminators
             - conv
+            - embedded_text
             - linear
             - lstm
             - text
@@ -64,6 +65,7 @@ NALP is based on the following structure, and you should pay attention to its tr
             - conv
             - gru
             - gumbel_lstm
+            - gumbel_rmc
             - linear
             - lstm
             - rmc

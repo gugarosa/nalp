@@ -1,34 +1,40 @@
 import tensorflow as tf
 
 import nalp.utils.logging as l
-from nalp.models.generators.lstm import LSTMGenerator
+from nalp.models.generators.rmc import RMCGenerator
 from nalp.models.layers.gumbel_softmax import GumbelSoftmax
 
 logger = l.get_logger(__name__)
 
 
-class GumbelLSTMGenerator(LSTMGenerator):
-    """A GumbelLSTMGenerator class is the one in charge of a generative Gumbel-based Long Short-Term Memory implementation.
+class GumbelRMCGenerator(RMCGenerator):
+    """A GumbelRMCGenerator class is the one in charge of a generative Gumbel-based Relational Memory Core implementation.
 
     """
 
-    def __init__(self, encoder=None, vocab_size=1, embedding_size=32, hidden_size=64, tau=5):
+    def __init__(self, encoder=None, vocab_size=1, embedding_size=32,
+                 n_slots=3, n_heads=5, head_size=10, n_blocks=1, n_layers=3,
+                 tau=5):
         """Initialization method.
 
         Args:
             encoder (IntegerEncoder): An index to vocabulary encoder.
             vocab_size (int): The size of the vocabulary.
             embedding_size (int): The size of the embedding layer.
-            hidden_size (int): The amount of hidden neurons.
+            n_slots (int): Number of memory slots.
+            n_heads (int): Number of attention heads.
+            head_size (int): Size of each attention head.
+            n_blocks (int): Number of feed-forward networks.
+            n_layers (int): Amout of layers per feed-forward network.
             tau (float): Gumbel-Softmax temperature parameter.
 
         """
 
-        logger.info('Overriding class: LSTMGenerator -> GumbelLSTMGenerator.')
+        logger.info('Overriding class: RMCGenerator -> GumbelRMCGenerator.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(GumbelLSTMGenerator, self).__init__(
-            encoder, vocab_size, embedding_size, hidden_size)
+        super(GumbelRMCGenerator, self).__init__(encoder, vocab_size, embedding_size,
+                                                 n_slots, n_heads, head_size, n_blocks, n_layers)
 
         # Defining a property to hold the Gumbel-Softmax temperature parameter
         self.tau = tau
