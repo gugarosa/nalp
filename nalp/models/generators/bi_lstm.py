@@ -1,5 +1,5 @@
 import tensorflow as tf
-from tensorflow.keras import layers
+from tensorflow.keras.layers import RNN, Dense, Embedding, LSTMCell
 
 import nalp.utils.logging as l
 from nalp.core.model import Generator
@@ -35,25 +35,37 @@ class BiLSTMGenerator(Generator):
         self.encoder = encoder
 
         # Creates an embedding layer
-        self.embedding = layers.Embedding(
-            vocab_size, embedding_size, name='embedding')
+        self.embedding = Embedding(vocab_size, embedding_size, name='embedding')
 
         # Creates a forward LSTM cell
-        cell_f = layers.LSTMCell(hidden_size, name='lstm_cell_f')
+        cell_f = LSTMCell(hidden_size, name='lstm_cell_f')
 
         # And a orward RNN layer
-        self.forward = layers.RNN(cell_f, name='forward_rnn',
-                             return_sequences=True, stateful=True)
+        self.forward = RNN(cell_f, name='forward_rnn',
+                           return_sequences=True, stateful=True)
 
         # Creates a backward LSTM cell
-        cell_b = layers.LSTMCell(hidden_size, name='lstm_cell_b')
+        cell_b = LSTMCell(hidden_size, name='lstm_cell_b')
 
         # And a backward RNN layer
-        self.backward = layers.RNN(cell_b, name='backward_rnn',
-                              return_sequences=True, stateful=True, go_backwards=True)
+        self.backward = RNN(cell_b, name='backward_rnn',
+                            return_sequences=True, stateful=True,
+                            go_backwards=True)
 
         # Creates the linear (Dense) layer
-        self.linear = layers.Dense(vocab_size, name='out')
+        self.linear = Dense(vocab_size, name='out')
+
+    @property
+    def encoder(self):
+        """obj: An encoder generic object.
+
+        """
+
+        return self._encoder
+
+    @encoder.setter
+    def encoder(self, encoder):
+        self._encoder = encoder
 
     def call(self, x):
         """Method that holds vital information whenever this class is called.

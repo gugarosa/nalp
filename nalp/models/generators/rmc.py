@@ -1,5 +1,5 @@
 import tensorflow as tf
-from tensorflow.keras import layers
+from tensorflow.keras.layers import RNN, Dense, Embedding
 
 import nalp.utils.logging as l
 from nalp.core.model import Generator
@@ -42,20 +42,32 @@ class RMCGenerator(Generator):
         self.encoder = encoder
 
         # Creates an embedding layer
-        self.embedding = layers.Embedding(
-            vocab_size, embedding_size, name='embedding')
+        self.embedding = Embedding(vocab_size, embedding_size, name='embedding')
 
         # Creates a relational memory cell
-        self.cell = RelationalMemoryCell(
-            n_slots, n_heads, head_size, n_blocks, n_layers, name='rmc_cell')
+        self.cell = RelationalMemoryCell(n_slots, n_heads, 
+                                         head_size, n_blocks, n_layers,
+                                         name='rmc_cell')
 
         # Creates the RNN loop itself
-        self.rnn = layers.RNN(self.cell, name='rnn_layer',
+        self.rnn = RNN(self.cell, name='rnn_layer',
                               return_sequences=True,
                               stateful=True)
 
         # Creates the linear (Dense) layer
-        self.linear = layers.Dense(vocab_size, name='out')
+        self.linear = Dense(vocab_size, name='out')
+
+    @property
+    def encoder(self):
+        """obj: An encoder generic object.
+
+        """
+
+        return self._encoder
+
+    @encoder.setter
+    def encoder(self, encoder):
+        self._encoder = encoder
 
     def call(self, x):
         """Method that holds vital information whenever this class is called.

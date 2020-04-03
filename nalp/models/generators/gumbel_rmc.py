@@ -40,7 +40,19 @@ class GumbelRMCGenerator(RMCGenerator):
         self.tau = tau
 
         # Creates a Gumbel-Softmax layer
-        self.gumbel = GumbelSoftmax()
+        self.gumbel = GumbelSoftmax(name='gumbel')
+
+    @property
+    def tau(self):
+        """float: Gumbel-Softmax temperature parameter.
+
+        """
+
+        return self._tau
+
+    @tau.setter
+    def tau(self, tau):
+        self._tau = tau
 
     def call(self, x):
         """Method that holds vital information whenever this class is called.
