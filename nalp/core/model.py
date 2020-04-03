@@ -1,11 +1,12 @@
 import tensorflow as tf
+from tensorflow.keras import Model
 
 import nalp.utils.logging as l
 
 logger = l.get_logger(__name__)
 
 
-class Discriminator(tf.keras.Model):
+class Discriminator(Model):
     """A Discriminator class is responsible for easily-implementing the discriminative part of
     a neural network, when custom training or additional sets are not needed.
 
@@ -42,7 +43,7 @@ class Discriminator(tf.keras.Model):
         raise NotImplementedError
 
 
-class Generator(tf.keras.Model):
+class Generator(Model):
     """A Generator class is responsible for easily-implementing the generative part of
     a neural network, when custom training or additional sets are not needed.
 
@@ -132,7 +133,7 @@ class Generator(tf.keras.Model):
         return text
 
 
-class Adversarial(tf.keras.Model):
+class Adversarial(Model):
     """An Adversarial class is responsible for customly implementing Generative Adversarial Networks.
 
     """
@@ -156,47 +157,55 @@ class Adversarial(tf.keras.Model):
         # Defining the generator network
         self.G = generator
 
-    def compile(self, g_optimizer, d_optimizer):
-        """Main building method.
-
-        Args:
-            g_optimizer (tf.keras.optimizers): An optimizer instance for the generator.
-            d_optimizer (tf.keras.optimizers): An optimizer instance for the discriminator.
+    @property
+    def D(self):
+        """Discriminator: Discriminator architecture.
 
         """
 
-        # Creates an optimizer object for the generator
-        self.G_optimizer = g_optimizer
+        return self._D
+
+    @D.setter
+    def D(self, D):
+        self._D = D
+
+    @property
+    def G(self):
+        """Generator: Generator architecture.
+
+        """
+
+        return self._G
+
+    @G.setter
+    def G(self, G):
+        self._G = G
+
+    def compile(self, d_optimizer, g_optimizer):
+        """Main building method.
+
+        Args:
+            d_optimizer (tf.keras.optimizers): An optimizer instance for the discriminator.
+            g_optimizer (tf.keras.optimizers): An optimizer instance for the generator.
+
+        """
 
         # Creates an optimizer object for the discriminator
         self.D_optimizer = d_optimizer
 
+        # Creates an optimizer object for the generator
+        self.G_optimizer = g_optimizer
+
         # Defining the loss function
         self.loss = tf.nn.sigmoid_cross_entropy_with_logits
-
-        # Defining a loss metric for the generator
-        self.G_loss = tf.metrics.Mean(name='G_loss')
 
         # Defining a loss metric for the discriminator
         self.D_loss = tf.metrics.Mean(name='D_loss')
 
-    def generator_loss(self, y_fake):
-        """Calculates the loss out of the generator architecture.
+        # Defining a loss metric for the generator
+        self.G_loss = tf.metrics.Mean(name='G_loss')
 
-        Args:
-            y_fake (tf.Tensor): A tensor containing the fake data targets.
-
-        Returns:
-            The loss based on the generator network.
-
-        """
-
-        # Calculating the generator loss
-        loss = self.loss(tf.ones_like(y_fake), y_fake)
-
-        return tf.reduce_mean(loss)
-
-    def discriminator_loss(self, y_real, y_fake):
+    def _discriminator_loss(self, y_real, y_fake):
         """Calculates the loss out of the discriminator architecture.
 
         Args:
@@ -215,6 +224,22 @@ class Adversarial(tf.keras.Model):
         fake_loss = self.loss(tf.zeros_like(y_fake), y_fake)
 
         return tf.reduce_mean(real_loss) + tf.reduce_mean(fake_loss)
+
+    def _generator_loss(self, y_fake):
+        """Calculates the loss out of the generator architecture.
+
+        Args:
+            y_fake (tf.Tensor): A tensor containing the fake data targets.
+
+        Returns:
+            The loss based on the generator network.
+
+        """
+
+        # Calculating the generator loss
+        loss = self.loss(tf.ones_like(y_fake), y_fake)
+
+        return tf.reduce_mean(loss)
 
     @tf.function
     def step(self, x):
@@ -240,10 +265,10 @@ class Adversarial(tf.keras.Model):
             y_real = self.D(x)
 
             # Calculates the generator loss upon D(G(z))
-            G_loss = self.generator_loss(y_fake)
+            G_loss = self._generator_loss(y_fake)
 
             # Calculates the discriminator loss upon D(x) and D(G(z))
-            D_loss = self.discriminator_loss(y_real, y_fake)
+            D_loss = self._discriminator_loss(y_real, y_fake)
 
         # Calculate the gradients based on generator's loss for each training variable
         G_gradients = G_tape.gradient(G_loss, self.G.trainable_variables)
