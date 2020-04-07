@@ -85,8 +85,7 @@ class EmbeddedTextDiscriminator(Discriminator):
         hw = self.highway(x)
 
         # Calculating the `highway` layer
-        x = tf.math.sigmoid(hw) * tf.nn.relu(hw) + \
-            (1 - tf.math.sigmoid(hw)) * x
+        x = tf.math.sigmoid(hw) * tf.nn.relu(hw) + (1 - tf.math.sigmoid(hw)) * x
 
         # Calculating the output with a dropout regularization
         x = self.out(self.drop(x, training=training))

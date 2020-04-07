@@ -4,7 +4,7 @@ import tensorflow as tf
 import nalp.utils.constants as c
 import nalp.utils.logging as l
 from nalp.core.model import Adversarial
-from nalp.models.discriminators.text import EmbeddedTextDiscriminator
+from nalp.models.discriminators.embedded_text import EmbeddedTextDiscriminator
 from nalp.models.generators.lstm import LSTMGenerator
 
 logger = l.get_logger(__name__)
@@ -122,7 +122,7 @@ class SeqGAN(Adversarial):
 
         # Generating an uniform tensor between 0 and vocab_size
         start_batch = tf.random.uniform(
-            [batch_size, 1], 0, self.vocab_size, dtype='int64')
+            [batch_size, 1], 0, self.vocab_size, dtype='int32')
 
         # Copying the sampled batch with the start batch tokens
         sampled_batch = start_batch
@@ -142,7 +142,7 @@ class SeqGAN(Adversarial):
             preds /= self.T
 
             # Samples a predicted batch
-            start_batch = tf.random.categorical(preds, 1)
+            start_batch = tf.random.categorical(preds, 1, dtype='int32')
 
             # Concatenates the sampled batch with the predicted batch
             sampled_batch = tf.concat([sampled_batch, start_batch], 1)
@@ -189,7 +189,7 @@ class SeqGAN(Adversarial):
                 # For every possible value ranging from step to maximum length
                 for _ in range(step, max_length):
                     # Calculates the output
-                    output = tf.random.categorical(output, 1)
+                    output = tf.random.categorical(output, 1, dtype='int32')
 
                     # Concatenates the samples with the output
                     samples = tf.concat([samples, output], 1)
