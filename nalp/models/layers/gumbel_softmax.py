@@ -63,7 +63,7 @@ class GumbelSoftmax(Layer):
         x = inputs + gumbel_distribution(inputs.shape)
 
         # Applying the softmax over the Gumbel-based input
-        x = tf.nn.softmax(x * tau, self.axis)
+        x = tf.nn.softmax(x / tau, self.axis)
 
         # Sampling an argmax token from the Gumbel-based input
         y = tf.stop_gradient(tf.argmax(x, self.axis, tf.int32))
