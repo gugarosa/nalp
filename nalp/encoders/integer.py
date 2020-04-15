@@ -79,7 +79,7 @@ class IntegerEncoder(Encoder):
             raise RuntimeError(e)
 
         # Applies the encoding to the new tokens
-        encoded_tokens = np.array([self.encoder[t] for t in tokens])
+        encoded_tokens = np.array([self.encoder[t] for t in tokens], dtype=np.int32)
 
         return encoded_tokens
 
