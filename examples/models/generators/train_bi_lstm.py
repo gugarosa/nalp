@@ -1,9 +1,9 @@
 import tensorflow as tf
 
-from nalp.corpus.text import TextCorpus
-from nalp.datasets.language_modeling import LanguageModelingDataset
-from nalp.encoders.integer import IntegerEncoder
-from nalp.models.generators.bi_lstm import BiLSTMGenerator
+from nalp.corpus import TextCorpus
+from nalp.datasets import LanguageModelingDataset
+from nalp.encoders import IntegerEncoder
+from nalp.models.generators import BiLSTMGenerator
 
 # Creating a character TextCorpus from file
 corpus = TextCorpus(from_file='data/text/chapter1_harry.txt', type='char')

@@ -1,7 +1,7 @@
 import nalp.utils.loader as l
 import nalp.utils.logging as log
 import nalp.utils.preprocess as p
-from nalp.core.corpus import Corpus
+from nalp.core import Corpus
 
 logger = log.get_logger(__name__)
 

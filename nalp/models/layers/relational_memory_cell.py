@@ -3,7 +3,7 @@ from tensorflow.keras.layers import AbstractRNNCell, Dense, LayerNormalization
 from tensorflow.python.keras import (activations, constraints, initializers,
                                      regularizers)
 
-from nalp.models.layers.multi_head_attention import MultiHeadAttention
+from nalp.models.layers import MultiHeadAttention
 
 
 class RelationalMemoryCell(AbstractRNNCell):

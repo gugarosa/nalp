@@ -1,7 +1,7 @@
 from tensorflow.keras.layers import RNN, Dense, LSTMCell
 
 import nalp.utils.logging as l
-from nalp.core.model import Discriminator
+from nalp.core import Discriminator
 
 logger = l.get_logger(__name__)
 

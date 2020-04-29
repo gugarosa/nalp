@@ -1,5 +1,5 @@
 import nalp.utils.preprocess as p
-from nalp.corpus.text import TextCorpus
+from nalp.corpus import TextCorpus
 
 # Creating a character TextCorpus from file
 corpus = TextCorpus(from_file='data/text/chapter1_harry.txt', type='char')

@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from nalp.datasets.image import ImageDataset
+from nalp.datasets import ImageDataset
 
 # Loading the MNIST dataset
 (x, y), (_, _) = tf.keras.datasets.mnist.load_data()

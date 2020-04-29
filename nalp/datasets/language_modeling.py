@@ -2,7 +2,7 @@ from tensorflow import data
 
 import nalp.utils.constants as c
 import nalp.utils.logging as l
-from nalp.core.dataset import Dataset
+from nalp.core import Dataset
 
 logger = l.get_logger(__name__)
 

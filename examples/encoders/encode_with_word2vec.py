@@ -1,5 +1,5 @@
-from nalp.corpus.text import TextCorpus
-from nalp.encoders.word2vec import Word2vecEncoder
+from nalp.corpus import TextCorpus
+from nalp.encoders import Word2vecEncoder
 
 # Creating a TextCorpus from file
 corpus = TextCorpus(from_file='data/text/chapter1_harry.txt', type='word')

@@ -2,7 +2,7 @@ import tensorflow as tf
 from tensorflow.keras.layers import RNN, Dense, Embedding
 
 import nalp.utils.logging as l
-from nalp.core.model import Generator
+from nalp.core import Generator
 from nalp.models.layers.relational_memory_cell import RelationalMemoryCell
 
 logger = l.get_logger(__name__)

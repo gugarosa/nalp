@@ -1,5 +1,5 @@
 import nalp.utils.preprocess as p
-from nalp.corpus.audio import AudioCorpus
+from nalp.corpus import AudioCorpus
 
 # Creating an AudioCorpus from file
 corpus = AudioCorpus(from_file='data/audio/sample.mid')

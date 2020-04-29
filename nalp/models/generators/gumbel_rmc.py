@@ -1,8 +1,8 @@
 import tensorflow as tf
 
 import nalp.utils.logging as l
-from nalp.models.generators.rmc import RMCGenerator
-from nalp.models.layers.gumbel_softmax import GumbelSoftmax
+from nalp.models.generators import RMCGenerator
+from nalp.models.layers import GumbelSoftmax
 
 logger = l.get_logger(__name__)
 

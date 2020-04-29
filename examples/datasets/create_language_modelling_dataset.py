@@ -1,7 +1,7 @@
 import nalp.utils.preprocess as p
-from nalp.corpus.text import TextCorpus
-from nalp.datasets.language_modeling import LanguageModelingDataset
-from nalp.encoders.integer import IntegerEncoder
+from nalp.corpus import TextCorpus
+from nalp.datasets import LanguageModelingDataset
+from nalp.encoders import IntegerEncoder
 
 # Creating a character TextCorpus from file
 corpus = TextCorpus(from_file='data/text/chapter1_harry.txt', type='char')

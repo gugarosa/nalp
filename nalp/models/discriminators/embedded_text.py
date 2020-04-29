@@ -3,7 +3,7 @@ from tensorflow.keras.layers import (Conv2D, Dense, Dropout, Embedding,
                                      MaxPool1D)
 
 import nalp.utils.logging as l
-from nalp.core.model import Discriminator
+from nalp.core import Discriminator
 
 logger = l.get_logger(__name__)
 

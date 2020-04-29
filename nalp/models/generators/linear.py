@@ -2,7 +2,7 @@ import tensorflow as tf
 from tensorflow.keras.layers import Dense
 
 import nalp.utils.logging as l
-from nalp.core.model import Generator
+from nalp.core import Generator
 
 logger = l.get_logger(__name__)
 
