@@ -1,7 +1,7 @@
 import nalp.utils.logging as l
-from nalp.core.model import Adversarial
-from nalp.models.discriminators.conv import ConvDiscriminator
-from nalp.models.generators.conv import ConvGenerator
+from nalp.core import Adversarial
+from nalp.models.discriminators import ConvDiscriminator
+from nalp.models.generators import ConvGenerator
 
 logger = l.get_logger(__name__)
 

@@ -1,9 +1,9 @@
 import tensorflow as tf
 
 import nalp.utils.logging as l
-from nalp.core.model import Adversarial
-from nalp.models.discriminators.lstm import LSTMDiscriminator
-from nalp.models.generators.gumbel_lstm import GumbelLSTMGenerator
+from nalp.core import Adversarial
+from nalp.models.discriminators import LSTMDiscriminator
+from nalp.models.generators import GumbelLSTMGenerator
 
 logger = l.get_logger(__name__)
 

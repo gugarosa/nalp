@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import tensorflow as tf
 
-from nalp.models.gan import GAN
+from nalp.models import GAN
 
 # When generating artificial images, make sure
 # to use the same data, classes and parameters

@@ -3,9 +3,9 @@ import tensorflow as tf
 
 import nalp.utils.constants as c
 import nalp.utils.logging as l
-from nalp.core.model import Adversarial
-from nalp.models.discriminators.embedded_text import EmbeddedTextDiscriminator
-from nalp.models.generators.lstm import LSTMGenerator
+from nalp.core import Adversarial
+from nalp.models.discriminators import EmbeddedTextDiscriminator
+from nalp.models.generators import LSTMGenerator
 
 logger = l.get_logger(__name__)
 

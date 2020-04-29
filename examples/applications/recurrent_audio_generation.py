@@ -2,10 +2,9 @@ import numpy as np
 import tensorflow as tf
 from mido import Message, MidiFile, MidiTrack
 
-from nalp.corpus.audio import AudioCorpus
-from nalp.datasets.language_modeling import LanguageModelingDataset
-from nalp.encoders.integer import IntegerEncoder
-from nalp.models.generators.rnn import RNNGenerator
+from nalp.datasets import LanguageModelingDataset
+from nalp.encoders import IntegerEncoder
+from nalp.models.generators import RNNGenerator
 
 # Creating an AudioCorpus from file
 corpus = AudioCorpus(from_file='data/audio/sample.mid')

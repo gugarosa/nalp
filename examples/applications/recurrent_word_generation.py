@@ -1,8 +1,8 @@
 import tensorflow as tf
 
-from nalp.corpus.text import TextCorpus
-from nalp.encoders.integer import IntegerEncoder
-from nalp.models.generators.rnn import RNNGenerator
+from nalp.corpus import TextCorpus
+from nalp.encoders import IntegerEncoder
+from nalp.models.generators import RNNGenerator
 
 # When generating artificial text, make sure
 # to use the same data, classes and parameters
