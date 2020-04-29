@@ -13,7 +13,7 @@ Use NALP if you need a library or wish to:
 NALP is compatible with: **Python 3.6+**.
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
     :caption: Package Reference
 
     api/nalp.core
