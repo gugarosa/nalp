@@ -1,4 +1,5 @@
 import tensorflow as tf
+from tqdm import tqdm
 
 import nalp.utils.logging as l
 from nalp.core import Adversarial
@@ -43,6 +44,8 @@ class GSGAN(Adversarial):
 
         # Defining a property for holding the vocabulary size
         self.vocab_size = vocab_size
+
+        logger.info('Class overrided.')
 
     @property
     def vocab_size(self):
@@ -253,6 +256,9 @@ class GSGAN(Adversarial):
 
         logger.info('Pre-fitting generator ...')
 
+        # Gathering the amount of batches
+        n_batches = tf.data.experimental.cardinality(batches).numpy()
+
         # Iterate through all generator epochs
         for e in range(epochs):
             logger.info(f'Epoch {e+1}/{epochs}')
@@ -277,6 +283,9 @@ class GSGAN(Adversarial):
         """
 
         logger.info('Fitting model ...')
+
+        # Gathering the amount of batches
+        n_batches = tf.data.experimental.cardinality(batches).numpy()
 
         # Iterate through all epochs
         for e in range(epochs):

@@ -37,5 +37,7 @@ class GAN(Adversarial):
         # Overrides its parent class with any custom arguments if needed
         super(GAN, self).__init__(D, G, name='gan')
 
-        logger.info(f'Input: {input_shape} | Noise: {noise_dim} | Number of Samplings: {n_samplings} | '
+        logger.debug(f'Input: {input_shape} | Noise: {noise_dim} | Number of Samplings: {n_samplings} | '
                     f'Activation Rate: {alpha}.')
+                    
+        logger.info('Class overrided.')

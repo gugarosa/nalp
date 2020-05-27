@@ -1,4 +1,5 @@
 import tensorflow as tf
+from tensorflow.keras.utils import Progbar
 
 import nalp.utils.logging as l
 from nalp.core import Adversarial
@@ -54,8 +55,10 @@ class WGAN(Adversarial):
         # Defining the gradient penalty coefficient as a property for further usage
         self.penalty_lambda = penalty
 
-        logger.info(f'Input: {input_shape} | Noise: {noise_dim} | Number of Samplings: {n_samplings} | '
+        logger.debug(f'Input: {input_shape} | Noise: {noise_dim} | Number of Samplings: {n_samplings} | '
                     f'Activation Rate: {alpha} | Dropout Rate: {dropout_rate} | Type: {type}.')
+
+        logger.info('Class overrided.')
 
     @property
     def type(self):
@@ -226,6 +229,9 @@ class WGAN(Adversarial):
 
         logger.info('Fitting model ...')
 
+        # Gathering the amount of batches
+        n_batches = tf.data.experimental.cardinality(batches).numpy()
+
         # Iterate through all epochs
         for e in range(epochs):
             logger.info(f'Epoch {e+1}/{epochs}')
@@ -233,6 +239,9 @@ class WGAN(Adversarial):
             # Resetting states to further append losses
             self.G_loss.reset_states()
             self.D_loss.reset_states()
+
+            # Defining a customized progress bar
+            b = Progbar(n_batches, stateful_metrics=['loss(G)', 'loss(D)'])
 
             # Iterate through all possible training batches
             for batch in batches:
@@ -244,5 +253,7 @@ class WGAN(Adversarial):
                 # Performs the optimization step over the generator
                 self.G_step(batch)
 
-            logger.info(
-                f'Loss(G): {self.G_loss.result().numpy()} | Loss(D): {self.D_loss.result().numpy()}')
+                # Adding corresponding values to the progress bar
+                b.add(1, values=[('loss(G)', self.G_loss.result()), ('loss(D)', self.D_loss.result())])
+
+            logger.debug(f'Loss(G): {self.G_loss.result().numpy()} | Loss(D): {self.D_loss.result().numpy()}')

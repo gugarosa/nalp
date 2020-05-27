@@ -39,8 +39,7 @@ class LanguageModelingDataset(Dataset):
         self._build(mapped_sequences, batch_size)
 
         # Debugging some important information
-        logger.debug(
-            f'Batches: {data.experimental.cardinality(self.batches)} | Batch size: {batch_size} | Shuffle: {shuffle}.')
+        logger.debug(f'Batch size: {batch_size} | Shuffle: {shuffle}.')
 
         logger.info('Class overrided.')
 

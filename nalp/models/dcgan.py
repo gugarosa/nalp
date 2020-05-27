@@ -38,5 +38,7 @@ class DCGAN(Adversarial):
         # Overrides its parent class with any custom arguments if needed
         super(DCGAN, self).__init__(D, G, name='dcgan')
 
-        logger.info(f'Input: {input_shape} | Noise: {noise_dim} | Number of Samplings: {n_samplings} | '
+        logger.debug(f'Input: {input_shape} | Noise: {noise_dim} | Number of Samplings: {n_samplings} | '
                     f'Activation Rate: {alpha} | Dropout Rate: {dropout_rate}.')
+                    
+        logger.info('Class overrided.')

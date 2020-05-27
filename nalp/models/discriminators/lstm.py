@@ -43,6 +43,8 @@ class LSTMDiscriminator(Discriminator):
         # And finally, defining the output layer
         self.out = Dense(1, name='out')
 
+        logger.info('Class overrided.')
+
     def call(self, x):
         """Method that holds vital information whenever this class is called.
 

@@ -41,6 +41,8 @@ class LinearGenerator(Generator):
         # Defining the output layer with a `tanh` activation for restraining interval to [-1, 1]
         self.out = Dense(input_shape[0], activation='tanh', name='out')
 
+        logger.info('Class overrided.')
+
     @property
     def alpha(self):
         """float: LeakyReLU activation threshold.

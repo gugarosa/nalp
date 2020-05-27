@@ -49,6 +49,7 @@ class StackedRNNGenerator(Generator):
         self.linear = Dense(vocab_size, name='out')
 
         logger.debug(f'Number of cells: {len(hidden_size)}')
+        logger.info('Class overrided.')
 
     @property
     def encoder(self):

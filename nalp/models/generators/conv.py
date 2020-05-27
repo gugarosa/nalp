@@ -72,6 +72,8 @@ class ConvGenerator(Generator):
                                    padding='same', use_bias=False,
                                    activation='tanh', name='out')
 
+        logger.info('Class overrided.')
+
     @property
     def alpha(self):
         """float: LeakyReLU activation threshold.

@@ -36,6 +36,8 @@ class GumbelLSTMGenerator(LSTMGenerator):
         # Creates a Gumbel-Softmax layer
         self.gumbel = GumbelSoftmax(name='gumbel')
 
+        logger.info('Class overrided.')
+
     @property
     def tau(self):
         """float: Gumbel-Softmax temperature parameter.

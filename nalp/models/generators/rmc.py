@@ -57,6 +57,8 @@ class RMCGenerator(Generator):
         # Creates the linear (Dense) layer
         self.linear = Dense(vocab_size, name='out')
 
+        logger.info('Class overrided.')
+
     @property
     def encoder(self):
         """obj: An encoder generic object.

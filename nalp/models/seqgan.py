@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+from tensorflow.keras.utils import Progbar
 
 import nalp.utils.constants as c
 import nalp.utils.logging as l
@@ -53,6 +54,8 @@ class SeqGAN(Adversarial):
 
         # Defining a property for holding the temperature
         self.T = temperature
+
+        logger.info('Class overrided.')
 
     @property
     def vocab_size(self):
@@ -307,6 +310,9 @@ class SeqGAN(Adversarial):
 
         logger.info('Pre-fitting generator ...')
 
+        # Gathering the amount of batches
+        n_batches = tf.data.experimental.cardinality(batches).numpy()
+
         # Iterate through all generator epochs
         for e in range(g_epochs):
             logger.info(f'Epoch {e+1}/{g_epochs}')
@@ -314,12 +320,18 @@ class SeqGAN(Adversarial):
             # Resetting state to further append losses
             self.G_loss.reset_states()
 
+            # Defining a customized progress bar
+            b = Progbar(n_batches, stateful_metrics=['loss(G)'])
+
             # Iterate through all possible pre-training batches
             for x_batch, y_batch in batches:
                 # Performs the optimization step over the generator
                 self.G_pre_step(x_batch, y_batch)
 
-            logger.info(f'Loss(G): {self.G_loss.result().numpy()}')
+                # Adding corresponding values to the progress bar
+                b.add(1, values=[('loss(G)', self.G_loss.result())])
+
+            logger.debug(f'Loss(G): {self.G_loss.result().numpy()}')
 
         logger.info('Pre-fitting discriminator ...')
 
@@ -329,6 +341,9 @@ class SeqGAN(Adversarial):
 
             # Resetting state to further append losses
             self.D_loss.reset_states()
+
+            # Defining a customized progress bar
+            b = Progbar(n_batches, stateful_metrics=['loss(D)'])
 
             # Iterate through all possible pre-training batches
             for x_batch, _ in batches:
@@ -354,8 +369,11 @@ class SeqGAN(Adversarial):
                     # Performs the optimization step over the discriminator
                     self.D_step(tf.gather(x_concat_batch, indices),
                                 tf.gather(y_concat_batch, indices))
+                
+                # Adding corresponding values to the progress bar
+                b.add(1, values=[('loss(D)', self.D_loss.result())])
 
-            logger.info(f'Loss(D): {self.D_loss.result().numpy()}')
+            logger.debug(f'Loss(D): {self.D_loss.result().numpy()}')
 
     def fit(self, batches, epochs=10, d_epochs=5, n_rollouts=16):
         """Trains the model.
@@ -370,6 +388,9 @@ class SeqGAN(Adversarial):
 
         logger.info('Fitting model ...')
 
+        # Gathering the amount of batches
+        n_batches = tf.data.experimental.cardinality(batches).numpy()
+
         # Iterate through all epochs
         for e in range(epochs):
             logger.info(f'Epoch {e+1}/{epochs}')
@@ -377,6 +398,9 @@ class SeqGAN(Adversarial):
             # Resetting state to further append losses
             self.G_loss.reset_states()
             self.D_loss.reset_states()
+
+            # Defining a customized progress bar
+            b = Progbar(n_batches, stateful_metrics=['loss(G)', 'loss(D)'])
 
             # Iterate through all possible training batches
             for x_batch, _ in batches:
@@ -416,5 +440,7 @@ class SeqGAN(Adversarial):
                         self.D_step(tf.gather(x_concat_batch, indices),
                                     tf.gather(y_concat_batch, indices))
 
-            logger.info(
-                f'Loss(G): {self.G_loss.result().numpy()} | Loss(D): {self.D_loss.result().numpy()}')
+                # Adding corresponding values to the progress bar
+                b.add(1, values=[('loss(G)', self.G_loss.result()), ('loss(D)', self.D_loss.result())])
+
+            logger.debug(f'Loss(G): {self.G_loss.result().numpy()} | Loss(D): {self.D_loss.result().numpy()}')

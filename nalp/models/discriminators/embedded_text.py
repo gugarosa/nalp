@@ -26,8 +26,7 @@ class EmbeddedTextDiscriminator(Discriminator):
 
         """
 
-        logger.info(
-            'Overriding class: Discriminator -> EmbeddedTextDiscriminator.')
+        logger.info('Overriding class: Discriminator -> EmbeddedTextDiscriminator.')
 
         # Overrides its parent class with any custom arguments if needed
         super(EmbeddedTextDiscriminator, self).__init__(name='D_text')
@@ -52,6 +51,8 @@ class EmbeddedTextDiscriminator(Discriminator):
 
         # And finally, defining the output layer
         self.out = Dense(2, name='out')
+
+        logger.info('Class overrided.')
 
     def call(self, x, training=True):
         """Method that holds vital information whenever this class is called.

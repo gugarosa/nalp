@@ -50,6 +50,8 @@ class TextDiscriminator(Discriminator):
         # And finally, defining the output layer
         self.out = Dense(2, name='out')
 
+        logger.info('Class overrided.')
+
     def call(self, x, training=True):
         """Method that holds vital information whenever this class is called.
 

@@ -41,6 +41,8 @@ class ConvDiscriminator(Discriminator):
         # Defining the output as a logit unit that decides whether input is real or fake
         self.out = Dense(1, name='out')
 
+        logger.info('Class overrided.')
+
     @property
     def alpha(self):
         """float: LeakyReLU activation threshold.
