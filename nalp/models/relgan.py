@@ -1,5 +1,5 @@
 import tensorflow as tf
-from tqdm import tqdm
+from tensorflow.keras.utils import Progbar
 
 import nalp.utils.logging as l
 from nalp.core import Adversarial
@@ -274,10 +274,16 @@ class RelGAN(Adversarial):
             # Resetting state to further append losses
             self.G_loss.reset_states()
 
+            # Defining a customized progress bar
+            b = Progbar(n_batches, stateful_metrics=['loss(G)'])
+
             # Iterate through all possible pre-training batches
             for x_batch, y_batch in batches:
                 # Performs the optimization step over the generator
                 self.G_pre_step(x_batch, y_batch)
+
+                # Adding corresponding values to the progress bar
+                b.add(1, values=[('loss(G)', self.G_loss.result())])
 
             logger.info(f'Loss(G): {self.G_loss.result().numpy()}')
 
@@ -303,13 +309,18 @@ class RelGAN(Adversarial):
             self.G_loss.reset_states()
             self.D_loss.reset_states()
 
+            # Defining a customized progress bar
+            b = Progbar(n_batches, stateful_metrics=['loss(G)', 'loss(D)'])
+
             # Iterate through all possible training batches
             for x_batch, y_batch in batches:
                 # Performs the optimization step
                 self.step(x_batch, y_batch)
 
+                # Adding corresponding values to the progress bar
+                b.add(1, values=[('loss(G)', self.G_loss.result()), ('loss(D)', self.D_loss.result())])
+
             # Exponentially annealing the Gumbel-Softmax temperature
             self.G.tau = 5 ** ((epochs - e) / epochs)
 
-            logger.info(
-                f'Loss(G): {self.G_loss.result().numpy()} | Loss(D): {self.D_loss.result().numpy()}')
+            logger.info(f'Loss(G): {self.G_loss.result().numpy()} | Loss(D): {self.D_loss.result().numpy()}')

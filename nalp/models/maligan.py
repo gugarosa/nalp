@@ -1,6 +1,6 @@
 import numpy as np
 import tensorflow as tf
-from tqdm import tqdm
+from tensorflow.keras.utils import Progbar
 
 import nalp.utils.constants as c
 import nalp.utils.logging as l
@@ -292,10 +292,16 @@ class MaliGAN(Adversarial):
             # Resetting state to further append losses
             self.G_loss.reset_states()
 
+            # Defining a customized progress bar
+            b = Progbar(n_batches, stateful_metrics=['loss(G)'])
+
             # Iterate through all possible pre-training batches
             for x_batch, y_batch in batches:
                 # Performs the optimization step over the generator
                 self.G_pre_step(x_batch, y_batch)
+
+                # Adding corresponding values to the progress bar
+                b.add(1, values=[('loss(G)', self.G_loss.result())])
 
             logger.info(f'Loss(G): {self.G_loss.result().numpy()}')
 
@@ -307,6 +313,9 @@ class MaliGAN(Adversarial):
 
             # Resetting state to further append losses
             self.D_loss.reset_states()
+
+            # Defining a customized progress bar
+            b = Progbar(n_batches, stateful_metrics=['loss(D)'])
 
             # Iterate through all possible pre-training batches
             for x_batch, _ in batches:
@@ -333,6 +342,9 @@ class MaliGAN(Adversarial):
                     self.D_step(tf.gather(x_concat_batch, indices),
                                 tf.gather(y_concat_batch, indices))
 
+                # Adding corresponding values to the progress bar
+                b.add(1, values=[('loss(D)', self.D_loss.result())])
+
             logger.info(f'Loss(D): {self.D_loss.result().numpy()}')
 
     def fit(self, batches, epochs=10, d_epochs=5):
@@ -357,6 +369,9 @@ class MaliGAN(Adversarial):
             # Resetting state to further append losses
             self.G_loss.reset_states()
             self.D_loss.reset_states()
+
+            # Defining a customized progress bar
+            b = Progbar(n_batches, stateful_metrics=['loss(G)', 'loss(D)'])
 
             # Iterate through all possible training batches
             for x_batch, _ in batches:
@@ -395,6 +410,8 @@ class MaliGAN(Adversarial):
                         # Performs the optimization step over the discriminator
                         self.D_step(tf.gather(x_concat_batch, indices),
                                     tf.gather(y_concat_batch, indices))
+                
+                # Adding corresponding values to the progress bar
+                b.add(1, values=[('loss(G)', self.G_loss.result()), ('loss(D)', self.D_loss.result())])
 
-            logger.info(
-                f'Loss(G): {self.G_loss.result().numpy()} | Loss(D): {self.D_loss.result().numpy()}')
+            logger.info(f'Loss(G): {self.G_loss.result().numpy()} | Loss(D): {self.D_loss.result().numpy()}')
