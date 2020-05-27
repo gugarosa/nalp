@@ -277,7 +277,7 @@ class GSGAN(Adversarial):
                 # Adding corresponding values to the progress bar
                 b.add(1, values=[('loss(G)', self.G_loss.result())])
 
-            logger.info(f'Loss(G): {self.G_loss.result().numpy()}')
+            logger.file(f'Loss(G): {self.G_loss.result().numpy()}')
 
     def fit(self, batches, epochs=100):
         """Trains the model.
@@ -315,4 +315,4 @@ class GSGAN(Adversarial):
             # Exponentially annealing the Gumbel-Softmax temperature
             self.G.tau = 5 ** ((epochs - e) / epochs)
 
-            logger.info(f'Loss(G): {self.G_loss.result().numpy()} | Loss(D): {self.D_loss.result().numpy()}')
+            logger.file(f'Loss(G): {self.G_loss.result().numpy()} | Loss(D): {self.D_loss.result().numpy()}')
