@@ -5,9 +5,9 @@ Have you ever wanted to create natural text from raw sources? If yes, NALP is fo
 
 Use NALP if you need a library or wish to:
 
-* Create your embeddings.
-* Design or use pre-loaded state-of-art neural networks.
-* Mix-and-match different strategies to solve your problem.
+* Create your embeddings;
+* Design or use pre-loaded state-of-art neural networks;
+* Mix-and-match different strategies to solve your problem;
 * Because it is cool to play with text.
 
 NALP is compatible with: **Python 3.6+**.
