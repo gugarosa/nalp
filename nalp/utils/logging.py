@@ -3,8 +3,8 @@ import sys
 from logging.handlers import TimedRotatingFileHandler
 
 FORMATTER = logging.Formatter(
-    "%(asctime)s - %(name)s — %(levelname)s — %(message)s")
-LOG_FILE = "nalp.log"
+    '%(asctime)s - %(name)s — %(levelname)s — %(message)s')
+LOG_FILE = 'nalp.log'
 LOG_LEVEL = logging.DEBUG
 
 
