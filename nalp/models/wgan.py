@@ -1,3 +1,6 @@
+"""Wasserstein Generative Adversarial Network.
+"""
+
 import tensorflow as tf
 from tensorflow.keras.utils import Progbar
 
@@ -10,17 +13,22 @@ logger = l.get_logger(__name__)
 
 
 class WGAN(Adversarial):
-    """A WGAN class is the one in charge of Wasserstein Generative Adversarial Networks implementation with
-    weight clipping or gradient penalty algorithms.
+    """A WGAN class is the one in charge of Wasserstein Generative Adversarial Networks
+    implementation with weight clipping or gradient penalty algorithms.
 
     References:
-        M. Arjovsky, S. Chintala, L. Bottou. Wasserstein gan. Preprint arXiv:1701.07875 (2017).
-        I. Gulrajani, et al. Improved training of wasserstein gans. Advances in neural information processing systems (2017).
+        M. Arjovsky, S. Chintala, L. Bottou.
+        Wasserstein gan.
+        Preprint arXiv:1701.07875 (2017).
+
+        I. Gulrajani, et al.
+        Improved training of wasserstein gans.
+        Advances in neural information processing systems (2017).
 
     """
 
     def __init__(self, input_shape=(28, 28, 1), noise_dim=100, n_samplings=3, alpha=0.3, dropout_rate=0.3,
-                 type='wc', clip=0.01, penalty=10):
+                 model_type='wc', clip=0.01, penalty=10):
         """Initialization method.
 
         Args:
@@ -29,7 +37,7 @@ class WGAN(Adversarial):
             n_samplings (int): Number of down/up samplings to perform.
             alpha (float): LeakyReLU activation threshold.
             dropout_rate (float): Dropout activation rate.
-            type (str): Whether should use weight clipping (wc) or gradient penalty (gp).
+            model_type (str): Whether should use weight clipping (wc) or gradient penalty (gp).
             clip (float): Clipping value for the Lipschitz constrain.
             penalty (int): Coefficient for the gradient penalty.
 
@@ -47,7 +55,7 @@ class WGAN(Adversarial):
         super(WGAN, self).__init__(D, G, name='wgan')
 
         # Defining the type of penalization to be used
-        self.type = type
+        self.model_type = model_type
 
         # Defining the clipping value as a property for further usage
         self.clip = clip
@@ -55,22 +63,23 @@ class WGAN(Adversarial):
         # Defining the gradient penalty coefficient as a property for further usage
         self.penalty_lambda = penalty
 
-        logger.debug(f'Input: {input_shape} | Noise: {noise_dim} | Number of Samplings: {n_samplings} | '
-                    f'Activation Rate: {alpha} | Dropout Rate: {dropout_rate} | Type: {type}.')
+        logger.debug('Input: %s | Noise: %d | Number of Samplings: %d | '
+                     'Activation Rate: %f | Dropout Rate: %f | Type: %s.',
+                     input_shape, noise_dim, n_samplings, alpha, dropout_rate, model_type)
 
         logger.info('Class overrided.')
 
     @property
-    def type(self):
+    def model_type(self):
         """str: Whether should use weight clipping (wc) or gradient penalty (gp).
 
         """
 
-        return self._type
+        return self._model_type
 
-    @type.setter
-    def type(self, type):
-        self._type = type
+    @model_type.setter
+    def model_type(self, model_type):
+        self._model_type = model_type
 
     @property
     def clip(self):
@@ -161,7 +170,7 @@ class WGAN(Adversarial):
             D_loss = -tf.reduce_mean(y_real) + tf.reduce_mean(y_fake)
 
             # Checks if WGAN is using gradient penalty
-            if self.type == 'gp':
+            if self.model_type == 'gp':
                 # Calculates the penalization score
                 penalty = self._gradient_penalty(x, x_fake)
 
@@ -179,7 +188,7 @@ class WGAN(Adversarial):
         self.D_loss.update_state(D_loss)
 
         # Checks if WGAN is using weight clipping
-        if self.type == 'wc':
+        if self.model_type == 'wc':
             # Clips the weights
             [w.assign(tf.clip_by_value(w, -self.clip, self.clip))
              for w in self.D.trainable_variables]
@@ -234,7 +243,7 @@ class WGAN(Adversarial):
 
         # Iterate through all epochs
         for e in range(epochs):
-            logger.info(f'Epoch {e+1}/{epochs}')
+            logger.info('Epoch %d/%d', e+1, epochs)
 
             # Resetting states to further append losses
             self.G_loss.reset_states()
@@ -254,6 +263,7 @@ class WGAN(Adversarial):
                 self.G_step(batch)
 
                 # Adding corresponding values to the progress bar
-                b.add(1, values=[('loss(G)', self.G_loss.result()), ('loss(D)', self.D_loss.result())])
+                b.add(1, values=[('loss(G)', self.G_loss.result()),
+                                 ('loss(D)', self.D_loss.result())])
 
-            logger.file(f'Loss(G): {self.G_loss.result().numpy()} | Loss(D): {self.D_loss.result().numpy()}')
+            logger.file('Loss(G): %f | Loss(D): %f', self.G_loss.result().numpy(), self.D_loss.result().numpy())

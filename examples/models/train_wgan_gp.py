@@ -12,7 +12,7 @@ dataset = ImageDataset(x, batch_size=256, shape=(
 
 # Creating the WGAN
 wgan = WGAN(input_shape=(28, 28, 1), noise_dim=100, n_samplings=3,
-            alpha=0.3, dropout_rate=0.3, type='gp', penalty=10)
+            alpha=0.3, dropout_rate=0.3, model_type='gp', penalty=10)
 
 # Compiling the WGAN
 wgan.compile(d_optimizer=tf.optimizers.RMSprop(learning_rate=0.00005),

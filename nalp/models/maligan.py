@@ -1,3 +1,6 @@
+"""Maximum-Likelihood Augmented Discrete Generative Adversarial Network.
+"""
+
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.utils import Progbar
@@ -22,7 +25,7 @@ class MaliGAN(Adversarial):
     """
 
     def __init__(self, encoder=None, vocab_size=1, max_length=1, embedding_size=32, hidden_size=64,
-                 n_filters=[64], filters_size=[1], dropout_rate=0.25, temperature=1):
+                 n_filters=(64), filters_size=(1), dropout_rate=0.25, temperature=1):
         """Initialization method.
 
         Args:
@@ -31,8 +34,8 @@ class MaliGAN(Adversarial):
             max_length (int): Maximum length of the sequences for the discriminator.
             embedding_size (int): The size of the embedding layer for both discriminator and generator.
             hidden_size (int): The amount of hidden neurons for the generator.
-            n_filters (list): Number of filters to be applied in the discriminator.
-            filters_size (list): Size of filters to be applied in the discriminator.
+            n_filters (tuple): Number of filters to be applied in the discriminator.
+            filters_size (tuple): Size of filters to be applied in the discriminator.
             dropout_rate (float): Dropout activation rate.
             temperature (float): Temperature value to sample the token.
 
@@ -135,7 +138,7 @@ class MaliGAN(Adversarial):
         self.G.reset_states()
 
         # For every possible generation
-        for i in range(length):
+        for _ in range(length):
             # Predicts the current token
             preds = self.G(start_batch)
 
@@ -287,7 +290,7 @@ class MaliGAN(Adversarial):
 
         # Iterate through all generator epochs
         for e in range(g_epochs):
-            logger.info(f'Epoch {e+1}/{g_epochs}')
+            logger.info('Epoch %d/%d', e+1, g_epochs)
 
             # Resetting state to further append losses
             self.G_loss.reset_states()
@@ -303,13 +306,13 @@ class MaliGAN(Adversarial):
                 # Adding corresponding values to the progress bar
                 b.add(1, values=[('loss(G)', self.G_loss.result())])
 
-            logger.file(f'Loss(G): {self.G_loss.result().numpy()}')
+            logger.file('Loss(G): %f', self.G_loss.result().numpy())
 
         logger.info('Pre-fitting discriminator ...')
 
         # Iterate through all discriminator epochs
         for e in range(d_epochs):
-            logger.info(f'Epoch {e+1}/{d_epochs}')
+            logger.info('Epoch %d/%d', e+1, d_epochs)
 
             # Resetting state to further append losses
             self.D_loss.reset_states()
@@ -345,7 +348,7 @@ class MaliGAN(Adversarial):
                 # Adding corresponding values to the progress bar
                 b.add(1, values=[('loss(D)', self.D_loss.result())])
 
-            logger.file(f'Loss(D): {self.D_loss.result().numpy()}')
+            logger.file('Loss(D): %f', self.D_loss.result().numpy())
 
     def fit(self, batches, epochs=10, d_epochs=5):
         """Trains the model.
@@ -364,7 +367,7 @@ class MaliGAN(Adversarial):
 
         # Iterate through all epochs
         for e in range(epochs):
-            logger.info(f'Epoch {e+1}/{epochs}')
+            logger.info('Epoch %d/%d', e+1, epochs)
 
             # Resetting state to further append losses
             self.G_loss.reset_states()
@@ -410,8 +413,9 @@ class MaliGAN(Adversarial):
                         # Performs the optimization step over the discriminator
                         self.D_step(tf.gather(x_concat_batch, indices),
                                     tf.gather(y_concat_batch, indices))
-                
-                # Adding corresponding values to the progress bar
-                b.add(1, values=[('loss(G)', self.G_loss.result()), ('loss(D)', self.D_loss.result())])
 
-            logger.file(f'Loss(G): {self.G_loss.result().numpy()} | Loss(D): {self.D_loss.result().numpy()}')
+                # Adding corresponding values to the progress bar
+                b.add(1, values=[('loss(G)', self.G_loss.result()),
+                                 ('loss(D)', self.D_loss.result())])
+
+            logger.file('Loss(G): %f | Loss(D): %f', self.G_loss.result().numpy(), self.D_loss.result().numpy())

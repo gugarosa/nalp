@@ -1,3 +1,6 @@
+"""Gumbel-Softmax Generative Adversarial Network.
+"""
+
 import tensorflow as tf
 from tensorflow.keras.utils import Progbar
 
@@ -10,21 +13,22 @@ logger = l.get_logger(__name__)
 
 
 class GSGAN(Adversarial):
-    """A GSGAN class is the one in charge of Gumbel-Softmax Generative Adversarial Networks implementation.
+    """A GSGAN class is the one in charge of
+    Gumbel-Softmax Generative Adversarial Networks implementation.
 
     References:
-        M. Kusner, J. Hernández-Lobato. Gans for sequences of discrete elements with the gumbel-softmax distribution.
+        M. Kusner, J. Hernández-Lobato.
+        Gans for sequences of discrete elements with the gumbel-softmax distribution.
         Preprint arXiv:1611.04051 (2016).
 
     """
 
-    def __init__(self, encoder=None, vocab_size=1, max_length=1, embedding_size=32, hidden_size=64, tau=5):
+    def __init__(self, encoder=None, vocab_size=1, embedding_size=32, hidden_size=64, tau=5):
         """Initialization method.
 
         Args:
             encoder (IntegerEncoder): An index to vocabulary encoder for the generator.
             vocab_size (int): The size of the vocabulary for both discriminator and generator.
-            max_length (int): Maximum length of the sequences for the discriminator.
             embedding_size (int): The size of the embedding layer for both discriminator and generator.
             hidden_size (int): The amount of hidden neurons for the generator.
             tau (float): Gumbel-Softmax temperature parameter.
@@ -116,7 +120,7 @@ class GSGAN(Adversarial):
         self.G.reset_states()
 
         # For every possible generation
-        for i in range(max_length):
+        for _ in range(max_length):
             # Predicts the current token
             _, preds, start_batch = self.G(start_batch)
 
@@ -261,7 +265,7 @@ class GSGAN(Adversarial):
 
         # Iterate through all generator epochs
         for e in range(epochs):
-            logger.info(f'Epoch {e+1}/{epochs}')
+            logger.info('Epoch %d/%d', e+1, epochs)
 
             # Resetting state to further append losses
             self.G_loss.reset_states()
@@ -277,7 +281,7 @@ class GSGAN(Adversarial):
                 # Adding corresponding values to the progress bar
                 b.add(1, values=[('loss(G)', self.G_loss.result())])
 
-            logger.file(f'Loss(G): {self.G_loss.result().numpy()}')
+            logger.file('Loss(G): %f', self.G_loss.result().numpy())
 
     def fit(self, batches, epochs=100):
         """Trains the model.
@@ -295,7 +299,7 @@ class GSGAN(Adversarial):
 
         # Iterate through all epochs
         for e in range(epochs):
-            logger.info(f'Epoch {e+1}/{epochs}')
+            logger.info('Epoch %d/%d', e+1, epochs)
 
             # Resetting states to further append losses
             self.G_loss.reset_states()
@@ -315,4 +319,4 @@ class GSGAN(Adversarial):
             # Exponentially annealing the Gumbel-Softmax temperature
             self.G.tau = 5 ** ((epochs - e) / epochs)
 
-            logger.file(f'Loss(G): {self.G_loss.result().numpy()} | Loss(D): {self.D_loss.result().numpy()}')
+            logger.file('Loss(G): %f | Loss(D): %f', self.G_loss.result().numpy(), self.D_loss.result().numpy())

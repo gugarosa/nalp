@@ -1,9 +1,13 @@
+"""Deep Convolutional Generative Adversarial Network.
+"""
+
 import nalp.utils.logging as l
 from nalp.core import Adversarial
 from nalp.models.discriminators import ConvDiscriminator
 from nalp.models.generators import ConvGenerator
 
 logger = l.get_logger(__name__)
+
 
 class DCGAN(Adversarial):
     """A DCGAN class is the one in charge of Deep Convolutional Generative Adversarial Networks implementation.
@@ -38,7 +42,7 @@ class DCGAN(Adversarial):
         # Overrides its parent class with any custom arguments if needed
         super(DCGAN, self).__init__(D, G, name='dcgan')
 
-        logger.debug(f'Input: {input_shape} | Noise: {noise_dim} | Number of Samplings: {n_samplings} | '
-                    f'Activation Rate: {alpha} | Dropout Rate: {dropout_rate}.')
-                    
+        logger.debug('Input: %s | Noise: %d | Number of Samplings: %d | ' +
+                     'Activation Rate: %f | Dropout Rate: %f',
+                     input_shape, noise_dim, n_samplings, alpha, dropout_rate)
         logger.info('Class overrided.')

@@ -22,7 +22,7 @@ dataset = LanguageModelingDataset(encoded_tokens, max_length=10, batch_size=64)
 
 # Creating the GSGAN
 gsgan = GSGAN(encoder=encoder, vocab_size=corpus.vocab_size,
-              max_length=10, embedding_size=256, hidden_size=512, tau=5)
+              embedding_size=256, hidden_size=512, tau=5)
 
 # Compiling the GSGAN
 gsgan.compile(pre_optimizer=tf.optimizers.Adam(learning_rate=0.01),

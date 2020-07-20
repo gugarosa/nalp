@@ -1,3 +1,6 @@
+"""Relational Generative Adversarial Network.
+"""
+
 import tensorflow as tf
 from tensorflow.keras.utils import Progbar
 
@@ -20,7 +23,7 @@ class RelGAN(Adversarial):
 
     def __init__(self, encoder=None, vocab_size=1, max_length=1, embedding_size=32,
                  n_slots=3, n_heads=5, head_size=10, n_blocks=1, n_layers=3,
-                 n_filters=[64], filters_size=[1], dropout_rate=0.25, tau=5):
+                 n_filters=(64), filters_size=(1), dropout_rate=0.25, tau=5):
         """Initialization method.
 
         Args:
@@ -33,8 +36,8 @@ class RelGAN(Adversarial):
             head_size (int): Size of each attention head for the generator.
             n_blocks (int): Number of feed-forward networks for the generator.
             n_layers (int): Amout of layers per feed-forward network for the generator.
-            n_filters (list): Number of filters to be applied in the discriminator.
-            filters_size (list): Size of filters to be applied in the discriminator.
+            n_filters (tuple): Number of filters to be applied in the discriminator.
+            filters_size (tuple): Size of filters to be applied in the discriminator.
             dropout_rate (float): Dropout activation rate.
             tau (float): Gumbel-Softmax temperature parameter.
 
@@ -126,7 +129,7 @@ class RelGAN(Adversarial):
         self.G.reset_states()
 
         # For every possible generation
-        for i in range(max_length):
+        for _ in range(max_length):
             # Predicts the current token
             _, preds, start_batch = self.G(start_batch)
 
@@ -269,7 +272,7 @@ class RelGAN(Adversarial):
 
         # Iterate through all generator epochs
         for e in range(epochs):
-            logger.info(f'Epoch {e+1}/{epochs}')
+            logger.info('Epoch %d/%d', e+1, epochs)
 
             # Resetting state to further append losses
             self.G_loss.reset_states()
@@ -285,7 +288,7 @@ class RelGAN(Adversarial):
                 # Adding corresponding values to the progress bar
                 b.add(1, values=[('loss(G)', self.G_loss.result())])
 
-            logger.file(f'Loss(G): {self.G_loss.result().numpy()}')
+            logger.file('Loss(G): %f', self.G_loss.result().numpy())
 
     def fit(self, batches, epochs=100):
         """Trains the model.
@@ -303,7 +306,7 @@ class RelGAN(Adversarial):
 
         # Iterate through all epochs
         for e in range(epochs):
-            logger.info(f'Epoch {e+1}/{epochs}')
+            logger.info('Epoch %d/%d', e+1, epochs)
 
             # Resetting states to further append losses
             self.G_loss.reset_states()
@@ -323,4 +326,4 @@ class RelGAN(Adversarial):
             # Exponentially annealing the Gumbel-Softmax temperature
             self.G.tau = 5 ** ((epochs - e) / epochs)
 
-            logger.file(f'Loss(G): {self.G_loss.result().numpy()} | Loss(D): {self.D_loss.result().numpy()}')
+            logger.file('Loss(G): %f | Loss(D): %f', self.G_loss.result().numpy(), self.D_loss.result().numpy())

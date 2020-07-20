@@ -1,3 +1,6 @@
+"""Generative Adversarial Network.
+"""
+
 import nalp.utils.logging as l
 from nalp.core import Adversarial
 from nalp.models.discriminators import LinearDiscriminator
@@ -37,7 +40,7 @@ class GAN(Adversarial):
         # Overrides its parent class with any custom arguments if needed
         super(GAN, self).__init__(D, G, name='gan')
 
-        logger.debug(f'Input: {input_shape} | Noise: {noise_dim} | Number of Samplings: {n_samplings} | '
-                    f'Activation Rate: {alpha}.')
-                    
+        logger.debug('Input: %s | Noise: %d | '
+                     'Number of Samplings: %d | Activation Rate: %f.',
+                     input_shape, noise_dim, n_samplings, alpha)
         logger.info('Class overrided.')
