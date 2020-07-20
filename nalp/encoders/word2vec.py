@@ -1,3 +1,6 @@
+"""Word2vec encoding.
+"""
+
 import multiprocessing
 
 import numpy as np
@@ -27,7 +30,8 @@ class Word2vecEncoder(Encoder):
 
         logger.info('Class overrided.')
 
-    def learn(self, tokens, max_features=128, window_size=5, min_count=1, algorithm=0, learning_rate=0.01, iterations=1000):
+    def learn(self, tokens, max_features=128, window_size=5, min_count=1,
+              algorithm=0, learning_rate=0.01, iterations=1000):
         """Learns a Word2Vec representation based on the its methodology.
 
         One can use CBOW or Skip-gram algorithm for the learning procedure.
@@ -38,7 +42,7 @@ class Word2vecEncoder(Encoder):
             window_size (int): Maximum distance between current and predicted word.
             min_count (int): Minimum count of words for its use.
             algorithm (bool): 1 for skip-gram, while 0 for CBOW.
-            learning_rate (float): Starting value of the learning procedure learning rate.
+            learning_rate (float): Value of the learning rate.
             iterations (int): Number of iterations.
 
         """
@@ -47,7 +51,8 @@ class Word2vecEncoder(Encoder):
 
         # Creates a Word2Vec model
         self.encoder = W2V(sentences=[tokens], size=max_features, window=window_size, min_count=min_count,
-                           sg=algorithm, alpha=learning_rate, iter=iterations, workers=multiprocessing.cpu_count())
+                           sg=algorithm, alpha=learning_rate, iter=iterations,
+                           workers=multiprocessing.cpu_count())
 
     def encode(self, tokens):
         """Encodes the data into a Word2Vec representation.

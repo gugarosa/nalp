@@ -1,3 +1,6 @@
+"""Language modeling dataset class.
+"""
+
 from tensorflow import data
 
 import nalp.utils.constants as c
@@ -8,8 +11,8 @@ logger = l.get_logger(__name__)
 
 
 class LanguageModelingDataset(Dataset):
-    """A LanguageModelingDataset class is responsible for creating a dataset that predicts the next timestep (t+1)
-    given a timestep (t).
+    """A LanguageModelingDataset class is responsible for creating a dataset
+    that predicts the next timestep (t+1) given a timestep (t).
 
     """
 
@@ -39,8 +42,7 @@ class LanguageModelingDataset(Dataset):
         self._build(mapped_sequences, batch_size)
 
         # Debugging some important information
-        logger.debug(f'Batch size: {batch_size} | Shuffle: {shuffle}.')
-
+        logger.debug('Batch size: %d | Shuffle: %s.', batch_size, shuffle)
         logger.info('Class overrided.')
 
     def _create_sequences(self, encoded_tokens, max_length):
@@ -55,7 +57,7 @@ class LanguageModelingDataset(Dataset):
 
         """
 
-        logger.debug(f'Creating sequences ...')
+        logger.debug('Creating sequences ...')
 
         # Creating tensor slices from the encoded tokens
         slices = data.Dataset.from_tensor_slices(encoded_tokens)
@@ -63,7 +65,7 @@ class LanguageModelingDataset(Dataset):
         # Creating the sequences
         sequences = slices.batch(max_length + 1, drop_remainder=True)
 
-        logger.debug(f'Maximum length: {max_length}.')
+        logger.debug('Maximum length: %d.', max_length)
 
         return sequences
 
@@ -79,12 +81,12 @@ class LanguageModelingDataset(Dataset):
         """
 
         # Maps the sequence to the input
-        input = sequence[:-1]
+        _input = sequence[:-1]
 
         # Maps the sequence to the target
         target = sequence[1:]
 
-        return input, target
+        return _input, target
 
     def _build(self, mapped_sequences, batch_size):
         """Builds the batches based on the mapped sequences.

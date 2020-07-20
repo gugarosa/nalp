@@ -1,3 +1,6 @@
+"""Integer-based encoding.
+"""
+
 import numpy as np
 
 import nalp.utils.logging as l

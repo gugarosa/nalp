@@ -1,6 +1,8 @@
+"""Audio-related corpus.
+"""
+
 import nalp.utils.loader as l
 import nalp.utils.logging as log
-import nalp.utils.preprocess as p
 from nalp.core import Corpus
 
 logger = log.get_logger(__name__)
@@ -47,9 +49,8 @@ class AudioCorpus(Corpus):
         self._build(self.tokens)
 
         # Debugging some important information
-        logger.debug(
-            f'Tokens: {len(self.tokens)} | Vocabulary Size: {len(self.vocab)} | Type: audio.')
-
+        logger.debug('Tokens: %d | Vocabulary Size: %d | Type: audio.',
+                     len(self.tokens), len(self.vocab))
         logger.info('AudioCorpus created.')
 
     @property

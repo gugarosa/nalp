@@ -1,3 +1,6 @@
+"""Text-related corpus.
+"""
+
 import nalp.utils.loader as l
 import nalp.utils.logging as log
 import nalp.utils.preprocess as p
@@ -14,13 +17,13 @@ class TextCorpus(Corpus):
 
     """
 
-    def __init__(self, tokens=None, from_file=None, type='char'):
+    def __init__(self, tokens=None, from_file=None, corpus_type='char'):
         """Initialization method.
 
         Args:
             tokens (list): A list of tokens.
             from_file (str): An input file to load the text.
-            type (str): The desired type to tokenize the text. Should be `char` or `word`.
+            corpus_type (str): The desired type to tokenize the text. Should be `char` or `word`.
 
         """
 
@@ -35,7 +38,7 @@ class TextCorpus(Corpus):
             text = l.load_txt(from_file)
 
             # Creates a tokenizer based on desired type
-            pipe = self._create_tokenizer(type)
+            pipe = self._create_tokenizer(corpus_type)
 
             # Retrieve the tokens
             self.tokens = pipe(text)
@@ -49,9 +52,8 @@ class TextCorpus(Corpus):
         self._build(self.tokens)
 
         # Debugging some important information
-        logger.debug(
-            f'Tokens: {len(self.tokens)} | Vocabulary Size: {len(self.vocab)} | Type: {type}.')
-
+        logger.debug('Tokens: %d | Vocabulary Size: %d | Type: %s.',
+                     len(self.tokens), len(self.vocab), corpus_type)
         logger.info('TextCorpus created.')
 
     @property
@@ -102,11 +104,11 @@ class TextCorpus(Corpus):
     def index_vocab(self, index_vocab):
         self._index_vocab = index_vocab
 
-    def _create_tokenizer(self, type):
+    def _create_tokenizer(self, corpus_type):
         """Creates a tokenizer based on the input type.
 
         Args:
-            type (str): A type to create the tokenizer. Should be `char` or `word`.
+            corpus_type (str): A type to create the tokenizer. Should be `char` or `word`.
 
         Returns:
             The created tokenizer.
@@ -114,9 +116,9 @@ class TextCorpus(Corpus):
         """
 
         # Checks if type is possible
-        if type not in ['char', 'word']:
+        if corpus_type not in ['char', 'word']:
             # If not, creates an error
-            e = f'Type argument should be `char` or `word`.'
+            e = 'Type argument should be `char` or `word`.'
 
             # Logs the error
             logger.error(e)
@@ -124,11 +126,11 @@ class TextCorpus(Corpus):
             raise RuntimeError(e)
 
         # If the type is char
-        if type == 'char':
+        if corpus_type == 'char':
             return p.pipeline(p.tokenize_to_char)
 
         # If the type is word
-        elif type == 'word':
+        if corpus_type == 'word':
             return p.pipeline(p.tokenize_to_word)
 
     def _build(self, tokens):

@@ -1,3 +1,6 @@
+"""Model-related classes.
+"""
+
 import tensorflow as tf
 from tensorflow.keras import Model
 from tensorflow.keras.utils import Progbar
@@ -94,7 +97,7 @@ class Generator(Model):
 
         """
 
-        logger.debug(f'Generating text with length: {length} ...')
+        logger.debug('Generating text with length: %d ...', length)
 
         # Encoding the start string into tokens
         start_tokens = self.encoder.encode(start)
@@ -109,7 +112,7 @@ class Generator(Model):
         self.reset_states()
 
         # For every possible generation
-        for i in range(length):
+        for _ in range(length):
             # Predicts the current token
             preds = self(start_tokens)
 
@@ -135,7 +138,8 @@ class Generator(Model):
 
 
 class Adversarial(Model):
-    """An Adversarial class is responsible for customly implementing Generative Adversarial Networks.
+    """An Adversarial class is responsible for customly
+    implementing Generative Adversarial Networks.
 
     """
 
@@ -307,7 +311,7 @@ class Adversarial(Model):
 
         # Iterate through all epochs
         for e in range(epochs):
-            logger.info(f'Epoch {e+1}/{epochs}')
+            logger.info('Epoch %d/%d', e+1, epochs)
 
             # Resetting states to further append losses
             self.G_loss.reset_states()
@@ -322,6 +326,8 @@ class Adversarial(Model):
                 self.step(batch)
 
                 # Adding corresponding values to the progress bar
-                b.add(1, values=[('loss(G)', self.G_loss.result()), ('loss(D)', self.D_loss.result())])
+                b.add(1, values=[('loss(G)', self.G_loss.result()),
+                                 ('loss(D)', self.D_loss.result())])
 
-            logger.file(f'Loss(G): {self.G_loss.result().numpy()} | Loss(D): {self.D_loss.result().numpy()}')
+            logger.file('Loss(G): %f | Loss(D): %f',
+                        self.G_loss.result().numpy(), self.D_loss.result().numpy())

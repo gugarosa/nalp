@@ -1,3 +1,6 @@
+"""Corpus-related class.
+"""
+
 class Corpus:
     """A Corpus class is used to defined the first step of the workflow.
 

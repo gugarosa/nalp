@@ -1,3 +1,6 @@
+"""Dataset-related class.
+"""
+
 class Dataset:
     """A Dataset class is responsible for receiving encoded tokens and
     persisting data that will be feed as an input to the networks.

@@ -1,3 +1,6 @@
+"""Data-loading utilities.
+"""
+
 from mido import MidiFile
 
 import nalp.utils.logging as l
@@ -16,7 +19,7 @@ def load_txt(file_name):
 
     """
 
-    logger.debug(f'Loading {file_name} ...')
+    logger.debug('Loading %s ...', file_name)
 
     # Tries to load the file
     try:
@@ -50,7 +53,7 @@ def load_audio(file_name):
 
     """
 
-    logger.debug(f'Loading {file_name} ...')
+    logger.debug('Loading %s ...', file_name)
 
     # Tries to load the file
     try:

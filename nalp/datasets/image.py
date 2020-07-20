@@ -1,3 +1,6 @@
+"""Imaging dataset class.
+"""
+
 from tensorflow import data
 
 import nalp.utils.constants as c
@@ -37,9 +40,8 @@ class ImageDataset(Dataset):
         self._build(processed_images, batch_size)
 
         # Debugging some important information
-        logger.debug(
-            f'Size: {shape} | Batch size: {batch_size} | Normalization: {normalize} | Shuffle: {shuffle}.')
-
+        logger.debug('Size: %s | Batch size: %d | Normalization: %s | Shuffle: %s.',
+                     shape, batch_size, normalize, shuffle)
         logger.info('Class overrided.')
 
     def _preprocess(self, images, shape, normalize):

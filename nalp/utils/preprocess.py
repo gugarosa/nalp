@@ -1,3 +1,6 @@
+"""Pre-processing functions.
+"""
+
 import re
 
 import nltk
@@ -82,6 +85,6 @@ def pipeline(*func):
 
         return x
 
-    logger.debug('Pipeline created with ' + str(func) + '.')
+    logger.debug('Pipeline created with %s.', str(func))
 
     return process

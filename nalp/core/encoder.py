@@ -1,3 +1,6 @@
+"""Encoder-related class.
+"""
+
 class Encoder:
     """An Encoder class is responsible for receiving a Corpus and
     enconding it on a representation (i.e., integer, word2vec).
