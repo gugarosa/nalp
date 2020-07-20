@@ -6,7 +6,7 @@ from nalp.encoders import IntegerEncoder
 from nalp.models.generators import StackedRNNGenerator
 
 # Creating a character TextCorpus from file
-corpus = TextCorpus(from_file='data/text/chapter1_harry.txt', type='char')
+corpus = TextCorpus(from_file='data/text/chapter1_harry.txt', corpus_type='char')
 
 # Creating an IntegerEncoder
 encoder = IntegerEncoder()
@@ -22,7 +22,7 @@ dataset = LanguageModelingDataset(encoded_tokens, max_length=10, batch_size=64)
 
 # Creating the StackedRNN
 rnn = StackedRNNGenerator(encoder=encoder, vocab_size=corpus.vocab_size,
-                          embedding_size=256, hidden_size=[128, 256, 512])
+                          embedding_size=256, hidden_size=(128, 256, 512))
 
 # As NALP's StackedRNNs are stateful, we need to build it with a fixed batch size
 rnn.build((64, None))

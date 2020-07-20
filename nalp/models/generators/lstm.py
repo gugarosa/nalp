@@ -1,3 +1,6 @@
+"""Long Short-Term Memory generator.
+"""
+
 from tensorflow.keras.layers import RNN, Dense, Embedding, LSTMCell
 
 import nalp.utils.logging as l
@@ -7,7 +10,8 @@ logger = l.get_logger(__name__)
 
 
 class LSTMGenerator(Generator):
-    """A LSTMGenerator class is the one in charge of Long Short-Term Memory implementation.
+    """A LSTMGenerator class is the one in charge of a
+    Long Short-Term Memory implementation.
 
     References:
         S. Hochreiter, Jürgen Schmidhuber. Long short-term memory. Neural computation 9.8 (1997).
@@ -34,15 +38,16 @@ class LSTMGenerator(Generator):
         self.encoder = encoder
 
         # Creates an embedding layer
-        self.embedding = Embedding(vocab_size, embedding_size, name='embedding')
+        self.embedding = Embedding(
+            vocab_size, embedding_size, name='embedding')
 
         # Creates a LSTM cell
         self.cell = LSTMCell(hidden_size, name='lstm_cell')
 
         # Creates the RNN loop itself
         self.rnn = RNN(self.cell, name='rnn_layer',
-                              return_sequences=True,
-                              stateful=True)
+                       return_sequences=True,
+                       stateful=True)
 
         # Creates the linear (Dense) layer
         self.linear = Dense(vocab_size, name='out')

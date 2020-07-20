@@ -1,4 +1,6 @@
-import tensorflow as tf
+"""Relational Memory Core generator.
+"""
+
 from tensorflow.keras.layers import RNN, Dense, Embedding
 
 import nalp.utils.logging as l
@@ -9,7 +11,8 @@ logger = l.get_logger(__name__)
 
 
 class RMCGenerator(Generator):
-    """An RMCGenerator class is the one in charge of Relational Recurrent Neural Networks vanilla implementation.
+    """An RMCGenerator class is the one in charge of
+    Relational Recurrent Neural Networks vanilla implementation.
 
     References:
         A. Santoro, et al. Relational recurrent neural networks.
@@ -42,17 +45,18 @@ class RMCGenerator(Generator):
         self.encoder = encoder
 
         # Creates an embedding layer
-        self.embedding = Embedding(vocab_size, embedding_size, name='embedding')
+        self.embedding = Embedding(
+            vocab_size, embedding_size, name='embedding')
 
         # Creates a relational memory cell
-        self.cell = RelationalMemoryCell(n_slots, n_heads, 
+        self.cell = RelationalMemoryCell(n_slots, n_heads,
                                          head_size, n_blocks, n_layers,
                                          name='rmc_cell')
 
         # Creates the RNN loop itself
         self.rnn = RNN(self.cell, name='rnn_layer',
-                              return_sequences=True,
-                              stateful=True)
+                       return_sequences=True,
+                       stateful=True)
 
         # Creates the linear (Dense) layer
         self.linear = Dense(vocab_size, name='out')

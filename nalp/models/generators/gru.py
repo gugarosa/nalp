@@ -1,3 +1,6 @@
+"""Gated Recurrent Unit generator.
+"""
+
 from tensorflow.keras.layers import RNN, Dense, Embedding, GRUCell
 
 import nalp.utils.logging as l
@@ -7,7 +10,8 @@ logger = l.get_logger(__name__)
 
 
 class GRUGenerator(Generator):
-    """A GRUGenerator class is the one in charge of Gated Recurrent Unit implementation.
+    """A GRUGenerator class is the one in charge of a
+    Gated Recurrent Unit implementation.
 
     References:
         K. Cho, et al.
@@ -36,15 +40,16 @@ class GRUGenerator(Generator):
         self.encoder = encoder
 
         # Creates an embedding layer
-        self.embedding = Embedding(vocab_size, embedding_size, name='embedding')
+        self.embedding = Embedding(
+            vocab_size, embedding_size, name='embedding')
 
         # Creates a GRU cell
         self.cell = GRUCell(hidden_size, name='gru')
 
         # Creates the RNN loop itself
         self.rnn = RNN(self.cell, name='rnn_layer',
-                              return_sequences=True,
-                              stateful=True)
+                       return_sequences=True,
+                       stateful=True)
 
         # Creates the linear (Dense) layer
         self.linear = Dense(vocab_size, name='out')

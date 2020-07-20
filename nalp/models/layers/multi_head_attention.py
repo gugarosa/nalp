@@ -1,3 +1,6 @@
+"""Multi-Head Attention layer.
+"""
+
 import tensorflow as tf
 from tensorflow.keras.layers import Dense, Layer
 
@@ -5,8 +8,8 @@ import nalp.utils.constants as c
 
 
 def scaled_dot_product_attention(q, k, v, mask):
-    """Calculate the attention weights, such that q, k, v must have matching leading dimensions, and
-    k, v must have matching penultimate dimension.
+    """Calculate the attention weights, such that q, k, v must have matching
+    leading dimensions, and k, v must have matching penultimate dimension.
 
     Args:
         q (tf.Tensor): Query tensor.

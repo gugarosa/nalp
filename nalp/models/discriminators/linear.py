@@ -1,3 +1,6 @@
+"""Linear discriminator.
+"""
+
 import tensorflow as tf
 from tensorflow.keras.layers import Dense
 
@@ -8,7 +11,8 @@ logger = l.get_logger(__name__)
 
 
 class LinearDiscriminator(Discriminator):
-    """A LinearDiscriminator class stands for the linear discriminative part of a Generative Adversarial Network.
+    """A LinearDiscriminator class stands for the
+    linear discriminative part of a Generative Adversarial Network.
 
     """
 
@@ -63,9 +67,9 @@ class LinearDiscriminator(Discriminator):
         """
 
         # For every possible linear layer
-        for l in self.linear:
+        for layer in self.linear:
             # Applies the layer with a LeakyReLU activation
-            x = tf.nn.leaky_relu(l(x), self.alpha)
+            x = tf.nn.leaky_relu(layer(x), self.alpha)
 
         # Passing down the output layer
         x = self.out(x)

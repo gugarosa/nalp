@@ -1,3 +1,6 @@
+"""Stacked Recurrent Neural Network generator.
+"""
+
 from tensorflow.keras.layers import RNN, Dense, Embedding, SimpleRNNCell
 
 import nalp.utils.logging as l
@@ -7,21 +10,22 @@ logger = l.get_logger(__name__)
 
 
 class StackedRNNGenerator(Generator):
-    """A StackedRNNGenerator class is the one in charge of stacked Recurrent Neural Networks implementation.
+    """A StackedRNNGenerator class is the one in charge of
+    stacked Recurrent Neural Networks implementation.
 
     References:
         J. Elman. Finding structure in time. Cognitive science 14.2 (1990).
 
     """
 
-    def __init__(self, encoder=None, vocab_size=1, embedding_size=32, hidden_size=[64, 64]):
+    def __init__(self, encoder=None, vocab_size=1, embedding_size=32, hidden_size=(64, 64)):
         """Initialization method.
 
         Args:
             encoder (IntegerEncoder): An index to vocabulary encoder.
             vocab_size (int): The size of the vocabulary.
             embedding_size (int): The size of the embedding layer.
-            hidden_size (list): Amount of hidden neurons per cell.
+            hidden_size (tuple): Amount of hidden neurons per cell.
 
         """
 
@@ -42,13 +46,13 @@ class StackedRNNGenerator(Generator):
 
         # Creates the RNN loop itself
         self.rnn = RNN(self.cells, name='rnn_layer',
-                              return_sequences=True,
-                              stateful=True)
+                       return_sequences=True,
+                       stateful=True)
 
         # Creates the linear (Dense) layer
         self.linear = Dense(vocab_size, name='out')
 
-        logger.debug(f'Number of cells: {len(hidden_size)}')
+        logger.debug('Number of cells: %d', len(hidden_size))
         logger.info('Class overrided.')
 
     @property

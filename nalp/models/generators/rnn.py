@@ -1,3 +1,6 @@
+"""Recurrent Neural Network generator.
+"""
+
 from tensorflow.keras.layers import RNN, Dense, Embedding, SimpleRNNCell
 
 import nalp.utils.logging as l
@@ -7,7 +10,8 @@ logger = l.get_logger(__name__)
 
 
 class RNNGenerator(Generator):
-    """An RNNGenerator class is the one in charge of Recurrent Neural Networks vanilla implementation.
+    """An RNNGenerator class is the one in charge of
+    Recurrent Neural Networks vanilla implementation.
 
     References:
         J. Elman. Finding structure in time. Cognitive science 14.2 (1990).
@@ -41,8 +45,8 @@ class RNNGenerator(Generator):
 
         # Creates the RNN loop itself
         self.rnn = RNN(self.cell, name='rnn_layer',
-                              return_sequences=True,
-                              stateful=True)
+                       return_sequences=True,
+                       stateful=True)
 
         # Creates the linear (Dense) layer
         self.linear = Dense(vocab_size, name='out')

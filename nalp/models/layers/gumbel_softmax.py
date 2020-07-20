@@ -1,3 +1,6 @@
+"""Gumbel-Softmax layer.
+"""
+
 import tensorflow as tf
 from tensorflow.keras.layers import Layer
 
@@ -19,7 +22,7 @@ def gumbel_distribution(input_shape):
     uniform_dist = tf.random.uniform(input_shape, 0, 1)
 
     # Samples from the Gumbel distribution
-    gumbel_dist = -tf.math.log(-tf.math.log(uniform_dist + c.EPSILON) + c.EPSILON)
+    gumbel_dist = -1 * tf.math.log(-1 * tf.math.log(uniform_dist + c.EPSILON) + c.EPSILON)
 
     return gumbel_dist
 

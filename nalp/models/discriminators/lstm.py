@@ -1,3 +1,6 @@
+"""Long Short-Term Memory discriminator.
+"""
+
 from tensorflow.keras.layers import RNN, Dense, LSTMCell
 
 import nalp.utils.logging as l
@@ -7,18 +10,18 @@ logger = l.get_logger(__name__)
 
 
 class LSTMDiscriminator(Discriminator):
-    """A LSTMDiscriminator class is the one in charge of a discriminative Long Short-Term Memory implementation.
+    """A LSTMDiscriminator class is the one in charge of a
+    discriminative Long Short-Term Memory implementation.
 
     References:
         S. Hochreiter, Jürgen Schmidhuber. Long short-term memory. Neural computation 9.8 (1997).
 
     """
 
-    def __init__(self, vocab_size=1, embedding_size=32, hidden_size=64):
+    def __init__(self, embedding_size=32, hidden_size=64):
         """Initialization method.
 
         Args:
-            vocab_size (int): The size of the vocabulary.
             embedding_size (int): The size of the embedding layer.
             hidden_size (int): The amount of hidden neurons.
 
@@ -37,8 +40,8 @@ class LSTMDiscriminator(Discriminator):
 
         # Creates the RNN loop itself
         self.rnn = RNN(self.cell, name='rnn_layer',
-                              return_sequences=True,
-                              stateful=True)
+                       return_sequences=True,
+                       stateful=True)
 
         # And finally, defining the output layer
         self.out = Dense(1, name='out')

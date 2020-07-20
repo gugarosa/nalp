@@ -1,3 +1,6 @@
+"""Text-based discriminator.
+"""
+
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, Dense, Dropout, MaxPool1D
 
@@ -8,19 +11,20 @@ logger = l.get_logger(__name__)
 
 
 class TextDiscriminator(Discriminator):
-    """A TextDiscriminator class stands for the text-discriminative part of a Generative Adversarial Network.
+    """A TextDiscriminator class stands for the
+    text-discriminative part of a Generative Adversarial Network.
 
     """
 
-    def __init__(self, vocab_size=1, max_length=1, embedding_size=32, n_filters=[64], filters_size=[1], dropout_rate=0.25):
+    def __init__(self, max_length=1, embedding_size=32, n_filters=(64),
+                 filters_size=(1), dropout_rate=0.25):
         """Initialization method.
 
         Args:
-            vocab_size (int): The size of the vocabulary.
             max_length (int): Maximum length of the sequences.
             embedding_size (int): The size of the embedding layer.
-            n_filters (list): Number of filters to be applied.
-            filters_size (list): Size of filters to be applied.
+            n_filters (tuple): Number of filters to be applied.
+            filters_size (tuple): Size of filters to be applied.
             dropout_rate (float): Dropout activation rate.
 
         """

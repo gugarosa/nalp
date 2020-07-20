@@ -1,3 +1,6 @@
+"""Convolutional generator.
+"""
+
 import tensorflow as tf
 from tensorflow.keras.layers import BatchNormalization, Conv2DTranspose, Dense
 
@@ -8,7 +11,8 @@ logger = l.get_logger(__name__)
 
 
 class ConvGenerator(Generator):
-    """A ConvGenerator class stands for the convolutional generative part of a Generative Adversarial Network.
+    """A ConvGenerator class stands for the
+    convolutional generative part of a Generative Adversarial Network.
 
     """
 

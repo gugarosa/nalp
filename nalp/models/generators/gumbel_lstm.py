@@ -1,3 +1,6 @@
+"""Gumbel Long Short-Term Memory generator.
+"""
+
 import tensorflow as tf
 
 import nalp.utils.logging as l
@@ -8,7 +11,8 @@ logger = l.get_logger(__name__)
 
 
 class GumbelLSTMGenerator(LSTMGenerator):
-    """A GumbelLSTMGenerator class is the one in charge of a generative Gumbel-based Long Short-Term Memory implementation.
+    """A GumbelLSTMGenerator class is the one in charge of a
+    generative Gumbel-based Long Short-Term Memory implementation.
 
     """
 
@@ -89,7 +93,7 @@ class GumbelLSTMGenerator(LSTMGenerator):
 
         """
 
-        logger.debug(f'Generating text with length: {length} ...')
+        logger.debug('Generating text with length: %d ...', length)
 
         # Applying Gumbel-Softmax temperature as argument
         self.tau = temperature
@@ -107,7 +111,7 @@ class GumbelLSTMGenerator(LSTMGenerator):
         self.reset_states()
 
         # For every possible generation
-        for i in range(length):
+        for _ in range(length):
             # Predicts the current token
             _, preds, _ = self(start_tokens)
 

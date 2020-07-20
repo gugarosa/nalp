@@ -1,3 +1,6 @@
+"""Bi-directional Long Short-Term Memory generator.
+"""
+
 import tensorflow as tf
 from tensorflow.keras.layers import RNN, Dense, Embedding, LSTMCell
 
@@ -8,7 +11,8 @@ logger = l.get_logger(__name__)
 
 
 class BiLSTMGenerator(Generator):
-    """A BiLSTMGenerator class is the one in charge of a bi-directional Long Short-Term Memory implementation.
+    """A BiLSTMGenerator class is the one in charge of a
+    bi-directional Long Short-Term Memory implementation.
 
     References:
         S. Hochreiter, Jürgen Schmidhuber. Long short-term memory. Neural computation 9.8 (1997).

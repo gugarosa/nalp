@@ -1,3 +1,6 @@
+"""Gumbel Relational Memory Core generator.
+"""
+
 import tensorflow as tf
 
 import nalp.utils.logging as l
@@ -8,7 +11,8 @@ logger = l.get_logger(__name__)
 
 
 class GumbelRMCGenerator(RMCGenerator):
-    """A GumbelRMCGenerator class is the one in charge of a generative Gumbel-based Relational Memory Core implementation.
+    """A GumbelRMCGenerator class is the one in charge of a
+    generative Gumbel-based Relational Memory Core implementation.
 
     """
 
@@ -95,7 +99,7 @@ class GumbelRMCGenerator(RMCGenerator):
 
         """
 
-        logger.debug(f'Generating text with length: {length} ...')
+        logger.debug('Generating text with length: %d ...', length)
 
         # Applying Gumbel-Softmax temperature as argument
         self.tau = temperature
@@ -113,7 +117,7 @@ class GumbelRMCGenerator(RMCGenerator):
         self.reset_states()
 
         # For every possible generation
-        for i in range(length):
+        for _ in range(length):
             # Predicts the current token
             _, preds, _ = self(start_tokens)
 

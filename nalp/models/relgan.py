@@ -43,7 +43,7 @@ class RelGAN(Adversarial):
         logger.info('Overriding class: Adversarial -> RelGAN.')
 
         # Creating the discriminator network
-        D = TextDiscriminator(vocab_size, max_length, embedding_size, n_filters, filters_size, dropout_rate)
+        D = TextDiscriminator(max_length, embedding_size, n_filters, filters_size, dropout_rate)
 
         # Creating the generator network
         G = GumbelRMCGenerator(encoder, vocab_size, embedding_size,

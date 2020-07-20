@@ -1,3 +1,6 @@
+"""Relational-Memory Cell layer.
+"""
+
 import tensorflow as tf
 from tensorflow.keras.layers import AbstractRNNCell, Dense, LayerNormalization
 from tensorflow.python.keras import (activations, constraints, initializers,
@@ -92,7 +95,8 @@ class RelationalMemoryCell(AbstractRNNCell):
         # Creating the feed-forward network
         # It is composed by linear layers and normalization ones
         self.before_norm = LayerNormalization()
-        self.linear = [Dense(self.slot_size, activation='relu') for _ in range(n_layers)]
+        self.linear = [Dense(self.slot_size, activation='relu')
+                       for _ in range(n_layers)]
         self.after_norm = LayerNormalization()
 
         # Creating the Multi-Head Attention layer
@@ -199,10 +203,12 @@ class RelationalMemoryCell(AbstractRNNCell):
         inputs = tf.expand_dims(self.projector(inputs), 1)
 
         # Reshaping the previous hidden state tensor
-        h_prev = tf.reshape(h_prev, [h_prev.shape[0], self.n_slots, self.slot_size])
+        h_prev = tf.reshape(
+            h_prev, [h_prev.shape[0], self.n_slots, self.slot_size])
 
         # Reshaping the previous memory tensor
-        m_prev = tf.reshape(m_prev, [m_prev.shape[0], self.n_slots, self.slot_size])
+        m_prev = tf.reshape(
+            m_prev, [m_prev.shape[0], self.n_slots, self.slot_size])
 
         # Copying the inputs for the forget and input gates
         inputs_f = inputs
@@ -233,7 +239,8 @@ class RelationalMemoryCell(AbstractRNNCell):
         att_m = self._attend_over_memory(inputs, m_prev)
 
         # Calculating current memory state
-        m = self.recurrent_activation(x_f + self.forget_bias) * m_prev + self.recurrent_activation(x_i) * self.activation(att_m)
+        m = self.recurrent_activation(
+            x_f + self.forget_bias) * m_prev + self.recurrent_activation(x_i) * self.activation(att_m)
 
         # Calculating current hidden state
         h = self.activation(m)
@@ -254,7 +261,7 @@ class RelationalMemoryCell(AbstractRNNCell):
 
         # Creates an identity matrix
         states = tf.eye(self.n_slots, batch_shape=[batch_size])
-        
+
         # If the slot size is bigger than number of slots
         if self.slot_size > self.n_slots:
             # Calculates its difference
@@ -265,7 +272,7 @@ class RelationalMemoryCell(AbstractRNNCell):
 
             # Concatenates the initial states with the padding
             states = tf.concat([states, padding], -1)
-        
+
         # If the slot size is smaller than number of slots
         elif self.slot_size < self.n_slots:
             # Just gather the tensor until the desired size
