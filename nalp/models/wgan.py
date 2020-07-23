@@ -64,7 +64,7 @@ class WGAN(Adversarial):
         self.penalty_lambda = penalty
 
         logger.debug('Input: %s | Noise: %d | Number of Samplings: %d | '
-                     'Activation Rate: %f | Dropout Rate: %f | Type: %s.',
+                     'Activation Rate: %s | Dropout Rate: %s | Type: %s.',
                      input_shape, noise_dim, n_samplings, alpha, dropout_rate, model_type)
 
         logger.info('Class overrided.')
@@ -266,4 +266,4 @@ class WGAN(Adversarial):
                 b.add(1, values=[('loss(G)', self.G_loss.result()),
                                  ('loss(D)', self.D_loss.result())])
 
-            logger.file('Loss(G): %f | Loss(D): %f', self.G_loss.result().numpy(), self.D_loss.result().numpy())
+            logger.file('Loss(G): %s | Loss(D): %s', self.G_loss.result().numpy(), self.D_loss.result().numpy())

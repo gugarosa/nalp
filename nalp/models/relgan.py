@@ -288,7 +288,7 @@ class RelGAN(Adversarial):
                 # Adding corresponding values to the progress bar
                 b.add(1, values=[('loss(G)', self.G_loss.result())])
 
-            logger.file('Loss(G): %f', self.G_loss.result().numpy())
+            logger.file('Loss(G): %s', self.G_loss.result().numpy())
 
     def fit(self, batches, epochs=100):
         """Trains the model.
@@ -326,4 +326,4 @@ class RelGAN(Adversarial):
             # Exponentially annealing the Gumbel-Softmax temperature
             self.G.tau = 5 ** ((epochs - e) / epochs)
 
-            logger.file('Loss(G): %f | Loss(D): %f', self.G_loss.result().numpy(), self.D_loss.result().numpy())
+            logger.file('Loss(G): %s | Loss(D): %s', self.G_loss.result().numpy(), self.D_loss.result().numpy())

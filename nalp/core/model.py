@@ -329,5 +329,5 @@ class Adversarial(Model):
                 b.add(1, values=[('loss(G)', self.G_loss.result()),
                                  ('loss(D)', self.D_loss.result())])
 
-            logger.file('Loss(G): %f | Loss(D): %f',
+            logger.file('Loss(G): %s | Loss(D): %s',
                         self.G_loss.result().numpy(), self.D_loss.result().numpy())

@@ -331,7 +331,7 @@ class SeqGAN(Adversarial):
                 # Adding corresponding values to the progress bar
                 b.add(1, values=[('loss(G)', self.G_loss.result())])
 
-            logger.file('Loss(G): %f', self.G_loss.result().numpy())
+            logger.file('Loss(G): %s', self.G_loss.result().numpy())
 
         logger.info('Pre-fitting discriminator ...')
 
@@ -373,7 +373,7 @@ class SeqGAN(Adversarial):
                 # Adding corresponding values to the progress bar
                 b.add(1, values=[('loss(D)', self.D_loss.result())])
 
-            logger.file('Loss(D): %f', self.D_loss.result().numpy())
+            logger.file('Loss(D): %s', self.D_loss.result().numpy())
 
     def fit(self, batches, epochs=10, d_epochs=5, n_rollouts=16):
         """Trains the model.
@@ -444,5 +444,5 @@ class SeqGAN(Adversarial):
                 b.add(1, values=[('loss(G)', self.G_loss.result()),
                                  ('loss(D)', self.D_loss.result())])
 
-            logger.file('Loss(G): %f| Loss(D): %f', self.G_loss.result(
+            logger.file('Loss(G): %s| Loss(D): %s', self.G_loss.result(
             ).numpy(), self.D_loss.result().numpy())
