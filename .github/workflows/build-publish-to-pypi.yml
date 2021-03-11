@@ -18,14 +18,14 @@ jobs:
           python-version: 3.7
       - name: Installs pypa/build
         # Install the `build` package for further building
-        run:
+        run: >-
           python -m
           pip install
           build
           --user
       - name: Builds the Wheel
         # Runs the `build` command to create the wheel and source tarball
-        run: >_
+        run: >-
           python -m
           build
           --sdist
