@@ -19,7 +19,7 @@ class SentenceCorpus(Corpus):
 
     """
 
-    def __init__(self, tokens=None, from_file=None, corpus_type='char', max_pad_length=None):
+    def __init__(self, tokens=None, from_file=None, corpus_type='char', max_pad_length=None, sos_eos_tokens=True):
         """Initialization method.
 
         Args:
@@ -27,6 +27,7 @@ class SentenceCorpus(Corpus):
             from_file (str): An input file to load the sentences.
             corpus_type (str): The desired type to tokenize the sentences. Should be `char` or `word`.
             max_pad_length (int): Maximum length to pad the tokens.
+            sos_eos_tokens (bool): Whether start-of-sentence and end-of-sentence tokens should be used.
 
         """
 
@@ -52,7 +53,7 @@ class SentenceCorpus(Corpus):
             self.tokens = tokens
 
         # Pads the tokens before building the vocabulary
-        self._pad_tokens(max_pad_length)
+        self._pad_tokens(max_pad_length, sos_eos_tokens)
 
         # Builds the vocabulary based on the tokens
         self._build()
@@ -139,11 +140,12 @@ class SentenceCorpus(Corpus):
         if corpus_type == 'word':
             return p.pipeline(p.tokenize_to_word)
 
-    def _pad_tokens(self, max_pad_length):
+    def _pad_tokens(self, max_pad_length, sos_eos_tokens):
         """Pads the tokens into a fixed length.
 
         Args:
             max_pad_length (int): Maximum length to pad the tokens.
+            sos_eos_tokens (bool): Whether start-of-sentence and end-of-sentence tokens should be used.
 
         """
 
@@ -167,6 +169,12 @@ class SentenceCorpus(Corpus):
             else:
                 # Gathers the maximum length allowed
                 self.tokens[i] = self.tokens[i][:max_pad_length]
+
+            # Checks if additional tokens should be added
+            if sos_eos_tokens:
+                # Adds start-of-sentence and end-of-sentence tokens
+                self.tokens[i].insert(0, '<SOS>')
+                self.tokens[i].append('<EOS>')
 
     def _build(self):
         """Builds the vocabulary based on the tokens.

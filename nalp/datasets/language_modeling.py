@@ -33,10 +33,17 @@ class LanguageModelingDataset(Dataset):
         super(LanguageModelingDataset, self).__init__(encoded_tokens, shuffle)
 
         # Creating the sequences
-        sequences = self._create_sequences(encoded_tokens, max_length)
+        sequences = self._create_sequences(encoded_tokens, encoded_tokens.ndim, max_length)
+
+        # print(list(sequences.as_numpy_iterator()))
+        # print(len(sequences))
 
         # Mapping the sequences to input and targets
         mapped_sequences = sequences.map(self._create_input_target)
+
+        # print(mapped_sequences)
+        # print(list(mapped_sequences.as_numpy_iterator()))
+        # print(mapped_sequences)
 
         # Building up the dataset class
         self._build(mapped_sequences, batch_size)
@@ -45,11 +52,12 @@ class LanguageModelingDataset(Dataset):
         logger.debug('Batch size: %d | Shuffle: %s.', batch_size, shuffle)
         logger.info('Class overrided.')
 
-    def _create_sequences(self, encoded_tokens, max_length):
+    def _create_sequences(self, encoded_tokens, n_dims, max_length):
         """Creates sequences of the desired length.
 
         Args:
             encoded_tokens (np.array): An array of encoded tokens.
+            n_dims (int): Number of array dimensions (rank).
             max_length (int): Maximum sequences' length.
 
         Returns:
@@ -59,13 +67,16 @@ class LanguageModelingDataset(Dataset):
 
         logger.debug('Creating sequences ...')
 
-        # Creating tensor slices from the encoded tokens
-        slices = data.Dataset.from_tensor_slices(encoded_tokens)
+        # Slices the tensors into sequences
+        sequences = data.Dataset.from_tensor_slices(encoded_tokens)
 
-        # Creating the sequences
-        sequences = slices.batch(max_length + 1, drop_remainder=True)
+        # This means that is a contiguous sequence of tokens and needs to
+        # be parsed into individual sequences
+        if n_dims == 1:
+            # Creates the sequences
+            sequences = sequences.batch(max_length + 1, drop_remainder=True)
 
-        logger.debug('Maximum length: %d.', max_length)
+            logger.debug('Maximum length: %d.', max_length)
 
         return sequences
 
