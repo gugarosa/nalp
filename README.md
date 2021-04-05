@@ -47,6 +47,7 @@ NALP is based on the following structure, and you should pay attention to its tr
         - model
     - corpus
         - audio
+        - sentence
         - text
     - datasets
         - image
@@ -96,7 +97,7 @@ The core is the core. Essentially, it is the parent of everything. You should fi
 
 ### Corpus
 
-Every pipeline has its first step, right? The corpus package serves as a basic class to load raw text and audio.
+Every pipeline has its first step, right? The corpus package serves as a basic class to load raw text, audio and sentences.
 
 ### Datasets
 
