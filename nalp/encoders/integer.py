@@ -81,17 +81,20 @@ class IntegerEncoder(Encoder):
 
             raise RuntimeError(e)
 
-        #
+        # Instantiates a list of empty encoded tokens
         encoded_tokens = []
 
-        #
+        # Iterates through every token
         for token in tokens:
-            if isinstance(token, list):
+            # Checks if token is a list
+            if isinstance(token, (np.ndarray, list)):
+                # If yes, appends the encoded list
                 encoded_tokens.append([self.encoder[t] for t in token])
-            else:
-                encoded_tokens += self.encoder[token]
 
-        print(encoded_tokens)
+            # If token is not a list
+            else:
+                # Concatenates the encoded token
+                encoded_tokens += [self.encoder[token]]
 
         # Applies the encoding to the new tokens
         encoded_tokens = np.array(encoded_tokens, dtype=np.int32)
@@ -121,7 +124,19 @@ class IntegerEncoder(Encoder):
 
             raise RuntimeError(e)
 
-        # Decoding the tokens
-        decoded_tokens = [self.decoder[t] for t in encoded_tokens]
+        # Instantiates a list of decoded tokens
+        decoded_tokens = []
+
+        # Iterates through every token
+        for token in encoded_tokens:
+            # Checks if token is a list
+            if isinstance(token, (np.ndarray, list)):
+                # If yes, appends the encoded list
+                decoded_tokens.append([self.decoder[t] for t in token])
+
+            # If token is not a list
+            else:
+                # Concatenates the encoded token
+                decoded_tokens += [self.decoder[token]]
 
         return decoded_tokens
