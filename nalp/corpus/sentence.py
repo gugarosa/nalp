@@ -19,13 +19,14 @@ class SentenceCorpus(Corpus):
 
     """
 
-    def __init__(self, tokens=None, from_file=None, corpus_type='char'):
+    def __init__(self, tokens=None, from_file=None, corpus_type='char', max_pad_length=None):
         """Initialization method.
 
         Args:
             tokens (list): A list of tokens.
             from_file (str): An input file to load the sentences.
             corpus_type (str): The desired type to tokenize the sentences. Should be `char` or `word`.
+            max_pad_length (int): Maximum length to pad the tokens.
 
         """
 
@@ -50,8 +51,11 @@ class SentenceCorpus(Corpus):
             # Gathers them to the property
             self.tokens = tokens
 
+        # Pads the tokens before building the vocabulary
+        self._pad_tokens(max_pad_length)
+
         # Builds the vocabulary based on the tokens
-        self._build(self.tokens)
+        self._build()
 
         # Debugging some important information
         logger.debug('Sentences: %d | Vocabulary Size: %d | Type: %s.',
@@ -135,16 +139,42 @@ class SentenceCorpus(Corpus):
         if corpus_type == 'word':
             return p.pipeline(p.tokenize_to_word)
 
-    def _build(self, tokens):
-        """Builds the vocabulary based on the tokens.
+    def _pad_tokens(self, max_pad_length):
+        """Pads the tokens into a fixed length.
 
         Args:
-            tokens (list): A list of tokens.
+            max_pad_length (int): Maximum length to pad the tokens.
+
+        """
+
+        # Checks if there is a supplied maximum pad length
+        if not max_pad_length:
+            # Gathers the maximum length to pad the tokens
+            max_pad_length = len(max(self.tokens, key=lambda t: len(t)))
+
+        # Iterates over every possible token
+        # Using index is a caveat due to lists immutable property
+        for i, _ in enumerate(self.tokens):
+            # Gathers the difference between length of current token and maximum length
+            length_diff = max_pad_length - len(self.tokens[i])
+
+            # If length difference is bigger than zero
+            if length_diff > 0:
+                # Pads the input based on the remaining tokens
+                self.tokens[i] += ['<PAD>'] * length_diff
+
+            # If length difference is smaller or equal to zero
+            else:
+                # Gathers the maximum length allowed
+                self.tokens[i] = self.tokens[i][:max_pad_length]
+
+    def _build(self):
+        """Builds the vocabulary based on the tokens.
 
         """
 
         # Creates the vocabulary
-        self.vocab = sorted(set(chain.from_iterable(tokens)))
+        self.vocab = sorted(set(chain.from_iterable(self.tokens)))
 
         # Also, gathers the vocabulary size
         self.vocab_size = len(self.vocab)

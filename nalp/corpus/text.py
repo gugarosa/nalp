@@ -49,7 +49,7 @@ class TextCorpus(Corpus):
             self.tokens = tokens
 
         # Builds the vocabulary based on the tokens
-        self._build(self.tokens)
+        self._build()
 
         # Debugging some important information
         logger.debug('Tokens: %d | Vocabulary Size: %d | Type: %s.',
@@ -133,16 +133,13 @@ class TextCorpus(Corpus):
         if corpus_type == 'word':
             return p.pipeline(p.tokenize_to_word)
 
-    def _build(self, tokens):
+    def _build(self):
         """Builds the vocabulary based on the tokens.
-
-        Args:
-            tokens (list): A list of tokens.
 
         """
 
         # Creates the vocabulary
-        self.vocab = sorted(set(tokens))
+        self.vocab = sorted(set(self.tokens))
 
         # Also, gathers the vocabulary size
         self.vocab_size = len(self.vocab)

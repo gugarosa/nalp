@@ -81,8 +81,20 @@ class IntegerEncoder(Encoder):
 
             raise RuntimeError(e)
 
+        #
+        encoded_tokens = []
+
+        #
+        for token in tokens:
+            if isinstance(token, list):
+                encoded_tokens.append([self.encoder[t] for t in token])
+            else:
+                encoded_tokens += self.encoder[token]
+
+        print(encoded_tokens)
+
         # Applies the encoding to the new tokens
-        encoded_tokens = np.array([self.encoder[t] for t in tokens], dtype=np.int32)
+        encoded_tokens = np.array(encoded_tokens, dtype=np.int32)
 
         return encoded_tokens
 
