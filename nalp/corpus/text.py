@@ -139,7 +139,7 @@ class TextCorpus(Corpus):
         """
 
         # Creates the vocabulary
-        self.vocab = sorted(set(self.tokens + ['<UNK>']))
+        self.vocab = sorted(set(self.tokens).union({'<UNK>'}))
 
         # Also, gathers the vocabulary size
         self.vocab_size = len(self.vocab)

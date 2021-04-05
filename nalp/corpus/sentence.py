@@ -182,7 +182,7 @@ class SentenceCorpus(Corpus):
         """
 
         # Creates the vocabulary
-        self.vocab = sorted(set(chain.from_iterable(self.tokens)))
+        self.vocab = sorted(set(chain.from_iterable(self.tokens)).union({'<UNK>'}))
 
         # Also, gathers the vocabulary size
         self.vocab_size = len(self.vocab)

@@ -89,12 +89,19 @@ class IntegerEncoder(Encoder):
             # Checks if token is a list
             if isinstance(token, (np.ndarray, list)):
                 # If yes, appends the encoded list
-                encoded_tokens.append([self.encoder[t] for t in token])
+                encoded_tokens.append([self.encoder[t] if t in self.encoder else self.encoder['<UNK>'] for t in token])
 
             # If token is not a list
             else:
-                # Concatenates the encoded token
-                encoded_tokens += [self.encoder[token]]
+                # Checks if token really exists in the vocabulary
+                if token in self.encoder:
+                    # Concatenates the encoded token
+                    encoded_tokens += [self.encoder[token]]
+
+                # If token does not exist in vocabulary
+                else:
+                    # Concatenates the unknown token
+                    encoded_tokens += [self.encoder['<UNK>']]
 
         # Applies the encoding to the new tokens
         encoded_tokens = np.array(encoded_tokens, dtype=np.int32)
