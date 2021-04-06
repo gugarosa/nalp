@@ -1,8 +1,8 @@
 """Constants.
 """
 
-# Reserved tokens that are used to indicate
-# fixed patterns
+# Reserved tokens that are used to indicate fixed patterns,
+# such as start-of-sentence, end-of-sentence, padding and unknown
 SOS = '<SOS>'
 EOS = '<EOS>'
 PAD = '<PAD>'
