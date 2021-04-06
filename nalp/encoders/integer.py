@@ -23,7 +23,7 @@ class IntegerEncoder(Encoder):
         logger.info('Overriding class: Encoder -> IntegerEncoder.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(IntegerEncoder, self).__init__()
+        super(IntegerEncoder, self)
 
         # Creates an empty decoder property
         self.decoder = None

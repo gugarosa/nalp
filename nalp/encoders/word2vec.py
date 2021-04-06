@@ -26,7 +26,7 @@ class Word2vecEncoder(Encoder):
         logger.info('Overriding class: Encoder -> Word2vecEncoder.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(Word2vecEncoder, self).__init__()
+        super(Word2vecEncoder, self)
 
         logger.info('Class overrided.')
 

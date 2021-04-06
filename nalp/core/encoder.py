@@ -7,14 +7,6 @@ class Encoder:
 
     """
 
-    def __init__(self):
-        """Initialization method.
-
-        """
-
-        # The encoder object will be initialized as None
-        self._encoder = None
-
     @property
     def encoder(self):
         """obj: An encoder generic object.
