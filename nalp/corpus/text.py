@@ -134,11 +134,10 @@ class TextCorpus(Corpus):
 
         # If the type is char
         if corpus_type == 'char':
-            return p.pipeline(p.tokenize_to_char)
+            return p.pipeline(p.lower_case, p.valid_char, p.tokenize_to_char)
 
-        # If the type is word
-        if corpus_type == 'word':
-            return p.pipeline(p.tokenize_to_word)
+        # Else, return it as a `word` tokenizer
+        return p.pipeline(p.lower_case, p.valid_char, p.tokenize_to_word)
 
     def _cut_tokens(self, min_frequency):
         """Cuts tokens that do not meet a minimum frequency value.

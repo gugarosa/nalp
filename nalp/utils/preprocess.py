@@ -63,7 +63,7 @@ def tokenize_to_word(s):
 
     """
 
-    return nltk.word_tokenize(s)
+    return nltk.regexp_tokenize(s, pattern='\s+', gaps=True)
 
 
 def pipeline(*func):
