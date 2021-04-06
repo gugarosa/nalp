@@ -71,7 +71,7 @@ class SentenceCorpus(Corpus):
                      sos_eos_tokens, len(self.vocab))
         logger.info('SentenceCorpus created.')
 
-    def _cut_tokens(self, min_frequency):
+    def _cut_tokens(self):
         """Cuts tokens that do not meet a minimum frequency value.
 
         Args:
@@ -88,7 +88,7 @@ class SentenceCorpus(Corpus):
             # Iterates over every token in the sentence
             for j, _ in enumerate(self.tokens[i]):
                 # If frequency of token is smaller than minimum frequency
-                if tokens_frequency[self.tokens[i][j]] < min_frequency:
+                if tokens_frequency[self.tokens[i][j]] < self.min_frequency:
                     # Replaces with an unknown token
                     self.tokens[i][j] = c.UNK
 
