@@ -35,15 +35,8 @@ class LanguageModelingDataset(Dataset):
         # Creating the sequences
         sequences = self._create_sequences(encoded_tokens, encoded_tokens.ndim, max_length)
 
-        # print(list(sequences.as_numpy_iterator()))
-        # print(len(sequences))
-
         # Mapping the sequences to input and targets
         mapped_sequences = sequences.map(self._create_input_target)
-
-        # print(mapped_sequences)
-        # print(list(mapped_sequences.as_numpy_iterator()))
-        # print(mapped_sequences)
 
         # Building up the dataset class
         self._build(mapped_sequences, batch_size)
@@ -110,12 +103,11 @@ class LanguageModelingDataset(Dataset):
 
         # Checks if data should be shuffled
         if self.shuffle:
-            # Creating the dataset from shuffled and batched data
-            self.batches = mapped_sequences.shuffle(
-                c.BUFFER_SIZE).batch(batch_size, drop_remainder=True)
+            # Shuffles the mapped sequences
+            mapped_sequences = mapped_sequences.shuffle(c.BUFFER_SIZE)
 
-        # If should not be shuffled
-        else:
-            # Creating the dataset from batched data
-            self.batches = mapped_sequences.batch(
-                batch_size, drop_remainder=True)
+        # Transforms the sequences into batches
+        self.batches = (
+            mapped_sequences
+            .batch(batch_size, drop_remainder=True)
+            .prefetch(data.experimental.AUTOTUNE))

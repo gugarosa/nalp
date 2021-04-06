@@ -1,8 +1,8 @@
 """Sentence-related corpus.
 """
 
-from itertools import chain
 from collections import Counter
+from itertools import chain
 
 import nalp.utils.constants as c
 import nalp.utils.loader as l
@@ -66,7 +66,7 @@ class SentenceCorpus(Corpus):
         self._build()
 
         # Debugging some important information
-        logger.debug('Sentences: %d | Type: %s | Minimum Frequency: %d | Maximum Pad Length: %d | '
+        logger.debug('Sentences: %d | Type: %s | Minimum Frequency: %d | Maximum Pad Length: %s | '
                      'Use <SOS> and <EOS>: %s | Vocabulary Size: %d.',
                      len(self.tokens), corpus_type, min_frequency, max_pad_length,
                      sos_eos_tokens, len(self.vocab))
@@ -169,7 +169,6 @@ class SentenceCorpus(Corpus):
                 if tokens_frequency[self.tokens[i][j]] < min_frequency:
                     # Replaces with an unknown token
                     self.tokens[i][j] = c.UNK
-
 
     def _pad_tokens(self, max_pad_length, sos_eos_tokens):
         """Pads the tokens into a fixed length.
