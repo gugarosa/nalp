@@ -3,6 +3,7 @@
 
 import numpy as np
 
+import nalp.utils.constants as c
 import nalp.utils.logging as l
 from nalp.core.encoder import Encoder
 
@@ -89,7 +90,7 @@ class IntegerEncoder(Encoder):
             # Checks if token is a list
             if isinstance(token, (np.ndarray, list)):
                 # If yes, appends the encoded list
-                encoded_tokens.append([self.encoder[t] if t in self.encoder else self.encoder['<UNK>'] for t in token])
+                encoded_tokens.append([self.encoder[t] if t in self.encoder else self.encoder[c.UNK] for t in token])
 
             # If token is not a list
             else:
@@ -101,7 +102,7 @@ class IntegerEncoder(Encoder):
                 # If token does not exist in vocabulary
                 else:
                     # Concatenates the unknown token
-                    encoded_tokens += [self.encoder['<UNK>']]
+                    encoded_tokens += [self.encoder[c.UNK]]
 
         # Applies the encoding to the new tokens
         encoded_tokens = np.array(encoded_tokens, dtype=np.int32)

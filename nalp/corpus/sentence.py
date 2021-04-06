@@ -2,7 +2,9 @@
 """
 
 from itertools import chain
+from collections import Counter
 
+import nalp.utils.constants as c
 import nalp.utils.loader as l
 import nalp.utils.logging as log
 import nalp.utils.preprocess as p
@@ -19,13 +21,15 @@ class SentenceCorpus(Corpus):
 
     """
 
-    def __init__(self, tokens=None, from_file=None, corpus_type='char', max_pad_length=None, sos_eos_tokens=True):
+    def __init__(self, tokens=None, from_file=None, corpus_type='char', min_frequency=1,
+                 max_pad_length=None, sos_eos_tokens=True):
         """Initialization method.
 
         Args:
             tokens (list): A list of tokens.
             from_file (str): An input file to load the sentences.
             corpus_type (str): The desired type to tokenize the sentences. Should be `char` or `word`.
+            min_frequency (int): Minimum frequency of individual tokens.
             max_pad_length (int): Maximum length to pad the tokens.
             sos_eos_tokens (bool): Whether start-of-sentence and end-of-sentence tokens should be used.
 
@@ -52,6 +56,9 @@ class SentenceCorpus(Corpus):
             # Gathers them to the property
             self.tokens = tokens
 
+        # Cuts the tokens based on a minimum frequency
+        self._cut_tokens(min_frequency)
+
         # Pads the tokens before building the vocabulary
         self._pad_tokens(max_pad_length, sos_eos_tokens)
 
@@ -59,8 +66,10 @@ class SentenceCorpus(Corpus):
         self._build()
 
         # Debugging some important information
-        logger.debug('Sentences: %d | Vocabulary Size: %d | Type: %s.',
-                     len(self.tokens), len(self.vocab), corpus_type)
+        logger.debug('Sentences: %d | Type: %s | Minimum Frequency: %d | Maximum Pad Length: %d | '
+                     'Use <SOS> and <EOS>: %s | Vocabulary Size: %d.',
+                     len(self.tokens), corpus_type, min_frequency, max_pad_length,
+                     sos_eos_tokens, len(self.vocab))
         logger.info('SentenceCorpus created.')
 
     @property
@@ -140,6 +149,28 @@ class SentenceCorpus(Corpus):
         if corpus_type == 'word':
             return p.pipeline(p.tokenize_to_word)
 
+    def _cut_tokens(self, min_frequency):
+        """Cuts tokens that do not meet a minimum frequency value.
+
+        Args:
+            min_frequency (int): Minimum frequency of individual tokens.
+
+        """
+
+        # Calculates the frequency of tokens
+        tokens_frequency = Counter(chain.from_iterable(self.tokens))
+
+        # Iterates over every possible sentence
+        # Using index is a caveat due to lists immutable property
+        for i, _ in enumerate(self.tokens):
+            # Iterates over every token in the sentence
+            for j, _ in enumerate(self.tokens[i]):
+                # If frequency of token is smaller than minimum frequency
+                if tokens_frequency[self.tokens[i][j]] < min_frequency:
+                    # Replaces with an unknown token
+                    self.tokens[i][j] = c.UNK
+
+
     def _pad_tokens(self, max_pad_length, sos_eos_tokens):
         """Pads the tokens into a fixed length.
 
@@ -154,7 +185,7 @@ class SentenceCorpus(Corpus):
             # Gathers the maximum length to pad the tokens
             max_pad_length = len(max(self.tokens, key=lambda t: len(t)))
 
-        # Iterates over every possible token
+        # Iterates over every possible sentence
         # Using index is a caveat due to lists immutable property
         for i, _ in enumerate(self.tokens):
             # Gathers the difference between length of current token and maximum length
@@ -163,7 +194,7 @@ class SentenceCorpus(Corpus):
             # If length difference is bigger than zero
             if length_diff > 0:
                 # Pads the input based on the remaining tokens
-                self.tokens[i] += ['<PAD>'] * length_diff
+                self.tokens[i] += [c.PAD] * length_diff
 
             # If length difference is smaller or equal to zero
             else:
@@ -173,8 +204,8 @@ class SentenceCorpus(Corpus):
             # Checks if additional tokens should be added
             if sos_eos_tokens:
                 # Adds start-of-sentence and end-of-sentence tokens
-                self.tokens[i].insert(0, '<SOS>')
-                self.tokens[i].append('<EOS>')
+                self.tokens[i].insert(0, c.SOS)
+                self.tokens[i].append(c.EOS)
 
     def _build(self):
         """Builds the vocabulary based on the tokens.
@@ -182,7 +213,7 @@ class SentenceCorpus(Corpus):
         """
 
         # Creates the vocabulary
-        self.vocab = sorted(set(chain.from_iterable(self.tokens)).union({'<UNK>'}))
+        self.vocab = sorted(set(chain.from_iterable(self.tokens)).union({c.UNK}))
 
         # Also, gathers the vocabulary size
         self.vocab_size = len(self.vocab)

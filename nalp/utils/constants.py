@@ -1,6 +1,13 @@
 """Constants.
 """
 
+# Reserved tokens that are used to indicate
+# fixed patterns
+SOS = '<SOS>'
+EOS = '<EOS>'
+PAD = '<PAD>'
+UNK = '<UNK>'
+
 # A buffer size constant defines the maximum amount of
 # buffer that should be used when shuffling a dataset
 BUFFER_SIZE = 100000

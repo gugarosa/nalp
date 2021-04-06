@@ -1,6 +1,9 @@
 """Text-related corpus.
 """
 
+from collections import Counter
+
+import nalp.utils.constants as c
 import nalp.utils.loader as l
 import nalp.utils.logging as log
 import nalp.utils.preprocess as p
@@ -17,13 +20,14 @@ class TextCorpus(Corpus):
 
     """
 
-    def __init__(self, tokens=None, from_file=None, corpus_type='char'):
+    def __init__(self, tokens=None, from_file=None, corpus_type='char', min_frequency=1):
         """Initialization method.
 
         Args:
             tokens (list): A list of tokens.
             from_file (str): An input file to load the text.
             corpus_type (str): The desired type to tokenize the text. Should be `char` or `word`.
+            min_frequency (int): Minimum frequency of individual tokens.
 
         """
 
@@ -48,12 +52,15 @@ class TextCorpus(Corpus):
             # Gathers them to the property
             self.tokens = tokens
 
+        # Cuts the tokens based on a minimum frequency
+        self._cut_tokens(min_frequency)
+
         # Builds the vocabulary based on the tokens
         self._build()
 
         # Debugging some important information
-        logger.debug('Tokens: %d | Vocabulary Size: %d | Type: %s.',
-                     len(self.tokens), len(self.vocab), corpus_type)
+        logger.debug('Tokens: %d | Type: %s | Minimum Frequency: %d | Vocabulary Size: %d.',
+                     len(self.tokens), corpus_type, min_frequency, len(self.vocab))
         logger.info('TextCorpus created.')
 
     @property
@@ -133,13 +140,32 @@ class TextCorpus(Corpus):
         if corpus_type == 'word':
             return p.pipeline(p.tokenize_to_word)
 
+    def _cut_tokens(self, min_frequency):
+        """Cuts tokens that do not meet a minimum frequency value.
+
+        Args:
+            min_frequency (int): Minimum frequency of individual tokens.
+
+        """
+
+        # Calculates the frequency of tokens
+        tokens_frequency = Counter(self.tokens)
+
+        # Iterates over every possible sentence
+        # Using index is a caveat due to lists immutable property
+        for i, _ in enumerate(self.tokens):
+            # If frequency of token is smaller than minimum frequency
+            if tokens_frequency[self.tokens[i]] < min_frequency:
+                # Replaces with an unknown token
+                self.tokens[i] = c.UNK
+
     def _build(self):
         """Builds the vocabulary based on the tokens.
 
         """
 
         # Creates the vocabulary
-        self.vocab = sorted(set(self.tokens).union({'<UNK>'}))
+        self.vocab = sorted(set(self.tokens).union({c.UNK}))
 
         # Also, gathers the vocabulary size
         self.vocab_size = len(self.vocab)

@@ -1,6 +1,9 @@
 """Audio-related corpus.
 """
 
+from collections import Counter
+
+import nalp.utils.constants as c
 import nalp.utils.loader as l
 import nalp.utils.logging as log
 from nalp.core import Corpus
@@ -16,11 +19,12 @@ class AudioCorpus(Corpus):
 
     """
 
-    def __init__(self, from_file):
+    def __init__(self, from_file, min_frequency=1):
         """Initialization method.
 
         Args:
             from_file (str): An input file to load the audio.
+            min_frequency (int): Minimum frequency of individual tokens.
 
         """
 
@@ -45,12 +49,15 @@ class AudioCorpus(Corpus):
                 # Saving to list
                 self.tokens.append(note[1])
 
+        # Cuts the tokens based on a minimum frequency
+        self._cut_tokens(min_frequency)
+
         # Builds the vocabulary based on the tokens
         self._build()
 
         # Debugging some important information
-        logger.debug('Tokens: %d | Vocabulary Size: %d | Type: audio.',
-                     len(self.tokens), len(self.vocab))
+        logger.debug('Tokens: %d | Type: audio | Minimum Frequency: %d | Vocabulary Size: %d.',
+                     len(self.tokens), min_frequency, len(self.vocab))
         logger.info('AudioCorpus created.')
 
     @property
@@ -100,6 +107,25 @@ class AudioCorpus(Corpus):
     @index_vocab.setter
     def index_vocab(self, index_vocab):
         self._index_vocab = index_vocab
+
+    def _cut_tokens(self, min_frequency):
+        """Cuts tokens that do not meet a minimum frequency value.
+
+        Args:
+            min_frequency (int): Minimum frequency of individual tokens.
+
+        """
+
+        # Calculates the frequency of tokens
+        tokens_frequency = Counter(self.tokens)
+
+        # Iterates over every possible sentence
+        # Using index is a caveat due to lists immutable property
+        for i, _ in enumerate(self.tokens):
+            # If frequency of token is smaller than minimum frequency
+            if tokens_frequency[self.tokens[i]] < min_frequency:
+                # Replaces with an unknown token
+                self.tokens[i] = c.UNK
 
     def _build(self):
         """Builds the vocabulary based on the tokens.
