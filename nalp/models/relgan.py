@@ -105,7 +105,7 @@ class RelGAN(Adversarial):
         current token (t) and predicting the next token (t+1).
 
         Args:
-            x (tf.Tensor): A tensor containing the inputs.
+            x (tf.tensor): A tensor containing the inputs.
 
         Returns:
             A (batch_size, length) tensor of generated tokens and a
@@ -148,8 +148,8 @@ class RelGAN(Adversarial):
         """Calculates the loss out of the discriminator architecture.
 
         Args:
-            y_real (tf.Tensor): A tensor containing the real data targets.
-            y_fake (tf.Tensor): A tensor containing the fake data targets.
+            y_real (tf.tensor): A tensor containing the real data targets.
+            y_fake (tf.tensor): A tensor containing the fake data targets.
 
         Returns:
             The loss based on the discriminator network.
@@ -165,8 +165,8 @@ class RelGAN(Adversarial):
         """Calculates the loss out of the generator architecture.
 
         Args:
-            y_real (tf.Tensor): A tensor containing the real data targets.
-            y_fake (tf.Tensor): A tensor containing the fake data targets.
+            y_real (tf.tensor): A tensor containing the real data targets.
+            y_fake (tf.tensor): A tensor containing the fake data targets.
 
         Returns:
             The loss based on the generator network.
@@ -183,8 +183,8 @@ class RelGAN(Adversarial):
         """Performs a single batch optimization pre-fitting step over the generator.
 
         Args:
-            x (tf.Tensor): A tensor containing the inputs.
-            y (tf.Tensor): A tensor containing the inputs' labels.
+            x (tf.tensor): A tensor containing the inputs.
+            y (tf.tensor): A tensor containing the inputs' labels.
 
         """
 
@@ -211,8 +211,8 @@ class RelGAN(Adversarial):
         """Performs a single batch optimization step.
 
         Args:
-            x (tf.Tensor): A tensor containing the inputs.
-            y (tf.Tensor): A tensor containing the inputs' labels.
+            x (tf.tensor): A tensor containing the inputs.
+            y (tf.tensor): A tensor containing the inputs' labels.
 
         """
 

@@ -1,41 +1,27 @@
 """Dataset-related class.
 """
 
+from tensorflow import data
+
+import nalp.utils.constants as c
+
+
 class Dataset:
     """A Dataset class is responsible for receiving encoded tokens and
     persisting data that will be feed as an input to the networks.
 
     """
 
-    def __init__(self, encoded_tokens, shuffle=True):
+    def __init__(self, shuffle=True):
         """Initialization method.
 
         Args:
-            encoded_tokens (np.array): An array of encoded tokens.
             shuffle (bool): Whether batches should be shuffled or not.
 
         """
 
-        # Creating a property to hold the encoded tokens
-        self.encoded_tokens = encoded_tokens
-
         # Creating a property to whether data should be shuffled or not
         self.shuffle = shuffle
-
-        # Creating a property to hold the further batches
-        self.batches = None
-
-    @property
-    def encoded_tokens(self):
-        """np.array: An numpy array holding the encoded tokens.
-
-        """
-
-        return self._encoded_tokens
-
-    @encoded_tokens.setter
-    def encoded_tokens(self, encoded_tokens):
-        self._encoded_tokens = encoded_tokens
 
     @property
     def shuffle(self):
@@ -61,13 +47,22 @@ class Dataset:
     def batches(self, batches):
         self._batches = batches
 
-    def _build(self):
-        """This method serves to build up the Dataset class. Note that for each child,
-        you need to define your own building method.
+    def _build(self, sliced_data, batch_size):
+        """Builds the batches based on the pre-processed images.
 
-        Raises:
-            NotImplementedError
+        Args:
+            sliced_data (tf.tensor): Slices of tensor-based data.
+            batch_size (int): Size of batches.
 
         """
 
-        raise NotImplementedError
+        # Checks if data should be shuffled
+        if self.shuffle:
+            # Shuffles the mapped sequences
+            sliced_data = sliced_data.shuffle(c.BUFFER_SIZE)
+
+        # Transforms the sequences into batches
+        self.batches = (
+            sliced_data
+            .batch(batch_size, drop_remainder=True)
+            .prefetch(data.experimental.AUTOTUNE))

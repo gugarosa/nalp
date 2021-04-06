@@ -47,7 +47,7 @@ class AudioCorpus(Corpus):
                 self.tokens.append(str(note[1]))
 
         # Cuts the tokens based on a minimum frequency
-        self._cut_tokens()
+        self._check_token_frequency()
 
         # Builds the vocabulary based on the tokens
         self._build()

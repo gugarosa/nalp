@@ -165,7 +165,7 @@ class SeqGAN(Adversarial):
         """Calculates rewards over an input using a Monte Carlo search strategy.
 
         Args:
-            x (tf.Tensor): A tensor containing the inputs.
+            x (tf.tensor): A tensor containing the inputs.
             n_rollouts (int): Number of rollouts for conducting the Monte Carlo search.
 
         """
@@ -218,8 +218,8 @@ class SeqGAN(Adversarial):
         """Performs a single batch optimization pre-fitting step over the generator.
 
         Args:
-            x (tf.Tensor): A tensor containing the inputs.
-            y (tf.Tensor): A tensor containing the inputs' labels.
+            x (tf.tensor): A tensor containing the inputs.
+            y (tf.tensor): A tensor containing the inputs' labels.
 
         """
 
@@ -246,9 +246,9 @@ class SeqGAN(Adversarial):
         """Performs a single batch optimization step over the generator.
 
         Args:
-            x (tf.Tensor): A tensor containing the inputs.
-            y (tf.Tensor): A tensor containing the inputs' labels.
-            rewards (tf.Tensor): A tensor containing the rewards for the input.
+            x (tf.tensor): A tensor containing the inputs.
+            y (tf.tensor): A tensor containing the inputs' labels.
+            rewards (tf.tensor): A tensor containing the rewards for the input.
 
         """
 
@@ -275,8 +275,8 @@ class SeqGAN(Adversarial):
         """Performs a single batch optimization step over the discriminator.
 
         Args:
-            x (tf.Tensor): A tensor containing the inputs.
-            y (tf.Tensor): A tensor containing the inputs' labels.
+            x (tf.tensor): A tensor containing the inputs.
+            y (tf.tensor): A tensor containing the inputs' labels.
 
         """
 

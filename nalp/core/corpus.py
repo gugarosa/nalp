@@ -15,6 +15,9 @@ class Corpus:
 
     It serves as a basis class to load raw text, audio and sentences.
 
+    Note that this class only provides basic properties and methods that are invoked
+    by its childs, thus, it should not be instantiated.
+
     """
 
     def __init__(self, min_frequency=1):
@@ -22,23 +25,12 @@ class Corpus:
 
         """
 
-        # Tokens storage
-        self.tokens = None
-
-        # Vocabulary and its size
-        self.vocab = None
-        self.vocab_size = None
-
-        # Vocabulary to index mapping (and vice-versa)
-        self.vocab_index = None
-        self.index_vocab = None
-
-        # Minimum tokens frequency
+        # Minimum token frequency
         self.min_frequency = min_frequency
 
     @property
     def tokens(self):
-        """list: A list of tokens.
+        """list: List of input tokens.
 
         """
 
@@ -50,7 +42,7 @@ class Corpus:
 
     @property
     def vocab(self):
-        """list: The vocabulary itself.
+        """list: Vocabulary tokens.
 
         """
 
@@ -62,7 +54,7 @@ class Corpus:
 
     @property
     def vocab_size(self):
-        """int: The size of the vocabulary.
+        """int: Vocabulary size.
 
         """
 
@@ -74,7 +66,7 @@ class Corpus:
 
     @property
     def vocab_index(self):
-        """dict: A dictionary mapping vocabulary to indexes.
+        """dict: Maps vocabulary tokens to indexes.
 
         """
 
@@ -86,7 +78,7 @@ class Corpus:
 
     @property
     def index_vocab(self):
-        """dict: A dictionary mapping indexes to vocabulary.
+        """dict: Maps indexes to vocabulary tokens.
 
         """
 
@@ -98,7 +90,7 @@ class Corpus:
 
     @property
     def min_frequency(self):
-        """int: Minimum tokens frequency.
+        """int: Minimum token frequency.
 
         """
 
@@ -107,23 +99,6 @@ class Corpus:
     @min_frequency.setter
     def min_frequency(self, min_frequency):
         self._min_frequency = min_frequency
-
-    def _build(self):
-        """Builds the vocabulary based on the tokens.
-
-        """
-
-        # Creates the vocabulary
-        self.vocab = sorted(set(self.tokens).union({c.UNK}))
-
-        # Also, gathers the vocabulary size
-        self.vocab_size = len(self.vocab)
-
-        # Creates a property mapping vocabulary to indexes
-        self.vocab_index = {t: i for i, t in enumerate(self.vocab)}
-
-        # Creates a property mapping indexes to vocabulary
-        self.index_vocab = {i: t for i, t in enumerate(self.vocab)}
 
     def _create_tokenizer(self, corpus_type):
         """Creates a tokenizer based on the input type.
@@ -153,7 +128,7 @@ class Corpus:
         # If not, return it as a `word` tokenizer
         return p.pipeline(p.lower_case, p.valid_char, p.tokenize_to_word)
 
-    def _cut_tokens(self):
+    def _check_token_frequency(self):
         """Cuts tokens that do not meet a minimum frequency value.
 
         """
@@ -168,3 +143,20 @@ class Corpus:
             if tokens_frequency[self.tokens[i]] < self.min_frequency:
                 # Replaces with an unknown token
                 self.tokens[i] = c.UNK
+
+    def _build(self):
+        """Builds the vocabulary based on the tokens.
+
+        """
+
+        # Creates the vocabulary
+        self.vocab = sorted(set(self.tokens).union({c.UNK}))
+
+        # Also, gathers the vocabulary size
+        self.vocab_size = len(self.vocab)
+
+        # Creates a property mapping vocabulary to indexes
+        self.vocab_index = {t: i for i, t in enumerate(self.vocab)}
+
+        # Creates a property mapping indexes to vocabulary
+        self.index_vocab = {i: t for i, t in enumerate(self.vocab)}

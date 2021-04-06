@@ -36,7 +36,7 @@ class Discriminator(Model):
         each neural network has its own forward pass implementation.
 
         Args:
-            x (tf.Tensor): A tensorflow's tensor holding input data.
+            x (tf.tensor): A tensorflow's tensor holding input data.
             training (bool): Whether architecture is under training or not.
 
         Raises:
@@ -73,7 +73,7 @@ class Generator(Model):
         each neural network has its own forward pass implementation.
 
         Args:
-            x (tf.Tensor): A tensorflow's tensor holding input data.
+            x (tf.tensor): A tensorflow's tensor holding input data.
             training (bool): Whether architecture is under training or not.
 
         Raises:
@@ -214,8 +214,8 @@ class Adversarial(Model):
         """Calculates the loss out of the discriminator architecture.
 
         Args:
-            y_real (tf.Tensor): A tensor containing the real data targets.
-            y_fake (tf.Tensor): A tensor containing the fake data targets.
+            y_real (tf.tensor): A tensor containing the real data targets.
+            y_fake (tf.tensor): A tensor containing the fake data targets.
 
         Returns:
             The loss based on the discriminator network.
@@ -234,7 +234,7 @@ class Adversarial(Model):
         """Calculates the loss out of the generator architecture.
 
         Args:
-            y_fake (tf.Tensor): A tensor containing the fake data targets.
+            y_fake (tf.tensor): A tensor containing the fake data targets.
 
         Returns:
             The loss based on the generator network.
@@ -251,7 +251,7 @@ class Adversarial(Model):
         """Performs a single batch optimization step.
 
         Args:
-            x (tf.Tensor): A tensor containing the inputs.
+            x (tf.tensor): A tensor containing the inputs.
 
         """
 

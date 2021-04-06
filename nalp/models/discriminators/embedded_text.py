@@ -63,7 +63,7 @@ class EmbeddedTextDiscriminator(Discriminator):
         """Method that holds vital information whenever this class is called.
 
         Args:
-            x (tf.Tensor): A tensorflow's tensor holding input data.
+            x (tf.tensor): A tensorflow's tensor holding input data.
             training (bool): Whether architecture is under training or not.
 
         Returns:

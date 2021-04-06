@@ -114,7 +114,7 @@ class RelationalMemoryCell(AbstractRNNCell):
         """Builds up the cell according to its input shape.
 
         Args:
-            input_shape (tf.Tensor): Tensor holding the input shape.
+            input_shape (tf.tensor): Tensor holding the input shape.
 
         """
 
@@ -152,8 +152,8 @@ class RelationalMemoryCell(AbstractRNNCell):
         """Performs an Attention mechanism over the current memory.
 
         Args:
-            inputs (tf.Tensor): An input tensor.
-            memory (tf.Tensor): Current memory tensor.
+            inputs (tf.tensor): An input tensor.
+            memory (tf.tensor): Current memory tensor.
 
         Returns:
             Updated current memory based on Multi-Head Attention mechanism.
@@ -188,7 +188,7 @@ class RelationalMemoryCell(AbstractRNNCell):
         """Method that holds vital information whenever this class is called.
 
         Args:
-            inputs (tf.Tensor): An input tensor.
+            inputs (tf.tensor): An input tensor.
             states (list): A list holding previous states and memories.
 
         Returns:

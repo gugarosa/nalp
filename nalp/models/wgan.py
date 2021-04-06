@@ -109,8 +109,8 @@ class WGAN(Adversarial):
         """Performs the gradient penalty procedure.
 
         Args:
-            x (tf.Tensor): A tensor containing the real inputs.
-            x_fake (tf.Tensor): A tensor containing the fake inputs.
+            x (tf.tensor): A tensor containing the real inputs.
+            x_fake (tf.tensor): A tensor containing the fake inputs.
 
         Returns:
             The penalization to be applied over the loss function.
@@ -148,7 +148,7 @@ class WGAN(Adversarial):
         """Performs a single batch optimization step over the discriminator.
 
         Args:
-            x (tf.Tensor): A tensor containing the inputs.
+            x (tf.tensor): A tensor containing the inputs.
 
         """
 
@@ -198,7 +198,7 @@ class WGAN(Adversarial):
         """Performs a single batch optimization step over the generator.
 
         Args:
-            x (tf.Tensor): A tensor containing the inputs.
+            x (tf.tensor): A tensor containing the inputs.
 
         """
 

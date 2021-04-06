@@ -12,10 +12,10 @@ def scaled_dot_product_attention(q, k, v, mask):
     leading dimensions, and k, v must have matching penultimate dimension.
 
     Args:
-        q (tf.Tensor): Query tensor.
-        k (tf.Tensor): Key tensor.
-        v (tf.Tensor): Value tensor.
-        mask (tf.Tensor): Mask to be applied.
+        q (tf.tensor): Query tensor.
+        k (tf.tensor): Key tensor.
+        v (tf.tensor): Value tensor.
+        mask (tf.tensor): Mask to be applied.
 
     Returns:
         An attention-based output tensor and its attention weights.
@@ -94,7 +94,7 @@ class MultiHeadAttention(Layer):
         """Split the last tensor dimension into (n_heads, depth) and transposes its result.
 
         Args:
-            x (tf.Tensor): Tensor to be splitted and transposed.
+            x (tf.tensor): Tensor to be splitted and transposed.
 
         Returns:
             Splitted and transposed tensor into shape equal to (batch_size, n_heads, length, depth).
@@ -110,10 +110,10 @@ class MultiHeadAttention(Layer):
         """Method that holds vital information whenever this class is called.
 
         Args:
-            q (tf.Tensor): Query tensor.
-            k (tf.Tensor): Key tensor.
-            v (tf.Tensor): Value tensor.
-            mask (tf.Tensor): Mask to be applied.
+            q (tf.tensor): Query tensor.
+            k (tf.tensor): Key tensor.
+            v (tf.tensor): Value tensor.
+            mask (tf.tensor): Mask to be applied.
 
         Returns:
             An attention-based output tensor and its attention weights.

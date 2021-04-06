@@ -56,10 +56,10 @@ class SentenceCorpus(Corpus):
             self.tokens = tokens
 
         # Cuts the tokens based on a minimum frequency
-        self._cut_tokens()
+        self._check_token_frequency()
 
         # Pads the tokens before building the vocabulary
-        self._pad_tokens(max_pad_length, sos_eos_tokens)
+        self._pad_token(max_pad_length, sos_eos_tokens)
 
         # Builds the vocabulary based on the tokens
         self._build()
@@ -71,11 +71,8 @@ class SentenceCorpus(Corpus):
                      sos_eos_tokens, len(self.vocab))
         logger.info('SentenceCorpus created.')
 
-    def _cut_tokens(self):
+    def _check_token_frequency(self):
         """Cuts tokens that do not meet a minimum frequency value.
-
-        Args:
-            min_frequency (int): Minimum frequency of individual tokens.
 
         """
 
@@ -92,7 +89,7 @@ class SentenceCorpus(Corpus):
                     # Replaces with an unknown token
                     self.tokens[i][j] = c.UNK
 
-    def _pad_tokens(self, max_pad_length, sos_eos_tokens):
+    def _pad_token(self, max_pad_length, sos_eos_tokens):
         """Pads the tokens into a fixed length.
 
         Args:

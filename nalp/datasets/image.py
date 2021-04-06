@@ -3,7 +3,6 @@
 
 from tensorflow import data
 
-import nalp.utils.constants as c
 import nalp.utils.logging as l
 from nalp.core import Dataset
 
@@ -30,18 +29,18 @@ class ImageDataset(Dataset):
 
         logger.info('Overriding class: Dataset -> ImageDataset.')
 
+        # Overrides its parent class with any custom arguments if needed
+        super(ImageDataset, self).__init__(shuffle)
+
         # Pre-process an array of images
         processed_images = self._preprocess(images, shape, normalize)
-
-        # Overrides its parent class with any custom arguments if needed
-        super(ImageDataset, self).__init__(processed_images, shuffle)
 
         # Building up the dataset class
         self._build(processed_images, batch_size)
 
         # Debugging some important information
         logger.debug('Size: %s | Batch size: %d | Normalization: %s | Shuffle: %s.',
-                     shape, batch_size, normalize, shuffle)
+                     shape, batch_size, normalize, self.shuffle)
         logger.info('Class overrided.')
 
     def _preprocess(self, images, shape, normalize):
@@ -53,7 +52,7 @@ class ImageDataset(Dataset):
             normalize (bool): Whether images should be normalized between -1 and 1.
 
         Returns:
-            An array of pre-processed images.
+            Slices of pre-processed tensor-based images.
 
         """
 
@@ -72,25 +71,7 @@ class ImageDataset(Dataset):
             # Normalize the images between -1 and 1
             images = (images - 127.5) / 127.5
 
+        # Slices the arrays into tensors
+        images = data.Dataset.from_tensor_slices(images)
+
         return images
-
-    def _build(self, processed_images, batch_size):
-        """Builds the batches based on the pre-processed images.
-
-        Args:
-            processed_images (np.array): An array of pre-processed images.
-            batch_size (int): Size of batches.
-
-        """
-
-        # Checks if data should be shuffled
-        if self.shuffle:
-            # Creating the dataset from shuffled and batched data
-            self.batches = data.Dataset.from_tensor_slices(
-                processed_images).shuffle(c.BUFFER_SIZE).batch(batch_size)
-
-        # If should not be shuffled
-        else:
-            # Creating the dataset from batched data
-            self.batches = data.Dataset.from_tensor_slices(
-                processed_images).batch(batch_size)

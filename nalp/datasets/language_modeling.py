@@ -3,7 +3,6 @@
 
 from tensorflow import data
 
-import nalp.utils.constants as c
 import nalp.utils.logging as l
 from nalp.core import Dataset
 
@@ -30,19 +29,17 @@ class LanguageModelingDataset(Dataset):
         logger.info('Overriding class: Dataset -> LanguageModelingDataset.')
 
         # Overrides its parent class with any custom arguments if needed
-        super(LanguageModelingDataset, self).__init__(encoded_tokens, shuffle)
+        super(LanguageModelingDataset, self).__init__(shuffle)
 
-        # Creating the sequences
+        # Creates the sequences and maps their inputs and targets
         sequences = self._create_sequences(encoded_tokens, encoded_tokens.ndim, max_contiguous_pad_length)
-
-        # Mapping the sequences to input and targets
         mapped_sequences = sequences.map(self._create_input_target)
 
-        # Building up the dataset class
+        # Builds up the dataset class
         self._build(mapped_sequences, batch_size)
 
         # Debugging some important information
-        logger.debug('Batch size: %d | Shuffle: %s.', batch_size, shuffle)
+        logger.debug('Batch size: %d | Shuffle: %s.', batch_size, self.shuffle)
         logger.info('Class overrided.')
 
     def _create_sequences(self, encoded_tokens, rank, max_contiguous_pad_length):
@@ -54,7 +51,7 @@ class LanguageModelingDataset(Dataset):
             max_contiguous_pad_length (int): Maximum sequences' length.
 
         Returns:
-            A tensor of maximum length sequences.
+            Slices of tensor-based sequences.
 
         """
 
@@ -91,23 +88,3 @@ class LanguageModelingDataset(Dataset):
         target = sequence[1:]
 
         return _input, target
-
-    def _build(self, mapped_sequences, batch_size):
-        """Builds the batches based on the mapped sequences.
-
-        Args:
-            mapped_sequences (tf.Tensor): A tensor of mapped sequences.
-            batch_size (int): Size of batches.
-
-        """
-
-        # Checks if data should be shuffled
-        if self.shuffle:
-            # Shuffles the mapped sequences
-            mapped_sequences = mapped_sequences.shuffle(c.BUFFER_SIZE)
-
-        # Transforms the sequences into batches
-        self.batches = (
-            mapped_sequences
-            .batch(batch_size, drop_remainder=True)
-            .prefetch(data.experimental.AUTOTUNE))
