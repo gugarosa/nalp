@@ -2,6 +2,7 @@ import numpy as np
 import tensorflow as tf
 from mido import Message, MidiFile, MidiTrack
 
+from nalp.corpus import AudioCorpus
 from nalp.datasets import LanguageModelingDataset
 from nalp.encoders import IntegerEncoder
 from nalp.models.generators import RNNGenerator
@@ -28,7 +29,7 @@ rnn = RNNGenerator(encoder=encoder, vocab_size=corpus.vocab_size, embedding_size
 rnn.build((64, None))
 
 # Compiling the RNN
-rnn.compile(optimize=tf.optimizers.Adam(learning_rate=0.001),
+rnn.compile(optimizer=tf.optimizers.Adam(learning_rate=0.001),
             loss=tf.losses.SparseCategoricalCrossentropy(from_logits=True),
             metrics=[tf.metrics.SparseCategoricalAccuracy(name='accuracy')])
 
