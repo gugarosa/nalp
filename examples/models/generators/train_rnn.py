@@ -18,7 +18,7 @@ encoder.learn(corpus.vocab_index, corpus.index_vocab)
 encoded_tokens = encoder.encode(corpus.tokens)
 
 # Creating Language Modeling Dataset
-dataset = LanguageModelingDataset(encoded_tokens, max_length=10, batch_size=64, shuffle=True)
+dataset = LanguageModelingDataset(encoded_tokens, max_contiguous_pad_length=10, batch_size=64, shuffle=True)
 
 # Creating the RNN
 rnn = RNNGenerator(encoder=encoder, vocab_size=corpus.vocab_size, embedding_size=256, hidden_size=512)

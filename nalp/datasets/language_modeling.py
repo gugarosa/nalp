@@ -16,12 +16,12 @@ class LanguageModelingDataset(Dataset):
 
     """
 
-    def __init__(self, encoded_tokens, max_length=1, batch_size=64, shuffle=True):
+    def __init__(self, encoded_tokens, max_contiguous_pad_length=1, batch_size=64, shuffle=True):
         """Initialization method.
 
         Args:
             encoded_tokens (np.array): An array of encoded tokens.
-            max_length (int): Maximum sequences' length.
+            max_contiguous_pad_length (int): Maximum length to pad contiguous text.
             batch_size (int): Size of batches.
             shuffle (bool): Whether batches should be shuffled or not.
 
@@ -33,7 +33,7 @@ class LanguageModelingDataset(Dataset):
         super(LanguageModelingDataset, self).__init__(encoded_tokens, shuffle)
 
         # Creating the sequences
-        sequences = self._create_sequences(encoded_tokens, encoded_tokens.ndim, max_length)
+        sequences = self._create_sequences(encoded_tokens, encoded_tokens.ndim, max_contiguous_pad_length)
 
         # Mapping the sequences to input and targets
         mapped_sequences = sequences.map(self._create_input_target)
@@ -45,13 +45,13 @@ class LanguageModelingDataset(Dataset):
         logger.debug('Batch size: %d | Shuffle: %s.', batch_size, shuffle)
         logger.info('Class overrided.')
 
-    def _create_sequences(self, encoded_tokens, n_dims, max_length):
+    def _create_sequences(self, encoded_tokens, rank, max_contiguous_pad_length):
         """Creates sequences of the desired length.
 
         Args:
             encoded_tokens (np.array): An array of encoded tokens.
-            n_dims (int): Number of array dimensions (rank).
-            max_length (int): Maximum sequences' length.
+            rank (int): Number of array dimensions (rank).
+            max_contiguous_pad_length (int): Maximum sequences' length.
 
         Returns:
             A tensor of maximum length sequences.
@@ -65,11 +65,11 @@ class LanguageModelingDataset(Dataset):
 
         # This means that is a contiguous sequence of tokens and needs to
         # be parsed into individual sequences
-        if n_dims == 1:
+        if rank == 1:
             # Creates the sequences
-            sequences = sequences.batch(max_length + 1, drop_remainder=True)
+            sequences = sequences.batch(max_contiguous_pad_length + 1, drop_remainder=True)
 
-            logger.debug('Maximum length: %d.', max_length)
+            logger.debug('Maximum contiguous pad length: %d.', max_contiguous_pad_length)
 
         return sequences
 

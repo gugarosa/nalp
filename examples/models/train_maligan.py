@@ -18,7 +18,7 @@ encoder.learn(corpus.vocab_index, corpus.index_vocab)
 encoded_tokens = encoder.encode(corpus.tokens)
 
 # Creating Language Modeling Dataset
-dataset = LanguageModelingDataset(encoded_tokens, max_length=10, batch_size=4)
+dataset = LanguageModelingDataset(encoded_tokens, max_contiguous_pad_length=10, batch_size=4)
 
 # Creating the MaliGAN
 maligan = MaliGAN(encoder=encoder, vocab_size=corpus.vocab_size, max_length=10, embedding_size=256,

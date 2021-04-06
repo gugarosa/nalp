@@ -56,7 +56,7 @@ class AudioCorpus(Corpus):
         self._build()
 
         # Debugging some important information
-        logger.debug('Tokens: %d | Type: audio | Minimum Frequency: %d | Vocabulary Size: %d.',
+        logger.debug('Tokens: %d | Type: audio | Minimum frequency: %d | Vocabulary size: %d.',
                      len(self.tokens), min_frequency, len(self.vocab))
         logger.info('AudioCorpus created.')
 
