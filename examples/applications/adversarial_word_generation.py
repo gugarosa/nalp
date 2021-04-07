@@ -32,4 +32,4 @@ start_string = 'Mr. and Mrs. Dursley'
 text = seqgan.G.generate_temperature_sampling(start=start_string.split(' '), max_length=1000, temperature=1)
 
 # Outputting the text
-print(start_string + ' '.join(text))
+print(start_string + ' ' + ' '.join(text))

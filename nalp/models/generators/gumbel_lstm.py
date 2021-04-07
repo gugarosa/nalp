@@ -111,11 +111,11 @@ class GumbelLSTMGenerator(LSTMGenerator):
             # Predicts the current token
             _, preds, _ = self(start_tokens)
 
-            # Removes the first dimension of the tensor
-            preds = tf.squeeze(preds, 0)
+            # Gathers the last timestep of the prediction
+            preds = preds[:, -1, :]
 
             # Samples a predicted token
-            sampled_token = tf.argmax(preds, 1)[-1].numpy()
+            sampled_token = tf.argmax(preds, 1)[0].numpy()
 
             # Put the sampled token back to the current token
             start_tokens = tf.expand_dims([sampled_token], 0)
@@ -164,14 +164,14 @@ class GumbelLSTMGenerator(LSTMGenerator):
             # Predicts the current token
             _, preds, _ = self(start_tokens)
 
-            # Removes the first dimension of the tensor
-            preds = tf.squeeze(preds, 0)
+            # Gathers the last timestep of the prediction
+            preds = preds[:, -1, :]
 
             # Regularize the prediction with the temperature
             preds /= temperature
 
             # Samples a predicted token
-            sampled_token = tf.argmax(preds, -1)[-1].numpy()
+            sampled_token = tf.argmax(preds, -1)[0].numpy()
 
             # Put the sampled token back to the current token
             start_tokens = tf.expand_dims([sampled_token], 0)
