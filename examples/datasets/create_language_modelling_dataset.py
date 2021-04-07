@@ -1,4 +1,3 @@
-import nalp.utils.preprocess as p
 from nalp.corpus import TextCorpus
 from nalp.datasets import LanguageModelingDataset
 from nalp.encoders import IntegerEncoder
@@ -21,6 +20,6 @@ dataset = LanguageModelingDataset(encoded_tokens, max_contiguous_pad_length=10, 
 # Iterating over one batch
 for input_batch, target_batch in dataset.batches.take(1):
     # For every input and target inside the batch
-    for input, target in zip(input_batch, target_batch):
+    for x, y in zip(input_batch, target_batch):
         # Transforms the tensor to numpy and decodes it
-        print(encoder.decode(input.numpy()), encoder.decode(target.numpy()))
+        print(encoder.decode(x.numpy()), encoder.decode(y.numpy()))

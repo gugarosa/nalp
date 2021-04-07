@@ -12,6 +12,6 @@ dataset = ImageDataset(x, batch_size=256, shape=(x.shape[0], 784),
 # Iterating over one batch
 for input_batch in dataset.batches.take(1):
     # For every input and target inside the batch
-    for input in input_batch:
+    for x in input_batch:
         # Transforms the tensor to numpy and print it
-        print(input.numpy())
+        print(x.numpy())
