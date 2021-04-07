@@ -63,7 +63,7 @@ class GumbelSoftmax(Layer):
         """
 
         # Adds a sampled Gumbel distribution to the input
-        x = inputs + gumbel_distribution(inputs.shape)
+        x = inputs + gumbel_distribution(tf.shape(inputs))
 
         # Applying the softmax over the Gumbel-based input
         x = tf.nn.softmax(x / tau, self.axis)

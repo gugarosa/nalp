@@ -85,21 +85,70 @@ class GumbelRMCGenerator(RMCGenerator):
 
         return x, x_g, y_g
 
-    def generate_text(self, start, length=100, temperature=1.0):
-        """Generates text by feeding to the network the
-        current token (t) and predicting the next token (t+1).
+    def generate_greedy_search(self, start, max_length=100):
+        """Generates text by using greedy search, where the sampled
+        token is always sampled according to the maximum probability.
 
         Args:
             start (str): The start string to generate the text.
-            length (int): Length of generated text.
-            temperature (float): A temperature value to sample the token.
+            max_length (int): Maximum length of generated text.
 
         Returns:
-            A list of generated text.
+            A list holding the generated text.
 
         """
 
-        logger.debug('Generating text with length: %d ...', length)
+        logger.debug('Greedy search generation with maximum length: %d', max_length)
+
+        # Encoding the start string into tokens
+        start_tokens = self.encoder.encode(start)
+
+        # Expanding the first dimension of tensor
+        start_tokens = tf.expand_dims(start_tokens, 0)
+
+        # Creating an empty list to hold the sampled_tokens
+        sampled_tokens = []
+
+        # Resetting the network states
+        self.reset_states()
+
+        # For every possible generation
+        for _ in range(max_length):
+            # Predicts the current token
+            _, preds, _ = self(start_tokens)
+
+            # Removes the first dimension of the tensor
+            preds = tf.squeeze(preds, 0)
+
+            # Samples a predicted token
+            sampled_token = tf.argmax(preds, 1)[-1].numpy()
+
+            # Put the sampled token back to the current token
+            start_tokens = tf.expand_dims([sampled_token], 0)
+
+            # Appends the sampled token to the list
+            sampled_tokens.append(sampled_token)
+
+        # Decodes the list into raw text
+        text = self.encoder.decode(sampled_tokens)
+
+        return text
+
+    def generate_temperature_sampling(self, start, max_length=100, temperature=1.0):
+        """Generates text by using temperature sampling, where the sampled
+        token is sampled according to a multinomial/categorical distribution.
+
+        Args:
+            start (str): The start string to generate the text.
+            max_length (int): Length of generated text.
+            temperature (float): A temperature value to sample the token.
+
+        Returns:
+            A list holding the generated text.
+
+        """
+
+        logger.debug('Temperature sampling generation with maximum length: %d', max_length)
 
         # Applying Gumbel-Softmax temperature as argument
         self.tau = temperature
@@ -117,12 +166,15 @@ class GumbelRMCGenerator(RMCGenerator):
         self.reset_states()
 
         # For every possible generation
-        for _ in range(length):
+        for _ in range(max_length):
             # Predicts the current token
             _, preds, _ = self(start_tokens)
 
             # Removes the first dimension of the tensor
             preds = tf.squeeze(preds, 0)
+
+            # Regularize the prediction with the temperature
+            preds /= temperature
 
             # Samples a predicted token
             sampled_token = tf.argmax(preds, -1)[-1].numpy()

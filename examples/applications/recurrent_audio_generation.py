@@ -49,7 +49,7 @@ rnn.load_weights('trained/audio_rnn').expect_partial()
 rnn.build((1, None))
 
 # Generating artificial notes
-notes = rnn.generate_text(start=[55], length=1000, temperature=0.5)
+notes = rnn.generate_temperature_sampling(start=[55], max_length=1000, temperature=0.5)
 
 # Creating midi classes to hold generated audio and further music track
 audio = MidiFile()

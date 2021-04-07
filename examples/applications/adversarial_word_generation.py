@@ -31,7 +31,7 @@ seqgan.G.build((1, 10))
 start_string = 'Mr. and Mrs. Dursley'
 
 # Generating artificial text
-text = seqgan.G.generate_text(start=start_string.split(' '), length=1000, temperature=1)
+text = seqgan.G.generate_temperature_sampling(start=start_string.split(' '), max_length=1000, temperature=1)
 
 # Outputting the text
 print(start_string + ' '.join(text))
