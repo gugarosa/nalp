@@ -1,5 +1,3 @@
-import tensorflow as tf
-
 from nalp.corpus import TextCorpus
 from nalp.encoders import IntegerEncoder
 from nalp.models.generators import RNNGenerator
