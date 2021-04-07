@@ -63,9 +63,10 @@ class WGAN(Adversarial):
         # Defining the gradient penalty coefficient as a property for further usage
         self.penalty_lambda = penalty
 
-        logger.debug('Input: %s | Noise: %d | Number of Samplings: %d | '
-                     'Activation Rate: %s | Dropout Rate: %s | Type: %s.',
-                     input_shape, noise_dim, n_samplings, alpha, dropout_rate, model_type)
+        logger.debug('Input: %s | Noise: %d | Number of samplings: %d | '
+                     'Activation rate: %s | Dropout rate: %s | Type: %s.',
+                     input_shape, noise_dim, n_samplings,
+                     alpha, dropout_rate, model_type)
 
         logger.info('Class overrided.')
 

@@ -41,6 +41,7 @@ class GAN(Adversarial):
         super(GAN, self).__init__(D, G, name='gan')
 
         logger.debug('Input: %s | Noise: %d | '
-                     'Number of Samplings: %d | Activation Rate: %s.',
-                     input_shape, noise_dim, n_samplings, alpha)
+                     'Number of samplings: %d | Activation rate: %s.',
+                     input_shape, noise_dim,
+                     n_samplings, alpha)
         logger.info('Class overrided.')
