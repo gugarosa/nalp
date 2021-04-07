@@ -215,28 +215,41 @@ class Generator(Model):
 
         # For every possible generation
         for _ in range(max_length):
-            # Predicts the current token
+            # Predicts the current token and gathers its last timestep
             preds = self(start_tokens)
             
-            # Gathers the last timestep of the prediction
+            # Gathers the last timestep of the prediction and creates a full indexes tensor
             preds = preds[:, -1, :]
 
             # Checks if there is a provided `k`
             if k > 0:
-                #
-                preds, preds_indexes = tf.math.top_k(preds, k, sorted=True)
+                # Samples the top-k predictions and its indexes
+                preds, preds_indexes = tf.math.top_k(preds, k)
 
-            #
+            # If there is no provided `k`,
+            # it means that we need to sort the predictions tensor
+            else:
+                # Gathers sorted predictions and its indexes
+                preds, preds_indexes = tf.math.top_k(preds, preds.shape[-1])
+
+            # Checks if there is a provided probability
             if p > 0.0:
-                #
-                print(tf.math.cumsum(preds))
+                # Calculates the cumulative probability over the predictions' softmax
+                cum_probs = tf.math.cumsum(tf.nn.softmax(preds), axis=-1)
 
-            # Gathers the top-k logits and its indexes
-            # top_k_preds, top_k_preds_indexes = tf.math.top_k(preds, k)
+                # Gathers a binary mask indicating whether indexes are below threshold
+                ignored_indexes = cum_probs <= p
+
+                # Also ensures that first index will always be true to prevent zero
+                # tokens from being sampled
+                ignored_indexes = tf.tensor_scatter_nd_update(ignored_indexes, [[0, 0]], [True])
+
+                # Filters the predictions and its indexes
+                preds = tf.expand_dims(preds[ignored_indexes], 0)
+                preds_indexes = tf.expand_dims(preds_indexes[ignored_indexes], 0)
 
             # Samples an index from top-k logits and gathers the real token index
-            index = tf.random.categorical(preds, 0)
-            print(index)
+            index = tf.random.categorical(preds, 1)[0, 0]
             sampled_token = preds_indexes[-1][index].numpy()
 
             # Put the sampled token back to the current token
