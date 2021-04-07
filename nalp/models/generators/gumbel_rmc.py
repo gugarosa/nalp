@@ -189,3 +189,83 @@ class GumbelRMCGenerator(RMCGenerator):
         text = self.encoder.decode(sampled_tokens)
 
         return text
+
+    def generate_top_sampling(self, start, max_length=100, k=0, p=0.0):
+        """Generates text by using top-k and top-p sampling, where the sampled
+        token is sampled according to the `k` most likely words distribution, as well
+        as to the maximim cumulative probability `p`.
+
+        Args:
+            start (str): The start string to generate the text.
+            max_length (int): Length of generated text.
+            k (int): Indicates the amount of likely words.
+            p (float): Maximum cumulative probability to be thresholded.
+
+        Returns:
+            A list holding the generated text.
+
+        """
+
+        logger.debug('Top-based sampling generation with maximum length: %d', max_length)
+
+        # Encoding the start string into tokens
+        start_tokens = self.encoder.encode(start)
+
+        # Expanding the first dimension of tensor
+        start_tokens = tf.expand_dims(start_tokens, 0)
+
+        # Creating an empty list to hold the sampled_tokens
+        sampled_tokens = []
+
+        # Resetting the network states
+        self.reset_states()
+
+        # For every possible generation
+        for _ in range(max_length):
+            # Predicts the current token and gathers its last timestep
+            _, preds, _ = self(start_tokens)
+
+            # Gathers the last timestep of the prediction and creates a full indexes tensor
+            preds = preds[:, -1, :]
+
+            # Checks if there is a provided `k`
+            if k > 0:
+                # Samples the top-k predictions and its indexes
+                preds, preds_indexes = tf.math.top_k(preds, k)
+
+            # If there is no provided `k`,
+            # it means that we need to sort the predictions tensor
+            else:
+                # Gathers sorted predictions and its indexes
+                preds, preds_indexes = tf.math.top_k(preds, preds.shape[-1])
+
+            # Checks if there is a provided probability
+            if p > 0.0:
+                # Calculates the cumulative probability over the predictions' softmax
+                cum_probs = tf.math.cumsum(tf.nn.softmax(preds), axis=-1)
+
+                # Gathers a binary mask indicating whether indexes are below threshold
+                ignored_indexes = cum_probs <= p
+
+                # Also ensures that first index will always be true to prevent zero
+                # tokens from being sampled
+                ignored_indexes = tf.tensor_scatter_nd_update(ignored_indexes, [[0, 0]], [True])
+
+                # Filters the predictions and its indexes
+                preds = tf.expand_dims(preds[ignored_indexes], 0)
+                preds_indexes = tf.expand_dims(preds_indexes[ignored_indexes], 0)
+
+            # Samples an index from top-k logits and gathers the real token index
+            index = tf.argmax(preds, -1)[0]
+            sampled_token = preds_indexes[-1][index].numpy()
+
+            # Put the sampled token back to the current token
+            start_tokens = tf.expand_dims([sampled_token], 0)
+
+            # Appends the sampled token to the list
+            sampled_tokens.append(sampled_token)
+
+        # Decodes the list into raw text
+        text = self.encoder.decode(sampled_tokens)
+
+        return text

@@ -186,13 +186,15 @@ class Generator(Model):
         return text
 
     def generate_top_sampling(self, start, max_length=100, k=0, p=0.0):
-        """Generates text by using top-k sampling, where the sampled
-        token is sampled according to the k most likely words distribution.
+        """Generates text by using top-k and top-p sampling, where the sampled
+        token is sampled according to the `k` most likely words distribution, as well
+        as to the maximim cumulative probability `p`.
 
         Args:
             start (str): The start string to generate the text.
             max_length (int): Length of generated text.
             k (int): Indicates the amount of likely words.
+            p (float): Maximum cumulative probability to be thresholded.
 
         Returns:
             A list holding the generated text.
@@ -217,7 +219,7 @@ class Generator(Model):
         for _ in range(max_length):
             # Predicts the current token and gathers its last timestep
             preds = self(start_tokens)
-            
+
             # Gathers the last timestep of the prediction and creates a full indexes tensor
             preds = preds[:, -1, :]
 
@@ -257,120 +259,6 @@ class Generator(Model):
 
             # Appends the sampled token to the list
             sampled_tokens.append(sampled_token)
-
-        # Decodes the list into raw text
-        text = self.encoder.decode(sampled_tokens)
-
-        return text
-
-    def generate_top_k_sampling(self, start, max_length=100, k=1):
-        """Generates text by using top-k sampling, where the sampled
-        token is sampled according to the k most likely words distribution.
-
-        Args:
-            start (str): The start string to generate the text.
-            max_length (int): Length of generated text.
-            k (int): Indicates the amount of likely words.
-
-        Returns:
-            A list holding the generated text.
-
-        """
-
-        logger.debug('Top-k sampling generation with maximum length: %d', max_length)
-
-        # Encoding the start string into tokens
-        start_tokens = self.encoder.encode(start)
-
-        # Expanding the first dimension of tensor
-        start_tokens = tf.expand_dims(start_tokens, 0)
-
-        # Creating an empty list to hold the sampled_tokens
-        sampled_tokens = []
-
-        # Resetting the network states
-        self.reset_states()
-
-        # For every possible generation
-        for _ in range(max_length):
-            # Predicts the current token
-            preds = self(start_tokens)
-
-            # Removes the first dimension of the tensor
-            preds = tf.squeeze(preds, 0)
-
-            # Gathers the top-k logits and its indexes
-            top_k_preds, top_k_preds_indexes = tf.math.top_k(preds, k)
-
-            # Samples an index from top-k logits and gathers the real token index
-            index = tf.random.categorical(top_k_preds, 1)[-1, 0]
-            sampled_token = top_k_preds_indexes[-1][index].numpy()
-
-            # Put the sampled token back to the current token
-            start_tokens = tf.expand_dims([sampled_token], 0)
-
-            # Appends the sampled token to the list
-            sampled_tokens.append(sampled_token)
-
-        # Decodes the list into raw text
-        text = self.encoder.decode(sampled_tokens)
-
-        return text
-
-    def generate_top_p_sampling(self, start, max_length=100, p=1.0):
-        """Generates text by using top-k sampling, where the sampled
-        token is sampled according to the k most likely words distribution.
-
-        Args:
-            start (str): The start string to generate the text.
-            max_length (int): Length of generated text.
-            k (int): Indicates the amount of likely words.
-
-        Returns:
-            A list holding the generated text.
-
-        """
-
-        logger.debug('Top-p sampling generation with maximum length: %d', max_length)
-
-        # Encoding the start string into tokens
-        start_tokens = self.encoder.encode(start)
-
-        # Expanding the first dimension of tensor
-        start_tokens = tf.expand_dims(start_tokens, 0)
-
-        # Creating an empty list to hold the sampled_tokens
-        sampled_tokens = []
-
-        # Resetting the network states
-        self.reset_states()
-
-        # For every possible generation
-        for _ in range(max_length):
-            # Predicts the current token
-            preds = self(start_tokens)
-
-            # Removes the first dimension of the tensor
-            preds = tf.squeeze(preds, 0)
-
-            #
-            sort_preds_indexes = tf.argsort(preds[-1])
-            sort_preds = tf.gather(preds[-1], sort_preds_indexes)
-
-            #
-            print(sort_preds_indexes[tf.math.cumsum(tf.nn.softmax(sort_preds)) < p])
-            
-            #
-            # index = tf.random.categorical(top_k_preds, 1)[-1, 0]
-            # sampled_token = top_k_preds_indexes[-1][index].numpy()
-
-            
-
-            # Put the sampled token back to the current token
-            # start_tokens = tf.expand_dims([sampled_token], 0)
-
-            # Appends the sampled token to the list
-            # sampled_tokens.append(sampled_token)
 
         # Decodes the list into raw text
         text = self.encoder.decode(sampled_tokens)
