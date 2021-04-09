@@ -122,7 +122,7 @@ class GumbelRMCGenerator(RMCGenerator):
             preds = preds[:, -1, :]
 
             # Samples a predicted token
-            sampled_token = tf.argmax(preds, -1)[0].numpy()
+            sampled_token = tf.argmax(preds, -1).numpy()
 
             # Put the sampled token back to the current token
             start_tokens = tf.expand_dims(sampled_token, 0)
@@ -180,7 +180,7 @@ class GumbelRMCGenerator(RMCGenerator):
             preds /= temperature
 
             # Samples a predicted token
-            sampled_token = tf.argmax(preds, -1)[0].numpy()
+            sampled_token = tf.argmax(preds, -1).numpy()
 
             # Put the sampled token back to the current token
             start_tokens = tf.expand_dims(sampled_token, 0)
