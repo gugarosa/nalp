@@ -1,5 +1,6 @@
 """Relational Memory Core generator.
 """
+import tensorflow as tf
 
 from tensorflow.keras.layers import RNN, Dense, Embedding
 
@@ -95,7 +96,7 @@ class RMCGenerator(Generator):
         x = self.embedding(x)
 
         # We need to apply the input into the first recurrent layer
-        x = self.rnn(x, initial_state=self.cell.get_initial_state(self.batch_size))
+        x = self.rnn(x, initial_state=self.cell.get_initial_state(batch_size=self.batch_size))
 
         # The input also suffers a linear combination to output correct shape
         x = self.linear(x)

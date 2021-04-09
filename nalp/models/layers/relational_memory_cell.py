@@ -251,11 +251,16 @@ class RelationalMemoryCell(AbstractRNNCell):
 
         return h, [h, m]
 
-    def get_initial_state(self, batch_size):
+    def get_initial_state(self, inputs=None, batch_size=None, dtype=None):
         """Gets the cell initial state by creating an identity matrix.
 
         Args:
+            inputs (tf.tensor): An input tensor.
             batch_size (int): Size of the batch.
+            dtype (dtype): Dtype from input tensor.
+
+        Returns:
+            Initial states.
 
         """
 
