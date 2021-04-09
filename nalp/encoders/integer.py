@@ -70,8 +70,6 @@ class IntegerEncoder(Encoder):
 
         """
 
-        logger.debug('Encoding new tokens ...')
-
         # Checks if enconder actually exists, if not raises an error
         if not self.encoder:
             # Creates the error
@@ -119,8 +117,6 @@ class IntegerEncoder(Encoder):
             A list of decoded tokens.
 
         """
-
-        logger.debug('Decoding encoded tokens ...')
 
         # Checks if decoder actually exists, if not raises an error
         if not self.decoder:

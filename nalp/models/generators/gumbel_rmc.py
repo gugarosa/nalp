@@ -3,6 +3,7 @@
 
 import tensorflow as tf
 
+import nalp.utils.constants as c
 import nalp.utils.logging as l
 from nalp.models.generators import RMCGenerator
 from nalp.models.layers import GumbelSoftmax
@@ -121,18 +122,20 @@ class GumbelRMCGenerator(RMCGenerator):
             preds = preds[:, -1, :]
 
             # Samples a predicted token
-            sampled_token = tf.argmax(preds, 1)[0].numpy()
+            sampled_token = tf.argmax(preds, -1)[0].numpy()
 
             # Put the sampled token back to the current token
-            start_tokens = tf.expand_dims([sampled_token], 0)
+            start_tokens = tf.expand_dims(sampled_token, 0)
 
-            # Appends the sampled token to the list
+            # Decodes the token and appends to the output list
+            sampled_token = self.encoder.decode(sampled_token)[0]
             sampled_tokens.append(sampled_token)
 
-        # Decodes the list into raw text
-        text = self.encoder.decode(sampled_tokens)
+            # Checks if sampled token is an end-of-sentence and breaks the loop
+            if sampled_token == c.EOS:
+                break
 
-        return text
+        return sampled_tokens
 
     def generate_temperature_sampling(self, start, max_length=100, temperature=1.0):
         """Generates text by using temperature sampling, where the sampled
@@ -180,15 +183,17 @@ class GumbelRMCGenerator(RMCGenerator):
             sampled_token = tf.argmax(preds, -1)[0].numpy()
 
             # Put the sampled token back to the current token
-            start_tokens = tf.expand_dims([sampled_token], 0)
+            start_tokens = tf.expand_dims(sampled_token, 0)
 
-            # Appends the sampled token to the list
+            # Decodes the token and appends to the output list
+            sampled_token = self.encoder.decode(sampled_token)[0]
             sampled_tokens.append(sampled_token)
 
-        # Decodes the list into raw text
-        text = self.encoder.decode(sampled_tokens)
+            # Checks if sampled token is an end-of-sentence and breaks the loop
+            if sampled_token == c.EOS:
+                break
 
-        return text
+        return sampled_tokens
 
     def generate_top_sampling(self, start, max_length=100, k=0, p=0.0):
         """Generates text by using top-k and top-p sampling, where the sampled
@@ -255,17 +260,19 @@ class GumbelRMCGenerator(RMCGenerator):
                 preds = tf.expand_dims(preds[ignored_indexes], 0)
                 preds_indexes = tf.expand_dims(preds_indexes[ignored_indexes], 0)
 
-            # Samples an index from top-k logits and gathers the real token index
+            # Samples the maximum top-k logit and gathers the real token index
             index = tf.argmax(preds, -1)[0]
-            sampled_token = preds_indexes[-1][index].numpy()
+            sampled_token = [preds_indexes[-1][index].numpy()]
 
             # Put the sampled token back to the current token
-            start_tokens = tf.expand_dims([sampled_token], 0)
+            start_tokens = tf.expand_dims(sampled_token, 0)
 
-            # Appends the sampled token to the list
+            # Decodes the token and appends to the output list
+            sampled_token = self.encoder.decode(sampled_token)[0]
             sampled_tokens.append(sampled_token)
 
-        # Decodes the list into raw text
-        text = self.encoder.decode(sampled_tokens)
+            # Checks if sampled token is an end-of-sentence and breaks the loop
+            if sampled_token == c.EOS:
+                break
 
-        return text
+        return sampled_tokens
