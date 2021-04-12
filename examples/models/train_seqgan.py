@@ -33,7 +33,7 @@ seqgan.compile(pre_optimizer=tf.optimizers.Adam(learning_rate=0.01),
 seqgan.pre_fit(dataset.batches, g_epochs=50, d_epochs=10)
 
 # Fitting the SeqGAN
-seqgan.fit(dataset.batches, epochs=10, d_epochs=5, n_rollouts=16)
+seqgan.fit(dataset.batches, epochs=10, g_epochs=1, d_epochs=5, n_rollouts=16)
 
 # Saving SeqGAN weights
 seqgan.save_weights('trained/seqgan', save_format='tf')

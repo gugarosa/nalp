@@ -375,12 +375,13 @@ class SeqGAN(Adversarial):
 
             logger.file('Loss(D): %s', self.D_loss.result().numpy())
 
-    def fit(self, batches, epochs=10, d_epochs=5, n_rollouts=16):
+    def fit(self, batches, epochs=10, g_epochs=1, d_epochs=5, n_rollouts=16):
         """Trains the model.
 
         Args:
             batches (Dataset): Training batches containing samples.
             epochs (int): The maximum number of total training epochs.
+            g_epochs (int): The maximum number of generator epochs per total epoch.
             d_epochs (int): The maximum number of discriminator epochs per total epoch.
             n_rollouts (int): Number of rollouts for conducting the Monte Carlo search.
 
@@ -407,15 +408,17 @@ class SeqGAN(Adversarial):
                 # Gathering the batch size and the maximum sequence length
                 batch_size, max_length = x_batch.shape[0], x_batch.shape[1]
 
-                # Generates a batch of fake inputs
-                x_fake_batch, y_fake_batch = self.generate_batch(
-                    batch_size, max_length)
+                # Iterate through all possible generator's  epochs
+                for _ in range(g_epochs):
+                    # Generates a batch of fake inputs
+                    x_fake_batch, y_fake_batch = self.generate_batch(
+                        batch_size, max_length)
 
-                # Gathers the rewards based on the sampled batch
-                rewards = self._get_reward(x_fake_batch, n_rollouts)
+                    # Gathers the rewards based on the sampled batch
+                    rewards = self._get_reward(x_fake_batch, n_rollouts)
 
-                # Performs the optimization step over the generator
-                self.G_step(x_fake_batch, y_fake_batch, rewards)
+                    # Performs the optimization step over the generator
+                    self.G_step(x_fake_batch, y_fake_batch, rewards)
 
                 # Iterate through all possible discriminator's epochs
                 for _ in range(d_epochs):

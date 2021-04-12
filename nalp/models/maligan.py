@@ -381,16 +381,6 @@ class MaliGAN(Adversarial):
                 # Gathering the batch size and the maximum sequence length
                 batch_size, max_length = x_batch.shape[0], x_batch.shape[1]
 
-                # Generates a batch of fake inputs
-                x_fake_batch, y_fake_batch = self.generate_batch(
-                    batch_size, max_length)
-
-                # Gathers the rewards based on the sampled batch
-                rewards = self._get_reward(x_fake_batch)
-
-                # Performs the optimization step over the generator
-                self.G_step(x_fake_batch, y_fake_batch, rewards)
-
                 # Iterate through all possible discriminator's epochs
                 for _ in range(d_epochs):
                     # Generates a batch of fake inputs
@@ -413,6 +403,16 @@ class MaliGAN(Adversarial):
                         # Performs the optimization step over the discriminator
                         self.D_step(tf.gather(x_concat_batch, indices),
                                     tf.gather(y_concat_batch, indices))
+
+                # Generates a batch of fake inputs
+                x_fake_batch, y_fake_batch = self.generate_batch(
+                    batch_size, max_length)
+
+                # Gathers the rewards based on the sampled batch
+                rewards = self._get_reward(x_fake_batch)
+
+                # Performs the optimization step over the generator
+                self.G_step(x_fake_batch, y_fake_batch, rewards)
 
                 # Adding corresponding values to the progress bar
                 b.add(1, values=[('loss(G)', self.G_loss.result()),
