@@ -49,6 +49,9 @@ class GSGAN(Adversarial):
         # Defining a property for holding the vocabulary size
         self.vocab_size = vocab_size
 
+        # Gumbel-Softmax initial temperature
+        self.init_tau = tau
+
         logger.info('Class overrided.')
 
     @property
@@ -62,6 +65,18 @@ class GSGAN(Adversarial):
     @vocab_size.setter
     def vocab_size(self, vocab_size):
         self._vocab_size = vocab_size
+
+    @property
+    def tau(self):
+        """float: Gumbel-Softmax initial temperature.
+
+        """
+
+        return self._tau
+
+    @tau.setter
+    def tau(self, tau):
+        self._tau = tau
 
     def compile(self, pre_optimizer, d_optimizer, g_optimizer):
         """Main building method.
@@ -317,6 +332,6 @@ class GSGAN(Adversarial):
                 b.add(1, values=[('loss(G)', self.G_loss.result()), ('loss(D)', self.D_loss.result())])
 
             # Exponentially annealing the Gumbel-Softmax temperature
-            self.G.tau = 5 ** ((epochs - e) / epochs)
+            self.G.tau = self.tau ** ((epochs - e) / epochs)
 
             logger.file('Loss(G): %s | Loss(D): %s', self.G_loss.result().numpy(), self.D_loss.result().numpy())
