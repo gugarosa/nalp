@@ -286,6 +286,9 @@ class Adversarial(Model):
         # Defining the generator network
         self.G = generator
 
+        # Defining the history
+        self.history = {}
+
     @property
     def D(self):
         """Discriminator: Discriminator architecture.
@@ -310,6 +313,18 @@ class Adversarial(Model):
     def G(self, G):
         self._G = G
 
+    @property
+    def history(self):
+        """dict: History dictionary.
+
+        """
+
+        return self._history
+
+    @history.setter
+    def history(self, history):
+        self._history = history
+
     def compile(self, d_optimizer, g_optimizer):
         """Main building method.
 
@@ -329,6 +344,10 @@ class Adversarial(Model):
         # Defining both loss metrics
         self.D_loss = tf.metrics.Mean(name='D_loss')
         self.G_loss = tf.metrics.Mean(name='G_loss')
+
+        # Storing losses as history keys
+        self.history['D_loss'] = []
+        self.history['G_loss'] = []
 
     def _discriminator_loss(self, y_real, y_fake):
         """Calculates the loss out of the discriminator architecture.
@@ -436,6 +455,10 @@ class Adversarial(Model):
                 # Adding corresponding values to the progress bar
                 b.add(1, values=[('loss(G)', self.G_loss.result()),
                                  ('loss(D)', self.D_loss.result())])
+
+            # Dumps the losses to history
+            self.history['G_loss'].append(self.G_loss.result().numpy())
+            self.history['D_loss'].append(self.D_loss.result().numpy())
 
             logger.to_file('Loss(G): %s | Loss(D): %s',
                         self.G_loss.result().numpy(), self.D_loss.result().numpy())

@@ -100,6 +100,11 @@ class GSGAN(Adversarial):
         self.D_loss = tf.metrics.Mean(name='D_loss')
         self.G_loss = tf.metrics.Mean(name='G_loss')
 
+        # Storing losses as history keys
+        self.history['pre_G_loss'] = []
+        self.history['D_loss'] = []
+        self.history['G_loss'] = []
+
     def generate_batch(self, x):
         """Generates a batch of tokens by feeding to the network the
         current token (t) and predicting the next token (t+1).
@@ -279,6 +284,9 @@ class GSGAN(Adversarial):
                 # Adding corresponding values to the progress bar
                 b.add(1, values=[('loss(G)', self.G_loss.result())])
 
+            # Dump loss to history
+            self.history['pre_G_loss'].append(self.G_loss.result().numpy())
+
             logger.to_file('Loss(G): %s', self.G_loss.result().numpy())
 
     def fit(self, batches, epochs=100):
@@ -316,5 +324,9 @@ class GSGAN(Adversarial):
 
             # Exponentially annealing the Gumbel-Softmax temperature
             self.G.tau = self.init_tau ** ((epochs - e) / epochs)
+
+            # Dumps the losses to history
+            self.history['G_loss'].append(self.G_loss.result().numpy())
+            self.history['D_loss'].append(self.D_loss.result().numpy())
 
             logger.to_file('Loss(G): %s | Loss(D): %s', self.G_loss.result().numpy(), self.D_loss.result().numpy())

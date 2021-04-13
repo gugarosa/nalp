@@ -265,4 +265,8 @@ class WGAN(Adversarial):
                 b.add(1, values=[('loss(G)', self.G_loss.result()),
                                  ('loss(D)', self.D_loss.result())])
 
+            # Dumps the losses to history
+            self.history['G_loss'].append(self.G_loss.result().numpy())
+            self.history['D_loss'].append(self.D_loss.result().numpy())
+
             logger.to_file('Loss(G): %s | Loss(D): %s', self.G_loss.result().numpy(), self.D_loss.result().numpy())
