@@ -95,10 +95,8 @@ class GumbelLSTMGenerator(LSTMGenerator):
 
         logger.debug('Greedy search generation with maximum length: %d', max_length)
 
-        # Encoding the start string into tokens
+        # Encoding the start string into tokens and expanding its first dimension
         start_tokens = self.encoder.encode(start)
-
-        # Expanding the first dimension of tensor
         start_tokens = tf.expand_dims(start_tokens, 0)
 
         # Creating an empty list to hold the sampled_tokens
@@ -109,10 +107,8 @@ class GumbelLSTMGenerator(LSTMGenerator):
 
         # For every possible generation
         for _ in range(max_length):
-            # Predicts the current token
+            # Predicts the current token and gathers its last timestep
             _, preds, _ = self(start_tokens)
-
-            # Gathers the last timestep of the prediction
             preds = preds[:, -1, :]
 
             # Samples a predicted token
@@ -150,10 +146,8 @@ class GumbelLSTMGenerator(LSTMGenerator):
         # Applying Gumbel-Softmax temperature as argument
         self.tau = temperature
 
-        # Encoding the start string into tokens
+        # Encoding the start string into tokens and expanding its first dimension
         start_tokens = self.encoder.encode(start)
-
-        # Expanding the first dimension of tensor
         start_tokens = tf.expand_dims(start_tokens, 0)
 
         # Creating an empty list to hold the sampled_tokens
@@ -164,10 +158,8 @@ class GumbelLSTMGenerator(LSTMGenerator):
 
         # For every possible generation
         for _ in range(max_length):
-            # Predicts the current token
+            # Predicts the current token and gathers its last timestep
             _, preds, _ = self(start_tokens)
-
-            # Gathers the last timestep of the prediction
             preds = preds[:, -1, :]
 
             # Regularize the prediction with the temperature
@@ -207,10 +199,8 @@ class GumbelLSTMGenerator(LSTMGenerator):
 
         logger.debug('Top-based sampling generation with maximum length: %d', max_length)
 
-        # Encoding the start string into tokens
+        # Encoding the start string into tokens and expanding its first dimension
         start_tokens = self.encoder.encode(start)
-
-        # Expanding the first dimension of tensor
         start_tokens = tf.expand_dims(start_tokens, 0)
 
         # Creating an empty list to hold the sampled_tokens
@@ -223,8 +213,6 @@ class GumbelLSTMGenerator(LSTMGenerator):
         for _ in range(max_length):
             # Predicts the current token and gathers its last timestep
             _, preds, _ = self(start_tokens)
-
-            # Gathers the last timestep of the prediction and creates a full indexes tensor
             preds = preds[:, -1, :]
 
             # Checks if there is a provided `k`

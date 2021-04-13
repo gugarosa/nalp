@@ -10,13 +10,9 @@ from nalp.models.generators import RNNGenerator
 # Creating an AudioCorpus from file
 corpus = AudioCorpus(from_file='data/audio/sample.mid')
 
-# Creating an IntegerEncoder
+# Creating an IntegerEncoder, learning encoding and encoding tokens
 encoder = IntegerEncoder()
-
-# Learns the encoding based on the AudioCorpus dictionary and reverse dictionary
 encoder.learn(corpus.vocab_index, corpus.index_vocab)
-
-# Applies the encoding on new data
 encoded_tokens = encoder.encode(corpus.tokens)
 
 # Creating Language Modeling Dataset

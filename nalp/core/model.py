@@ -99,10 +99,8 @@ class Generator(Model):
 
         logger.debug('Greedy search generation with maximum length: %d', max_length)
 
-        # Encoding the start string into tokens
+        # Encoding the start string into tokens, while expanding its first dimension
         start_tokens = self.encoder.encode(start)
-
-        # Expanding the first dimension of tensor
         start_tokens = tf.expand_dims(start_tokens, 0)
 
         # Creating an empty list to hold the sampled_tokens
@@ -113,10 +111,8 @@ class Generator(Model):
 
         # For every possible generation
         for _ in range(max_length):
-            # Predicts the current token
+            # Predicts the current token and gathers the last timestep
             preds = self(start_tokens)
-
-            # Gathers the last timestep of the prediction
             preds = preds[:, -1, :]
 
             # Samples a predicted token
@@ -151,10 +147,8 @@ class Generator(Model):
 
         logger.debug('Temperature sampling generation with maximum length: %d', max_length)
 
-        # Encoding the start string into tokens
+        # Encoding the start string into tokens, while expanding its first dimension
         start_tokens = self.encoder.encode(start)
-
-        # Expanding the first dimension of tensor
         start_tokens = tf.expand_dims(start_tokens, 0)
 
         # Creating an empty list to hold the sampled_tokens
@@ -165,10 +159,8 @@ class Generator(Model):
 
         # For every possible generation
         for _ in range(max_length):
-            # Predicts the current token
+            # Predicts the current token and gathers last timestep
             preds = self(start_tokens)
-
-            # Gathers the last timestep of the prediction
             preds = preds[:, -1, :]
 
             # Regularize the prediction with the temperature
@@ -208,10 +200,8 @@ class Generator(Model):
 
         logger.debug('Top-based sampling generation with maximum length: %d', max_length)
 
-        # Encoding the start string into tokens
+        # Encoding the start string into tokens, while expanding its first dimension
         start_tokens = self.encoder.encode(start)
-
-        # Expanding the first dimension of tensor
         start_tokens = tf.expand_dims(start_tokens, 0)
 
         # Creating an empty list to hold the sampled_tokens
@@ -224,8 +214,6 @@ class Generator(Model):
         for _ in range(max_length):
             # Predicts the current token and gathers its last timestep
             preds = self(start_tokens)
-
-            # Gathers the last timestep of the prediction and creates a full indexes tensor
             preds = preds[:, -1, :]
 
             # Checks if there is a provided `k`
@@ -331,19 +319,15 @@ class Adversarial(Model):
 
         """
 
-        # Creates an optimizer object for the discriminator
+        # Creates both optimizers
         self.D_optimizer = d_optimizer
-
-        # Creates an optimizer object for the generator
         self.G_optimizer = g_optimizer
 
         # Defining the loss function
         self.loss = tf.nn.sigmoid_cross_entropy_with_logits
 
-        # Defining a loss metric for the discriminator
+        # Defining both loss metrics
         self.D_loss = tf.metrics.Mean(name='D_loss')
-
-        # Defining a loss metric for the generator
         self.G_loss = tf.metrics.Mean(name='G_loss')
 
     def _discriminator_loss(self, y_real, y_fake):
@@ -399,36 +383,24 @@ class Adversarial(Model):
             # Generates new data, e.g., G(z)
             x_fake = self.G(z)
 
-            # Samples fake targets from the discriminator, e.g., D(G(z))
+            # Samples fake targets D(G(z)) and real targets D(x) from the discriminator
             y_fake = self.D(x_fake)
-
-            # Samples real targets from the discriminator, e.g., D(x)
             y_real = self.D(x)
 
-            # Calculates the generator loss upon D(G(z))
+            # Calculates both generator and discriminator losses
             G_loss = self._generator_loss(y_fake)
-
-            # Calculates the discriminator loss upon D(x) and D(G(z))
             D_loss = self._discriminator_loss(y_real, y_fake)
 
-        # Calculate the gradients based on generator's loss for each training variable
+        # Calculate both gradients
         G_gradients = G_tape.gradient(G_loss, self.G.trainable_variables)
-
-        # Calculate the gradients based on discriminator's loss for each training variable
         D_gradients = D_tape.gradient(D_loss, self.D.trainable_variables)
 
-        # Applies the generator's gradients using an optimizer
-        self.G_optimizer.apply_gradients(
-            zip(G_gradients, self.G.trainable_variables))
+        # Applies both gradients using an optimizer
+        self.G_optimizer.apply_gradients(zip(G_gradients, self.G.trainable_variables))
+        self.D_optimizer.apply_gradients(zip(D_gradients, self.D.trainable_variables))
 
-        # Applies the discriminator's gradients using an optimizer
-        self.D_optimizer.apply_gradients(
-            zip(D_gradients, self.D.trainable_variables))
-
-        # Updates the generator's loss state
+        # Updates the generator's and discriminator's loss states
         self.G_loss.update_state(G_loss)
-
-        # Updates the discriminator's loss state
         self.D_loss.update_state(D_loss)
 
     def fit(self, batches, epochs=100):
@@ -465,5 +437,5 @@ class Adversarial(Model):
                 b.add(1, values=[('loss(G)', self.G_loss.result()),
                                  ('loss(D)', self.D_loss.result())])
 
-            logger.file('Loss(G): %s | Loss(D): %s',
+            logger.to_file('Loss(G): %s | Loss(D): %s',
                         self.G_loss.result().numpy(), self.D_loss.result().numpy())

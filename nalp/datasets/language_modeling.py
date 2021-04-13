@@ -81,10 +81,8 @@ class LanguageModelingDataset(Dataset):
 
         """
 
-        # Maps the sequence to the input
+        # Maps the sequence to input and target
         _input = sequence[:-1]
-
-        # Maps the sequence to the target
         target = sequence[1:]
 
         return _input, target

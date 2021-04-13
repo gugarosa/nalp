@@ -136,8 +136,6 @@ class SentenceCorpus(Corpus):
         # Also, gathers the vocabulary size
         self.vocab_size = len(self.vocab)
 
-        # Creates a property mapping vocabulary to indexes
+        # Creates a property mapping vocabulary to indexes and vice-versa
         self.vocab_index = {t: i for i, t in enumerate(self.vocab)}
-
-        # Creates a property mapping indexes to vocabulary
         self.index_vocab = {i: t for i, t in enumerate(self.vocab)}

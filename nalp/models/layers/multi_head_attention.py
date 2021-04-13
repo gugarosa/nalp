@@ -120,22 +120,14 @@ class MultiHeadAttention(Layer):
 
         """
 
-        # Passes `q` down its linear layer
+        # Passes `q`, `k` and `v` down its linear layer
         q = self.w_q(q)
-
-        # Passes `k` down its linear layer
         k = self.w_k(k)
-
-        # Passes `v` down its linear layer
         v = self.w_v(v)
 
-        # Splits `q` into multiple heads
+        # Splits `q`, `k` and `v` into multiple heads
         q = self._split_heads(q)
-
-        # Splits `k` into multiple heads
         k = self._split_heads(k)
-
-        # Splits `v` into multiple heads
         v = self._split_heads(v)
 
         # Pefrosm the product for calculating the attention-based output

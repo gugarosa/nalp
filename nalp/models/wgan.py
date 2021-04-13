@@ -161,10 +161,8 @@ class WGAN(Adversarial):
             # Generates new data, e.g., G(z)
             x_fake = self.G(z)
 
-            # Samples fake scores from the discriminator, e.g., D(G(z))
+            # Samples fake scores from D(G(z)) and real scores from D(x)
             y_fake = self.D(x_fake)
-
-            # Samples real scores from the discriminator, e.g., D(x)
             y_real = self.D(x)
 
             # Calculates the discriminator loss upon D(x) and D(G(z))
@@ -267,4 +265,4 @@ class WGAN(Adversarial):
                 b.add(1, values=[('loss(G)', self.G_loss.result()),
                                  ('loss(D)', self.D_loss.result())])
 
-            logger.file('Loss(G): %s | Loss(D): %s', self.G_loss.result().numpy(), self.D_loss.result().numpy())
+            logger.to_file('Loss(G): %s | Loss(D): %s', self.G_loss.result().numpy(), self.D_loss.result().numpy())

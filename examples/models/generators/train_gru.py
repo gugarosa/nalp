@@ -8,13 +8,9 @@ from nalp.models.generators import GRUGenerator
 # Creating a character TextCorpus from file
 corpus = TextCorpus(from_file='data/text/chapter1_harry.txt', corpus_type='char')
 
-# Creating an IntegerEncoder
+# Creating an IntegerEncoder, learning encoding and encoding tokens
 encoder = IntegerEncoder()
-
-# Learns the encoding based on the TextCorpus dictionary and reverse dictionary
 encoder.learn(corpus.vocab_index, corpus.index_vocab)
-
-# Applies the encoding on new data
 encoded_tokens = encoder.encode(corpus.tokens)
 
 # Creating Language Modeling Dataset

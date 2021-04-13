@@ -9,10 +9,8 @@ from nalp.models import SeqGAN
 # Creating a character TextCorpus from file
 corpus = TextCorpus(from_file='data/text/chapter1_harry.txt', corpus_type='char')
 
-# Creating an IntegerEncoder
+# Creating an IntegerEncoder and learning encoding
 encoder = IntegerEncoder()
-
-# Learns the encoding based on the TextCorpus dictionary and reverse dictionary
 encoder.learn(corpus.vocab_index, corpus.index_vocab)
 
 # Creating the SeqGAN

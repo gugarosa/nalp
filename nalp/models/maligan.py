@@ -95,22 +95,16 @@ class MaliGAN(Adversarial):
 
         """
 
-        # Creates an optimizer object for pre-training the generator
+        # Creates optimizers for pre-training, discriminator and generator
         self.P_optimizer = pre_optimizer
-
-        # Creates an optimizer object for the discriminator
         self.D_optimizer = d_optimizer
-
-        # Creates an optimizer object for the generator
         self.G_optimizer = g_optimizer
 
         # Defining the loss function
         self.loss = tf.nn.sparse_softmax_cross_entropy_with_logits
 
-        # Defining a loss metric for the discriminator
+        # Defining both loss metrics
         self.D_loss = tf.metrics.Mean(name='D_loss')
-
-        # Defining a loss metric for the generator
         self.G_loss = tf.metrics.Mean(name='G_loss')
 
     def generate_batch(self, batch_size=1, length=1):
@@ -306,7 +300,7 @@ class MaliGAN(Adversarial):
                 # Adding corresponding values to the progress bar
                 b.add(1, values=[('loss(G)', self.G_loss.result())])
 
-            logger.file('Loss(G): %s', self.G_loss.result().numpy())
+            logger.to_file('Loss(G): %s', self.G_loss.result().numpy())
 
         logger.info('Pre-fitting discriminator ...')
 
@@ -348,7 +342,7 @@ class MaliGAN(Adversarial):
                 # Adding corresponding values to the progress bar
                 b.add(1, values=[('loss(D)', self.D_loss.result())])
 
-            logger.file('Loss(D): %s', self.D_loss.result().numpy())
+            logger.to_file('Loss(D): %s', self.D_loss.result().numpy())
 
     def fit(self, batches, epochs=10, d_epochs=5):
         """Trains the model.
@@ -418,4 +412,4 @@ class MaliGAN(Adversarial):
                 b.add(1, values=[('loss(G)', self.G_loss.result()),
                                  ('loss(D)', self.D_loss.result())])
 
-            logger.file('Loss(G): %s | Loss(D): %s', self.G_loss.result().numpy(), self.D_loss.result().numpy())
+            logger.to_file('Loss(G): %s | Loss(D): %s', self.G_loss.result().numpy(), self.D_loss.result().numpy())

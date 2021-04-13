@@ -67,16 +67,16 @@ class GSGAN(Adversarial):
         self._vocab_size = vocab_size
 
     @property
-    def tau(self):
+    def init_tau(self):
         """float: Gumbel-Softmax initial temperature.
 
         """
 
-        return self._tau
+        return self._init_tau
 
-    @tau.setter
-    def tau(self, tau):
-        self._tau = tau
+    @init_tau.setter
+    def init_tau(self, init_tau):
+        self._init_tau = init_tau
 
     def compile(self, pre_optimizer, d_optimizer, g_optimizer):
         """Main building method.
@@ -88,22 +88,16 @@ class GSGAN(Adversarial):
 
         """
 
-        # Creates an optimizer object for pre-training the generator
+        # Creates optimizers for pre-training, discriminator and generator
         self.P_optimizer = pre_optimizer
-
-        # Creates an optimizer object for the discriminator
         self.D_optimizer = d_optimizer
-
-        # Creates an optimizer object for the generator
         self.G_optimizer = g_optimizer
 
         # Defining the loss function
         self.loss = tf.nn.sigmoid_cross_entropy_with_logits
 
-        # Defining a loss metric for the discriminator
+        # Defining both loss metrics
         self.D_loss = tf.metrics.Mean(name='D_loss')
-
-        # Defining a loss metric for the generator
         self.G_loss = tf.metrics.Mean(name='G_loss')
 
     def generate_batch(self, x):
@@ -229,39 +223,28 @@ class GSGAN(Adversarial):
             # Generates new data, e.g., G(x)
             _, x_fake_probs = self.generate_batch(x)
 
-            # Samples fake targets from the discriminator, e.g., D(G(x))
+            # Samples fake targets from D(G(x))
             y_fake = self.D(x_fake_probs)
 
             # Extends the target tensor to an one-hot encoding representation
+            # and samples real targets from D(x)
             y = tf.one_hot(y, self.vocab_size)
-
-            # Samples real targets from the discriminator, e.g., D(x)
             y_real = self.D(y)
 
-            # Calculates the discriminator loss upon D(x) and D(G(x))
+            # Calculates both losses
             D_loss = self._discriminator_loss(y_real, y_fake)
-
-            # Calculates the generator loss upon D(G(x))
             G_loss = self._generator_loss(y_fake)
 
-        # Calculate the gradients based on discriminator's loss for each training variable
+        # Calculate both gradients
         D_gradients = D_tape.gradient(D_loss, self.D.trainable_variables)
-
-        # Calculate the gradients based on generator's loss for each training variable
         G_gradients = G_tape.gradient(G_loss, self.G.trainable_variables)
 
-        # Applies the discriminator's gradients using an optimizer
-        self.D_optimizer.apply_gradients(
-            zip(D_gradients, self.D.trainable_variables))
+        # Applies both gradients using an optimizer
+        self.D_optimizer.apply_gradients(zip(D_gradients, self.D.trainable_variables))
+        self.G_optimizer.apply_gradients(zip(G_gradients, self.G.trainable_variables))
 
-        # Applies the generator's gradients using an optimizer
-        self.G_optimizer.apply_gradients(
-            zip(G_gradients, self.G.trainable_variables))
-
-        # Updates the discriminator's loss state
+        # Updates both loss states
         self.D_loss.update_state(D_loss)
-
-        # Updates the generator's loss state
         self.G_loss.update_state(G_loss)
 
     def pre_fit(self, batches, epochs=100):
@@ -296,7 +279,7 @@ class GSGAN(Adversarial):
                 # Adding corresponding values to the progress bar
                 b.add(1, values=[('loss(G)', self.G_loss.result())])
 
-            logger.file('Loss(G): %s', self.G_loss.result().numpy())
+            logger.to_file('Loss(G): %s', self.G_loss.result().numpy())
 
     def fit(self, batches, epochs=100):
         """Trains the model.
@@ -332,6 +315,6 @@ class GSGAN(Adversarial):
                 b.add(1, values=[('loss(G)', self.G_loss.result()), ('loss(D)', self.D_loss.result())])
 
             # Exponentially annealing the Gumbel-Softmax temperature
-            self.G.tau = self.tau ** ((epochs - e) / epochs)
+            self.G.tau = self.init_tau ** ((epochs - e) / epochs)
 
-            logger.file('Loss(G): %s | Loss(D): %s', self.G_loss.result().numpy(), self.D_loss.result().numpy())
+            logger.to_file('Loss(G): %s | Loss(D): %s', self.G_loss.result().numpy(), self.D_loss.result().numpy())
