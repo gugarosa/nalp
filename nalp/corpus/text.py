@@ -55,6 +55,6 @@ class TextCorpus(Corpus):
         self._build()
 
         # Debugging some important information
-        logger.debug('Tokens: %d | Type: %s | Minimum frequency: %d | Vocabulary size: %d.',
-                     len(self.tokens), corpus_type, self.min_frequency, len(self.vocab))
+        logger.debug('Tokens: %d | Minimum frequency: %d | Vocabulary size: %d.',
+                     len(self.tokens), self.min_frequency, len(self.vocab))
         logger.info('TextCorpus created.')

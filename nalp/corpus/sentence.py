@@ -65,9 +65,9 @@ class SentenceCorpus(Corpus):
         self._build()
 
         # Debugging some important information
-        logger.debug('Sentences: %d | Type: %s | Minimum frequency: %d | Maximum pad length: %s | '
+        logger.debug('Sentences: %d | Minimum frequency: %d | Maximum pad length: %s | '
                      'Use <SOS> and <EOS>: %s | Vocabulary size: %d.',
-                     len(self.tokens), corpus_type, self.min_frequency, max_pad_length,
+                     len(self.tokens), self.min_frequency, max_pad_length,
                      sos_eos_tokens, len(self.vocab))
         logger.info('SentenceCorpus created.')
 
