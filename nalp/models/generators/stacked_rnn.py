@@ -52,7 +52,7 @@ class StackedRNNGenerator(Generator):
         # Creates the linear (Dense) layer
         self.linear = Dense(vocab_size, name='out')
 
-        logger.debug('Number of cells: %d', len(hidden_size))
+        logger.debug('Number of cells: %d.', len(hidden_size))
         logger.info('Class overrided.')
 
     @property

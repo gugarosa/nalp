@@ -56,15 +56,13 @@ class ImageDataset(Dataset):
 
         """
 
+        # Makes sure that images are float typed
+        images = images.astype('float32')
+
         # If a shape is supplied
         if shape:
-            # Reshapes the array and make sure that it is float typed
-            images = images.reshape(shape).astype('float32')
-
-        # If no shape is supplied
-        else:
-            # Just make sure that the array is float typed
-            images = images.astype('float32')
+            # Reshapes the array
+            images = images.reshape(shape)
 
         # If images should be normalized
         if normalize:
