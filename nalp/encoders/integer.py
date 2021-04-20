@@ -51,8 +51,6 @@ class IntegerEncoder(Encoder):
 
         """
 
-        logger.debug('Learning how to encode ...')
-
         # Creates the encoder property
         self.encoder = dictionary
 

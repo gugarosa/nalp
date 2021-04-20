@@ -55,8 +55,6 @@ class LanguageModelingDataset(Dataset):
 
         """
 
-        logger.debug('Creating sequences ...')
-
         # Slices the tensors into sequences
         sequences = data.Dataset.from_tensor_slices(encoded_tokens)
 
@@ -65,8 +63,6 @@ class LanguageModelingDataset(Dataset):
         if rank == 1:
             # Creates the sequences
             sequences = sequences.batch(max_contiguous_pad_length + 1, drop_remainder=True)
-
-            logger.debug('Maximum contiguous pad length: %d.', max_contiguous_pad_length)
 
         return sequences
 

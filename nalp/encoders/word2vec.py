@@ -47,8 +47,6 @@ class Word2vecEncoder(Encoder):
 
         """
 
-        logger.debug('Learning how to encode ...')
-
         # Creates a Word2Vec model
         self.encoder = W2V(sentences=[tokens], size=max_features, window=window_size, min_count=min_count,
                            sg=algorithm, alpha=learning_rate, iter=iterations,

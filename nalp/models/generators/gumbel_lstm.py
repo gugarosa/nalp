@@ -93,8 +93,6 @@ class GumbelLSTMGenerator(LSTMGenerator):
 
         """
 
-        logger.debug('Greedy search generation with maximum length: %d', max_length)
-
         # Encoding the start string into tokens and expanding its first dimension
         start_tokens = self.encoder.encode(start)
         start_tokens = tf.expand_dims(start_tokens, 0)
@@ -140,8 +138,6 @@ class GumbelLSTMGenerator(LSTMGenerator):
             A list holding the generated text.
 
         """
-
-        logger.debug('Temperature sampling generation with maximum length: %d', max_length)
 
         # Applying Gumbel-Softmax temperature as argument
         self.tau = temperature
@@ -196,8 +192,6 @@ class GumbelLSTMGenerator(LSTMGenerator):
             A list holding the generated text.
 
         """
-
-        logger.debug('Top-based sampling generation with maximum length: %d', max_length)
 
         # Encoding the start string into tokens and expanding its first dimension
         start_tokens = self.encoder.encode(start)
