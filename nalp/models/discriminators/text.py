@@ -91,6 +91,6 @@ class TextDiscriminator(Discriminator):
         x = tf.math.sigmoid(hw) * tf.nn.relu(hw) + (1 - tf.math.sigmoid(hw)) * x
 
         # Calculating the output with a dropout regularization
-        x = self.out(self.drop(x, training=training))
+        x = self.drop(x, training=training)
 
         return x
