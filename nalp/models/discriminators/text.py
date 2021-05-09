@@ -51,9 +51,6 @@ class TextDiscriminator(Discriminator):
         # Defining the dropout layer
         self.drop = Dropout(dropout_rate, name='drop')
 
-        # And finally, defining the output layer
-        self.out = Dense(2, name='out')
-
         logger.info('Class overrided.')
 
     def call(self, x, training=True):
