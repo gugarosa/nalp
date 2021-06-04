@@ -2,11 +2,9 @@
 """
 
 import tensorflow as tf
-from tensorflow.keras.layers import AbstractRNNCell, Dense, LayerNormalization
+from tensorflow.keras.layers import AbstractRNNCell, Dense, LayerNormalization, MultiHeadAttention
 from tensorflow.python.keras import (activations, constraints, initializers,
                                      regularizers)
-
-from nalp.models.layers import MultiHeadAttention
 
 
 class RelationalMemoryCell(AbstractRNNCell):
@@ -166,7 +164,7 @@ class RelationalMemoryCell(AbstractRNNCell):
             concat_memory = tf.concat([inputs, memory], 1)
 
             # Passes down the multi-head attention layer
-            att_memory, _ = self.attn(memory, concat_memory, concat_memory)
+            att_memory, _ = self.attn(memory, concat_memory, return_attention_scores=True)
 
             # Passes down the first normalization layer
             norm_memory = self.before_norm(att_memory + memory)
