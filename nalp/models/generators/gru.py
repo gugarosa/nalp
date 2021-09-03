@@ -33,7 +33,6 @@ class GRUGenerator(Generator):
 
         logger.info('Overriding class: Generator -> GRUGenerator.')
 
-        # Overrides its parent class with any custom arguments if needed
         super(GRUGenerator, self).__init__(name='G_gru')
 
         # Creates a property for holding the used encoder

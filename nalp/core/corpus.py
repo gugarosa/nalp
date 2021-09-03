@@ -111,21 +111,16 @@ class Corpus:
 
         """
 
-        # Checks if type is possible
         if corpus_type not in ['char', 'word']:
-            # If not, creates an error
             e = 'Corpus type should be `char` or `word`.'
 
-            # Logs the error
             logger.error(e)
 
             raise RuntimeError(e)
 
-        # Check is corpus type is `char`
         if corpus_type == 'char':
             return p.pipeline(p.lower_case, p.valid_char, p.tokenize_to_char)
 
-        # If not, return it as a `word` tokenizer
         return p.pipeline(p.lower_case, p.valid_char, p.tokenize_to_word)
 
     def _check_token_frequency(self):

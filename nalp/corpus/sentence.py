@@ -36,7 +36,6 @@ class SentenceCorpus(Corpus):
 
         logger.info('Overriding class: Corpus -> SentenceCorpus.')
 
-        # Overrides its parent class with any custom arguments if needed
         super(SentenceCorpus, self).__init__(min_frequency=min_frequency)
 
         # Checks if there are not pre-loaded tokens
@@ -50,7 +49,6 @@ class SentenceCorpus(Corpus):
             # Retrieve the tokens
             self.tokens = [pipe(sentence) for sentence in sentences]
 
-        # If there are tokens
         else:
             # Gathers them to the property
             self.tokens = tokens
@@ -64,7 +62,6 @@ class SentenceCorpus(Corpus):
         # Builds the vocabulary based on the tokens
         self._build()
 
-        # Debugging some important information
         logger.debug('Sentences: %d | Minimum frequency: %d | Maximum pad length: %s | '
                      'Use <SOS> and <EOS>: %s | Vocabulary size: %d.',
                      len(self.tokens), self.min_frequency, max_pad_length,
@@ -98,9 +95,7 @@ class SentenceCorpus(Corpus):
 
         """
 
-        # Checks if there is a supplied maximum pad length
         if not max_pad_length:
-            # Gathers the maximum length to pad the tokens
             max_pad_length = len(max(self.tokens, key=lambda t: len(t)))
 
         # Iterates over every possible sentence
@@ -109,19 +104,15 @@ class SentenceCorpus(Corpus):
             # Gathers the difference between length of current token and maximum length
             length_diff = max_pad_length - len(self.tokens[i])
 
-            # If length difference is bigger than zero
             if length_diff > 0:
                 # Pads the input based on the remaining tokens
                 self.tokens[i] += [c.PAD] * length_diff
 
-            # If length difference is smaller or equal to zero
             else:
                 # Gathers the maximum length allowed
                 self.tokens[i] = self.tokens[i][:max_pad_length]
 
-            # Checks if additional tokens should be added
             if sos_eos_tokens:
-                # Adds start-of-sentence and end-of-sentence tokens
                 self.tokens[i].insert(0, c.SOS)
                 self.tokens[i].append(c.EOS)
 

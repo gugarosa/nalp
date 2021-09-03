@@ -78,9 +78,7 @@ def pipeline(*func):
     """
 
     def process(x):
-        # Iterate over every argument function
         for f in func:
-            # Apply function to input
             x = f(x)
 
         return x

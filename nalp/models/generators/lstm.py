@@ -31,7 +31,6 @@ class LSTMGenerator(Generator):
 
         logger.info('Overriding class: Generator -> LSTMGenerator.')
 
-        # Overrides its parent class with any custom arguments if needed
         super(LSTMGenerator, self).__init__(name='G_lstm')
 
         # Creates a property for holding the used encoder

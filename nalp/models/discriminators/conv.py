@@ -28,7 +28,6 @@ class ConvDiscriminator(Discriminator):
 
         logger.info('Overriding class: Discriminator -> ConvDiscriminator.')
 
-        # Overrides its parent class with any custom arguments if needed
         super(ConvDiscriminator, self).__init__(name='D_conv')
 
         # Defining a property for the LeakyReLU activation

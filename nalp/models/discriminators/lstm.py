@@ -29,7 +29,6 @@ class LSTMDiscriminator(Discriminator):
 
         logger.info('Overriding class: Discriminator -> LSTMDiscriminator.')
 
-        # Overrides its parent class with any custom arguments if needed
         super(LSTMDiscriminator, self).__init__(name='D_lstm')
 
         # Creates an embedding layer

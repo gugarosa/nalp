@@ -27,7 +27,6 @@ class LinearDiscriminator(Discriminator):
 
         logger.info('Overriding class: Discriminator -> LinearDiscriminator.')
 
-        # Overrides its parent class with any custom arguments if needed
         super(LinearDiscriminator, self).__init__(name='D_linear')
 
         # Defining a property for the LeakyReLU activation

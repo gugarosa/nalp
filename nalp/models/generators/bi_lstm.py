@@ -32,7 +32,6 @@ class BiLSTMGenerator(Generator):
 
         logger.info('Overriding class: Generator -> BiLSTMGenerator.')
 
-        # Overrides its parent class with any custom arguments if needed
         super(BiLSTMGenerator, self).__init__(name='G_bi_lstm')
 
         # Creates a property for holding the used encoder

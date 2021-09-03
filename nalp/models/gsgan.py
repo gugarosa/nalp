@@ -43,7 +43,6 @@ class GSGAN(Adversarial):
         # Creating the generator network
         G = GumbelLSTMGenerator(encoder, vocab_size, embedding_size, hidden_size, tau)
 
-        # Overrides its parent class with any custom arguments if needed
         super(GSGAN, self).__init__(D, G, name='GSGAN')
 
         # Defining a property for holding the vocabulary size
@@ -161,10 +160,7 @@ class GSGAN(Adversarial):
 
         """
 
-        # Calculates the real data loss
         real_loss = self.loss(tf.ones_like(y_real), y_real)
-
-        # Calculates the fake data loss
         fake_loss = self.loss(tf.zeros_like(y_fake), y_fake)
 
         return tf.reduce_mean(real_loss) + tf.reduce_mean(fake_loss)
@@ -180,7 +176,6 @@ class GSGAN(Adversarial):
 
         """
 
-        # Calculating the generator loss
         loss = self.loss(tf.ones_like(y_fake), y_fake)
 
         return tf.reduce_mean(loss)
@@ -266,7 +261,6 @@ class GSGAN(Adversarial):
         # Gathering the amount of batches
         n_batches = tf.data.experimental.cardinality(batches).numpy()
 
-        # Iterate through all generator epochs
         for e in range(epochs):
             logger.info('Epoch %d/%d', e+1, epochs)
 
@@ -276,7 +270,6 @@ class GSGAN(Adversarial):
             # Defining a customized progress bar
             b = Progbar(n_batches, stateful_metrics=['loss(G)'])
 
-            # Iterate through all possible pre-training batches
             for x_batch, y_batch in batches:
                 # Performs the optimization step over the generator
                 self.G_pre_step(x_batch, y_batch)
@@ -303,7 +296,6 @@ class GSGAN(Adversarial):
         # Gathering the amount of batches
         n_batches = tf.data.experimental.cardinality(batches).numpy()
 
-        # Iterate through all epochs
         for e in range(epochs):
             logger.info('Epoch %d/%d', e+1, epochs)
 
@@ -314,7 +306,6 @@ class GSGAN(Adversarial):
             # Defining a customized progress bar
             b = Progbar(n_batches, stateful_metrics=['loss(G)', 'loss(D)'])
 
-            # Iterate through all possible training batches
             for x_batch, y_batch in batches:
                 # Performs the optimization step
                 self.step(x_batch, y_batch)

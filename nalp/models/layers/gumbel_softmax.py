@@ -44,7 +44,6 @@ class GumbelSoftmax(Layer):
 
         """
 
-        # Overrides its parent class with any custom arguments if needed
         super(GumbelSoftmax, self).__init__(**kwargs)
 
         # Defining a property for holding the intended axis
@@ -78,10 +77,7 @@ class GumbelSoftmax(Layer):
 
         """
 
-        # Defining a dictionary holding the configuration
         config = {'axis': self.axis}
-
-        # Overring the base configuration
         base_config = super(GumbelSoftmax, self).get_config()
 
         return dict(list(base_config.items()) + list(config.items()))

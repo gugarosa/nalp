@@ -37,7 +37,6 @@ class GumbelRMCGenerator(RMCGenerator):
 
         logger.info('Overriding class: RMCGenerator -> GumbelRMCGenerator.')
 
-        # Overrides its parent class with any custom arguments if needed
         super(GumbelRMCGenerator, self).__init__(encoder, vocab_size, embedding_size,
                                                  n_slots, n_heads, head_size, n_blocks, n_layers)
 

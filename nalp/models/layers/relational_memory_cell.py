@@ -44,7 +44,6 @@ class RelationalMemoryCell(AbstractRNNCell):
 
         """
 
-        # Overrides its parent class with any custom arguments if needed
         super(RelationalMemoryCell, self).__init__(**kwargs)
 
         # Number of memory slots and their sizes
@@ -291,7 +290,6 @@ class RelationalMemoryCell(AbstractRNNCell):
 
         """
 
-        # Defining a dictionary holding the configuration
         config = {
             'n_slots': self.n_slots,
             'slot_size': self.slot_size,
@@ -314,8 +312,6 @@ class RelationalMemoryCell(AbstractRNNCell):
             'units': self.units,
             'n_gates': self.n_gates
         }
-
-        # Overring the base configuration
         base_config = super(RelationalMemoryCell, self).get_config()
 
         return dict(list(base_config.items()) + list(config.items()))

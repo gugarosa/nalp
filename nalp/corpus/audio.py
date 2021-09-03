@@ -27,7 +27,6 @@ class AudioCorpus(Corpus):
 
         logger.info('Overriding class: Corpus -> AudioCorpus.')
 
-        # Overrides its parent class with any custom arguments if needed
         super(AudioCorpus, self).__init__(min_frequency=min_frequency)
 
         # Loads the audio from file
@@ -52,7 +51,6 @@ class AudioCorpus(Corpus):
         # Builds the vocabulary based on the tokens
         self._build()
 
-        # Debugging some important information
         logger.debug('Tokens: %d | Type: audio | Minimum frequency: %d | Vocabulary size: %d.',
                      len(self.tokens), self.min_frequency, len(self.vocab))
         logger.info('AudioCorpus created.')

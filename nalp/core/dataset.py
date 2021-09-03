@@ -56,9 +56,7 @@ class Dataset:
 
         """
 
-        # Checks if data should be shuffled
         if self.shuffle:
-            # Shuffles the mapped sequences
             sliced_data = sliced_data.shuffle(c.BUFFER_SIZE)
 
         # Transforms the sequences into batches

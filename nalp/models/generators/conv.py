@@ -29,7 +29,6 @@ class ConvGenerator(Generator):
 
         logger.info('Overriding class: Generator -> ConvGenerator.')
 
-        # Overrides its parent class with any custom arguments if needed
         super(ConvGenerator, self).__init__(name='G_conv')
 
         # Defining an alpha property for the LeakyReLU activation

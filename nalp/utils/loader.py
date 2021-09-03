@@ -21,22 +21,16 @@ def load_txt(file_name):
 
     logger.debug('Loading %s ...', file_name)
 
-    # Tries to load the file
     try:
-        # Opens the .txt file
         file = open(file_name, 'rb')
 
-        # Reads the text
         text = file.read().decode(encoding='utf-8')
 
         return text
 
-    # If file can not be loaded
     except FileNotFoundError:
-        # Creates an error
         e = f'File not found: {file_name}.'
 
-        # Logs the error
         logger.error(e)
 
         raise
@@ -55,19 +49,14 @@ def load_audio(file_name):
 
     logger.debug('Loading %s ...', file_name)
 
-    # Tries to load the file
     try:
-        # Opens the audio file
         audio = MidiFile(file_name)
 
         return audio
 
-    # If file can not be loaded
     except FileNotFoundError:
-        # Creates an error
         e = f'File not found: {file_name}.'
 
-        # Logs the error
         logger.error(e)
 
         raise

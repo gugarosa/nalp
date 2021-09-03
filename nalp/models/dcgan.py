@@ -39,7 +39,6 @@ class DCGAN(Adversarial):
         # Creating the generator network
         G = ConvGenerator(input_shape, noise_dim, n_samplings, alpha)
 
-        # Overrides its parent class with any custom arguments if needed
         super(DCGAN, self).__init__(D, G, name='dcgan')
 
         logger.debug('Input: %s | Noise: %d | Number of samplings: %d | '

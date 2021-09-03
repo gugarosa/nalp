@@ -39,7 +39,6 @@ class RMCGenerator(Generator):
 
         logger.info('Overriding class: Generator -> RMCGenerator.')
 
-        # Overrides its parent class with any custom arguments if needed
         super(RMCGenerator, self).__init__(name='G_rmc')
 
         # Creates a property for holding the used encoder

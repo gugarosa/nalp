@@ -31,7 +31,6 @@ class RNNGenerator(Generator):
 
         logger.info('Overriding class: Generator -> RNNGenerator.')
 
-        # Overrides its parent class with any custom arguments if needed
         super(RNNGenerator, self).__init__(name='G_rnn')
 
         # Creates a property for holding the used encoder

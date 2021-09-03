@@ -31,7 +31,6 @@ class GumbelLSTMGenerator(LSTMGenerator):
 
         logger.info('Overriding class: LSTMGenerator -> GumbelLSTMGenerator.')
 
-        # Overrides its parent class with any custom arguments if needed
         super(GumbelLSTMGenerator, self).__init__(
             encoder, vocab_size, embedding_size, hidden_size)
 

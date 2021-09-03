@@ -31,7 +31,6 @@ def scaled_dot_product_attention(q, k, v, mask):
     # Scales the tensor
     scaled_attention_logits = qk / tf.math.sqrt(scaled_qk)
 
-    # If there is a mask
     if mask is not None:
         # Adds the mask to the scaled attention logits
         scaled_attention_logits += (mask * c.EPSILON)
@@ -63,7 +62,6 @@ class MultiHeadAttention(Layer):
 
         """
 
-        # Overrides its parent class with any custom arguments if needed
         super(MultiHeadAttention, self).__init__(**kwargs)
 
         # Defining a property to hold the number of input features
@@ -149,14 +147,11 @@ class MultiHeadAttention(Layer):
 
         """
 
-        # Defining a dictionary holding the configuration
         config = {
             'n_features': self.n_features,
             'n_heads': self.n_heads,
             'depth': self.depth
         }
-
-        # Overring the base configuration
         base_config = super(MultiHeadAttention, self).get_config()
 
         return dict(list(base_config.items()) + list(config.items()))

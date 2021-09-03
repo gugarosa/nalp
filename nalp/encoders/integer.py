@@ -22,7 +22,6 @@ class IntegerEncoder(Encoder):
 
         logger.info('Overriding class: Encoder -> IntegerEncoder.')
 
-        # Overrides its parent class with any custom arguments if needed
         super(IntegerEncoder, self)
 
         # Creates an empty decoder property
@@ -68,39 +67,26 @@ class IntegerEncoder(Encoder):
 
         """
 
-        # Checks if enconder actually exists, if not raises an error
         if not self.encoder:
-            # Creates the error
             e = 'You need to call learn() prior to encode() method.'
 
-            # Logs the error
             logger.error(e)
 
             raise RuntimeError(e)
 
-        # Instantiates a list of empty encoded tokens
         encoded_tokens = []
 
-        # Iterates through every token
         for token in tokens:
-            # Checks if token is a list
             if isinstance(token, (np.ndarray, list)):
-                # If yes, appends the encoded list
                 encoded_tokens.append([self.encoder[t] if t in self.encoder else self.encoder[c.UNK] for t in token])
 
-            # If token is not a list
             else:
-                # Checks if token really exists in the vocabulary
                 if token in self.encoder:
-                    # Concatenates the encoded token
                     encoded_tokens += [self.encoder[token]]
 
-                # If token does not exist in vocabulary
                 else:
-                    # Concatenates the unknown token
                     encoded_tokens += [self.encoder[c.UNK]]
 
-        # Applies the encoding to the new tokens
         encoded_tokens = np.array(encoded_tokens, dtype=np.int32)
 
         return encoded_tokens
@@ -116,29 +102,20 @@ class IntegerEncoder(Encoder):
 
         """
 
-        # Checks if decoder actually exists, if not raises an error
         if not self.decoder:
-            # Creates the error
             e = 'You need to call learn() prior to decode() method.'
 
-            # Logs the error
             logger.error(e)
 
             raise RuntimeError(e)
 
-        # Instantiates a list of decoded tokens
         decoded_tokens = []
 
-        # Iterates through every token
         for token in encoded_tokens:
-            # Checks if token is a list
             if isinstance(token, (np.ndarray, list)):
-                # If yes, appends the encoded list
                 decoded_tokens.append([self.decoder[t] for t in token])
 
-            # If token is not a list
             else:
-                # Concatenates the encoded token
                 decoded_tokens += [self.decoder[token]]
 
         return decoded_tokens

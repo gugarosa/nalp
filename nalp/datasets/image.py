@@ -29,7 +29,6 @@ class ImageDataset(Dataset):
 
         logger.info('Overriding class: Dataset -> ImageDataset.')
 
-        # Overrides its parent class with any custom arguments if needed
         super(ImageDataset, self).__init__(shuffle)
 
         # Pre-process an array of images
@@ -38,7 +37,6 @@ class ImageDataset(Dataset):
         # Building up the dataset class
         self._build(processed_images, batch_size)
 
-        # Debugging some important information
         logger.debug('Size: %s | Batch size: %d | Normalization: %s | Shuffle: %s.',
                      shape, batch_size, normalize, self.shuffle)
         logger.info('Class overrided.')
@@ -56,17 +54,12 @@ class ImageDataset(Dataset):
 
         """
 
-        # Makes sure that images are float typed
         images = images.astype('float32')
 
-        # If a shape is supplied
         if shape:
-            # Reshapes the array
             images = images.reshape(shape)
 
-        # If images should be normalized
         if normalize:
-            # Normalize the images between -1 and 1
             images = (images - 127.5) / 127.5
 
         # Slices the arrays into tensors

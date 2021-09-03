@@ -29,7 +29,6 @@ class LinearGenerator(Generator):
 
         logger.info('Overriding class: Generator -> LinearGenerator.')
 
-        # Overrides its parent class with any custom arguments if needed
         super(LinearGenerator, self).__init__(name='G_linear')
 
         # Defining a property for the LeakyReLU activation

@@ -37,7 +37,6 @@ class GAN(Adversarial):
         # Creating the generator network
         G = LinearGenerator(input_shape, noise_dim, n_samplings, alpha)
 
-        # Overrides its parent class with any custom arguments if needed
         super(GAN, self).__init__(D, G, name='gan')
 
         logger.debug('Input: %s | Noise: %d | '

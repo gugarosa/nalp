@@ -29,7 +29,6 @@ class TextCorpus(Corpus):
 
         logger.info('Overriding class: Corpus -> TextCorpus.')
 
-        # Overrides its parent class with any custom arguments if needed
         super(TextCorpus, self).__init__(min_frequency=min_frequency)
 
         # Checks if there are not pre-loaded tokens
@@ -43,7 +42,6 @@ class TextCorpus(Corpus):
             # Retrieve the tokens
             self.tokens = pipe(text)
 
-        # If there are tokens
         else:
             # Gathers them to the property
             self.tokens = tokens
@@ -54,7 +52,6 @@ class TextCorpus(Corpus):
         # Builds the vocabulary based on the tokens
         self._build()
 
-        # Debugging some important information
         logger.debug('Tokens: %d | Minimum frequency: %d | Vocabulary size: %d.',
                      len(self.tokens), self.min_frequency, len(self.vocab))
         logger.info('TextCorpus created.')

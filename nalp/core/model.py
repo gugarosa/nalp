@@ -27,7 +27,6 @@ class Discriminator(Model):
 
         """
 
-        # Overrides its parent class with any custom arguments if needed
         super(Discriminator, self).__init__(name=name)
 
     def call(self, x, training=True):
@@ -64,7 +63,6 @@ class Generator(Model):
 
         """
 
-        # Overrides its parent class with any custom arguments if needed
         super(Generator, self).__init__(name=name)
 
     def call(self, x, training=True):
@@ -271,7 +269,6 @@ class Adversarial(Model):
 
         """
 
-        # Overrides its parent class with any custom arguments if needed
         super(Adversarial, self).__init__(name=name)
 
         # Defining the discriminator network
@@ -355,10 +352,7 @@ class Adversarial(Model):
 
         """
 
-        # Calculates the real data loss
         real_loss = self.loss(tf.ones_like(y_real), y_real)
-
-        # Calculates the fake data loss
         fake_loss = self.loss(tf.zeros_like(y_fake), y_fake)
 
         return tf.reduce_mean(real_loss) + tf.reduce_mean(fake_loss)
@@ -374,7 +368,6 @@ class Adversarial(Model):
 
         """
 
-        # Calculating the generator loss
         loss = self.loss(tf.ones_like(y_fake), y_fake)
 
         return tf.reduce_mean(loss)
@@ -430,7 +423,6 @@ class Adversarial(Model):
         # Gathering the amount of batches
         n_batches = tf.data.experimental.cardinality(batches).numpy()
 
-        # Iterate through all epochs
         for e in range(epochs):
             logger.info('Epoch %d/%d', e+1, epochs)
 
@@ -441,7 +433,6 @@ class Adversarial(Model):
             # Defining a customized progress bar
             b = Progbar(n_batches, stateful_metrics=['loss(G)', 'loss(D)'])
 
-            # Iterate through all possible training batches
             for batch in batches:
                 # Performs the optimization step
                 self.step(batch)

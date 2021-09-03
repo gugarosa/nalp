@@ -51,7 +51,6 @@ class WGAN(Adversarial):
         # Creating the generator network
         G = ConvGenerator(input_shape, noise_dim, n_samplings, alpha)
 
-        # Overrides its parent class with any custom arguments if needed
         super(WGAN, self).__init__(D, G, name='wgan')
 
         # Defining the type of penalization to be used
@@ -240,7 +239,6 @@ class WGAN(Adversarial):
         # Gathering the amount of batches
         n_batches = tf.data.experimental.cardinality(batches).numpy()
 
-        # Iterate through all epochs
         for e in range(epochs):
             logger.info('Epoch %d/%d', e+1, epochs)
 
@@ -251,7 +249,6 @@ class WGAN(Adversarial):
             # Defining a customized progress bar
             b = Progbar(n_batches, stateful_metrics=['loss(G)', 'loss(D)'])
 
-            # Iterate through all possible training batches
             for batch in batches:
                 # Iterate through all possible critic steps
                 for _ in range(critic_steps):

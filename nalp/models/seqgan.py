@@ -49,7 +49,6 @@ class SeqGAN(Adversarial):
         # Creating the generator network
         G = LSTMGenerator(encoder, vocab_size, embedding_size, hidden_size)
 
-        # Overrides its parent class with any custom arguments if needed
         super(SeqGAN, self).__init__(D, G, name='seqgan')
 
         # Defining a property for holding the vocabulary size
@@ -176,7 +175,6 @@ class SeqGAN(Adversarial):
         # Creates an empty tensor for holding the rewards
         rewards = tf.zeros([1, batch_size])
 
-        # For every possible rollout
         for _ in range(n_rollouts):
             # For every possible sequence step
             for step in range(1, max_length + 1):
@@ -323,7 +321,6 @@ class SeqGAN(Adversarial):
             # Defining a customized progress bar
             b = Progbar(n_batches, stateful_metrics=['loss(G)'])
 
-            # Iterate through all possible pre-training batches
             for x_batch, y_batch in batches:
                 # Performs the optimization step over the generator
                 self.G_pre_step(x_batch, y_batch)
@@ -348,7 +345,6 @@ class SeqGAN(Adversarial):
             # Defining a customized progress bar
             b = Progbar(n_batches, stateful_metrics=['loss(D)'])
 
-            # Iterate through all possible pre-training batches
             for x_batch, _ in batches:
                 # Gathering the batch size and the maximum sequence length
                 batch_size, max_length = x_batch.shape[0], x_batch.shape[1]
@@ -398,7 +394,6 @@ class SeqGAN(Adversarial):
         # Gathering the amount of batches
         n_batches = tf.data.experimental.cardinality(batches).numpy()
 
-        # Iterate through all epochs
         for e in range(epochs):
             logger.info('Epoch %d/%d', e+1, epochs)
 
@@ -409,7 +404,6 @@ class SeqGAN(Adversarial):
             # Defining a customized progress bar
             b = Progbar(n_batches, stateful_metrics=['loss(G)', 'loss(D)'])
 
-            # Iterate through all possible training batches
             for x_batch, _ in batches:
                 # Gathering the batch size and the maximum sequence length
                 batch_size, max_length = x_batch.shape[0], x_batch.shape[1]

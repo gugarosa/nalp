@@ -52,7 +52,6 @@ class RelGAN(Adversarial):
         G = GumbelRMCGenerator(encoder, vocab_size, embedding_size,
                                n_slots, n_heads, head_size, n_blocks, n_layers, tau)
 
-        # Overrides its parent class with any custom arguments if needed
         super(RelGAN, self).__init__(D, G, name='RelGAN')
 
         # Defining a property for holding the vocabulary size
@@ -170,7 +169,6 @@ class RelGAN(Adversarial):
 
         """
 
-        # Calculates the discriminator loss
         loss = self.loss(tf.ones_like(y_real), y_real - y_fake)
 
         return tf.reduce_mean(loss)
@@ -187,7 +185,6 @@ class RelGAN(Adversarial):
 
         """
 
-        # Calculating the generator loss
         loss = self.loss(tf.ones_like(y_fake), y_fake - y_real)
 
         return tf.reduce_mean(loss)
@@ -273,7 +270,6 @@ class RelGAN(Adversarial):
         # Gathering the amount of batches
         n_batches = tf.data.experimental.cardinality(batches).numpy()
 
-        # Iterate through all generator epochs
         for e in range(epochs):
             logger.info('Epoch %d/%d', e+1, epochs)
 
@@ -283,7 +279,6 @@ class RelGAN(Adversarial):
             # Defining a customized progress bar
             b = Progbar(n_batches, stateful_metrics=['loss(G)'])
 
-            # Iterate through all possible pre-training batches
             for x_batch, y_batch in batches:
                 # Performs the optimization step over the generator
                 self.G_pre_step(x_batch, y_batch)
@@ -310,7 +305,6 @@ class RelGAN(Adversarial):
         # Gathering the amount of batches
         n_batches = tf.data.experimental.cardinality(batches).numpy()
 
-        # Iterate through all epochs
         for e in range(epochs):
             logger.info('Epoch %d/%d', e+1, epochs)
 
@@ -321,7 +315,6 @@ class RelGAN(Adversarial):
             # Defining a customized progress bar
             b = Progbar(n_batches, stateful_metrics=['loss(G)', 'loss(D)'])
 
-            # Iterate through all possible training batches
             for x_batch, y_batch in batches:
                 # Performs the optimization step
                 self.step(x_batch, y_batch)

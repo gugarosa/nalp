@@ -31,7 +31,6 @@ class StackedRNNGenerator(Generator):
 
         logger.info('Overriding class: Generator -> StackedRNNGenerator.')
 
-        # Overrides its parent class with any custom arguments if needed
         super(StackedRNNGenerator, self).__init__(name='G_stacked_rnn')
 
         # Creates a property for holding the used encoder

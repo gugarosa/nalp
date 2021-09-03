@@ -28,7 +28,6 @@ class LanguageModelingDataset(Dataset):
 
         logger.info('Overriding class: Dataset -> LanguageModelingDataset.')
 
-        # Overrides its parent class with any custom arguments if needed
         super(LanguageModelingDataset, self).__init__(shuffle)
 
         # Creates the sequences and maps their inputs and targets
@@ -37,8 +36,7 @@ class LanguageModelingDataset(Dataset):
 
         # Builds up the dataset class
         self._build(mapped_sequences, batch_size)
-
-        # Debugging some important information
+        
         logger.debug('Batch size: %d | Shuffle: %s.', batch_size, self.shuffle)
         logger.info('Class overrided.')
 

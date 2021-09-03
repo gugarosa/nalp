@@ -31,7 +31,6 @@ class TextDiscriminator(Discriminator):
 
         logger.info('Overriding class: Discriminator -> TextDiscriminator.')
 
-        # Overrides its parent class with any custom arguments if needed
         super(TextDiscriminator, self).__init__(name='D_text')
 
         # Creates an embedding layer
