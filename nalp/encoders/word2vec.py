@@ -44,10 +44,13 @@ class Word2vecEncoder(Encoder):
             learning_rate (float): Value of the learning rate.
             iterations (int): Number of iterations.
 
+
+            size --> vector_size
+            iter --> epochs
         """
 
-        self.encoder = W2V(sentences=[tokens], size=max_features, window=window_size, min_count=min_count,
-                           sg=algorithm, alpha=learning_rate, iter=iterations,
+        self.encoder = W2V(sentences=[tokens], vector_size=max_features, window=window_size, min_count=min_count,
+                           sg=algorithm, alpha=learning_rate, epochs=iterations,
                            workers=multiprocessing.cpu_count())
 
     def encode(self, tokens):
