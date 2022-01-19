@@ -46,8 +46,8 @@ class Word2vecEncoder(Encoder):
 
         """
 
-        self.encoder = W2V(sentences=[tokens], size=max_features, window=window_size, min_count=min_count,
-                           sg=algorithm, alpha=learning_rate, iter=iterations,
+        self.encoder = W2V(sentences=[tokens], vector_size=max_features, window=window_size, min_count=min_count,
+                           sg=algorithm, alpha=learning_rate, epochs=iterations,
                            workers=multiprocessing.cpu_count())
 
     def encode(self, tokens):
@@ -94,7 +94,6 @@ class Word2vecEncoder(Encoder):
 
             raise RuntimeError(e)
 
-        decoded_tokens = [self.encoder.wv.most_similar(
-            positive=[t])[0][0] for t in encoded_tokens]
+        decoded_tokens = [self.encoder.wv.most_similar(positive=[t])[0][0] for t in encoded_tokens]
 
         return decoded_tokens
