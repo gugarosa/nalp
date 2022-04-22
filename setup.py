@@ -5,7 +5,7 @@ with open("README.md", "r") as f:
 
 setup(
     name="nalp",
-    version="2.0.4",
+    version="2.0.5",
     description="Natural Adversarial Language Processing",
     long_description=long_description,
     long_description_content_type="text/markdown",
