@@ -25,9 +25,7 @@ class Dataset:
 
     @property
     def shuffle(self):
-        """bool: Whether data should be shuffled or not.
-
-        """
+        """bool: Whether data should be shuffled or not."""
 
         return self._shuffle
 
@@ -37,9 +35,7 @@ class Dataset:
 
     @property
     def batches(self):
-        """tf.data.Dataset: An instance of tensorflow's dataset batches.
-
-        """
+        """tf.data.Dataset: An instance of tensorflow's dataset batches."""
 
         return self._batches
 
@@ -60,7 +56,6 @@ class Dataset:
             sliced_data = sliced_data.shuffle(c.BUFFER_SIZE)
 
         # Transforms the sequences into batches
-        self.batches = (
-            sliced_data
-            .batch(batch_size, drop_remainder=True)
-            .prefetch(data.experimental.AUTOTUNE))
+        self.batches = sliced_data.batch(batch_size, drop_remainder=True).prefetch(
+            data.experimental.AUTOTUNE
+        )

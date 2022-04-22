@@ -4,11 +4,11 @@
 import tensorflow as tf
 
 import nalp.utils.constants as c
-import nalp.utils.logging as l
 from nalp.models.generators import RMCGenerator
 from nalp.models.layers import GumbelSoftmax
+from nalp.utils import logging
 
-logger = l.get_logger(__name__)
+logger = logging.get_logger(__name__)
 
 
 class GumbelRMCGenerator(RMCGenerator):
@@ -17,9 +17,18 @@ class GumbelRMCGenerator(RMCGenerator):
 
     """
 
-    def __init__(self, encoder=None, vocab_size=1, embedding_size=32,
-                 n_slots=3, n_heads=5, head_size=10, n_blocks=1, n_layers=3,
-                 tau=5):
+    def __init__(
+        self,
+        encoder=None,
+        vocab_size=1,
+        embedding_size=32,
+        n_slots=3,
+        n_heads=5,
+        head_size=10,
+        n_blocks=1,
+        n_layers=3,
+        tau=5,
+    ):
         """Initialization method.
 
         Args:
@@ -35,24 +44,30 @@ class GumbelRMCGenerator(RMCGenerator):
 
         """
 
-        logger.info('Overriding class: RMCGenerator -> GumbelRMCGenerator.')
+        logger.info("Overriding class: RMCGenerator -> GumbelRMCGenerator.")
 
-        super(GumbelRMCGenerator, self).__init__(encoder, vocab_size, embedding_size,
-                                                 n_slots, n_heads, head_size, n_blocks, n_layers)
+        super(GumbelRMCGenerator, self).__init__(
+            encoder,
+            vocab_size,
+            embedding_size,
+            n_slots,
+            n_heads,
+            head_size,
+            n_blocks,
+            n_layers,
+        )
 
         # Defining a property to hold the Gumbel-Softmax temperature parameter
         self.tau = tau
 
         # Creates a Gumbel-Softmax layer
-        self.gumbel = GumbelSoftmax(name='gumbel')
+        self.gumbel = GumbelSoftmax(name="gumbel")
 
-        logger.info('Class overrided.')
+        logger.info("Class overrided.")
 
     @property
     def tau(self):
-        """float: Gumbel-Softmax temperature parameter.
-
-        """
+        """float: Gumbel-Softmax temperature parameter."""
 
         return self._tau
 
@@ -235,7 +250,9 @@ class GumbelRMCGenerator(RMCGenerator):
 
                 # Also ensures that first index will always be true to prevent zero
                 # tokens from being sampled
-                ignored_indexes = tf.tensor_scatter_nd_update(ignored_indexes, [[0, 0]], [True])
+                ignored_indexes = tf.tensor_scatter_nd_update(
+                    ignored_indexes, [[0, 0]], [True]
+                )
 
                 # Filters the predictions and its indexes
                 preds = tf.expand_dims(preds[ignored_indexes], 0)

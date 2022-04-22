@@ -22,7 +22,9 @@ def gumbel_distribution(input_shape):
     uniform_dist = tf.random.uniform(input_shape, 0, 1)
 
     # Samples from the Gumbel distribution
-    gumbel_dist = -1 * tf.math.log(-1 * tf.math.log(uniform_dist + c.EPSILON) + c.EPSILON)
+    gumbel_dist = -1 * tf.math.log(
+        -1 * tf.math.log(uniform_dist + c.EPSILON) + c.EPSILON
+    )
 
     return gumbel_dist
 
@@ -73,11 +75,9 @@ class GumbelSoftmax(Layer):
         return x, y
 
     def get_config(self):
-        """Gets the configuration of the layer for further serialization.
+        """Gets the configuration of the layer for further serialization."""
 
-        """
-
-        config = {'axis': self.axis}
+        config = {"axis": self.axis}
         base_config = super(GumbelSoftmax, self).get_config()
 
         return dict(list(base_config.items()) + list(config.items()))

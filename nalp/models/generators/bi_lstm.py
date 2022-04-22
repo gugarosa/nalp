@@ -4,10 +4,10 @@
 import tensorflow as tf
 from tensorflow.keras.layers import RNN, Dense, Embedding, LSTMCell
 
-import nalp.utils.logging as l
 from nalp.core import Generator
+from nalp.utils import logging
 
-logger = l.get_logger(__name__)
+logger = logging.get_logger(__name__)
 
 
 class BiLSTMGenerator(Generator):
@@ -30,41 +30,44 @@ class BiLSTMGenerator(Generator):
 
         """
 
-        logger.info('Overriding class: Generator -> BiLSTMGenerator.')
+        logger.info("Overriding class: Generator -> BiLSTMGenerator.")
 
-        super(BiLSTMGenerator, self).__init__(name='G_bi_lstm')
+        super(BiLSTMGenerator, self).__init__(name="G_bi_lstm")
 
         # Creates a property for holding the used encoder
         self.encoder = encoder
 
         # Creates an embedding layer
-        self.embedding = Embedding(vocab_size, embedding_size, name='embedding')
+        self.embedding = Embedding(vocab_size, embedding_size, name="embedding")
 
         # Creates a forward LSTM cell
-        cell_f = LSTMCell(hidden_size, name='lstm_cell_f')
+        cell_f = LSTMCell(hidden_size, name="lstm_cell_f")
 
         # And a orward RNN layer
-        self.forward = RNN(cell_f, name='forward_rnn',
-                           return_sequences=True, stateful=True)
+        self.forward = RNN(
+            cell_f, name="forward_rnn", return_sequences=True, stateful=True
+        )
 
         # Creates a backward LSTM cell
-        cell_b = LSTMCell(hidden_size, name='lstm_cell_b')
+        cell_b = LSTMCell(hidden_size, name="lstm_cell_b")
 
         # And a backward RNN layer
-        self.backward = RNN(cell_b, name='backward_rnn',
-                            return_sequences=True, stateful=True,
-                            go_backwards=True)
+        self.backward = RNN(
+            cell_b,
+            name="backward_rnn",
+            return_sequences=True,
+            stateful=True,
+            go_backwards=True,
+        )
 
         # Creates the linear (Dense) layer
-        self.linear = Dense(vocab_size, name='out')
+        self.linear = Dense(vocab_size, name="out")
 
-        logger.info('Class overrided.')
+        logger.info("Class overrided.")
 
     @property
     def encoder(self):
-        """obj: An encoder generic object.
-
-        """
+        """obj: An encoder generic object."""
 
         return self._encoder
 

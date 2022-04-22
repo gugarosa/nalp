@@ -3,6 +3,7 @@ gensim>=4.1.2
 matplotlib>=3.3.4
 mido>=1.2.9
 nltk>=3.5
+pre-commit>=2.17.0
 pylint>=2.7.2
 pytest>=6.2.2
 tensorflow>=2.4.1

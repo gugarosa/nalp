@@ -4,10 +4,10 @@
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, Dense, Dropout, MaxPool1D
 
-import nalp.utils.logging as l
 from nalp.core import Discriminator
+from nalp.utils import logging
 
-logger = l.get_logger(__name__)
+logger = logging.get_logger(__name__)
 
 
 class TextDiscriminator(Discriminator):
@@ -16,8 +16,14 @@ class TextDiscriminator(Discriminator):
 
     """
 
-    def __init__(self, max_length=1, embedding_size=32, n_filters=(64),
-                 filters_size=(1), dropout_rate=0.25):
+    def __init__(
+        self,
+        max_length=1,
+        embedding_size=32,
+        n_filters=(64),
+        filters_size=(1),
+        dropout_rate=0.25,
+    ):
         """Initialization method.
 
         Args:
@@ -29,28 +35,37 @@ class TextDiscriminator(Discriminator):
 
         """
 
-        logger.info('Overriding class: Discriminator -> TextDiscriminator.')
+        logger.info("Overriding class: Discriminator -> TextDiscriminator.")
 
-        super(TextDiscriminator, self).__init__(name='D_text')
+        super(TextDiscriminator, self).__init__(name="D_text")
 
         # Creates an embedding layer
-        self.embedding = Dense(embedding_size, name='embedding')
+        self.embedding = Dense(embedding_size, name="embedding")
 
         # Defining a list for holding the convolutional layers
-        self.conv = [Conv2D(n, (k, embedding_size), strides=(
-            1, 1), padding='valid', name=f'conv_{k}') for n, k in zip(n_filters, filters_size)]
+        self.conv = [
+            Conv2D(
+                n,
+                (k, embedding_size),
+                strides=(1, 1),
+                padding="valid",
+                name=f"conv_{k}",
+            )
+            for n, k in zip(n_filters, filters_size)
+        ]
 
         # Defining a list for holding the pooling layers
-        self.pool = [MaxPool1D(max_length - k + 1, 1, name=f'pool_{k}')
-                     for k in filters_size]
+        self.pool = [
+            MaxPool1D(max_length - k + 1, 1, name=f"pool_{k}") for k in filters_size
+        ]
 
         # Defining a linear layer for serving as the `highway`
-        self.highway = Dense(sum(n_filters), name='highway')
+        self.highway = Dense(sum(n_filters), name="highway")
 
         # Defining the dropout layer
-        self.drop = Dropout(dropout_rate, name='drop')
+        self.drop = Dropout(dropout_rate, name="drop")
 
-        logger.info('Class overrided.')
+        logger.info("Class overrided.")
 
     def call(self, x, training=True):
         """Method that holds vital information whenever this class is called.

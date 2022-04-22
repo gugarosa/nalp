@@ -3,10 +3,10 @@
 
 from tensorflow import data
 
-import nalp.utils.logging as l
 from nalp.core import Dataset
+from nalp.utils import logging
 
-logger = l.get_logger(__name__)
+logger = logging.get_logger(__name__)
 
 
 class LanguageModelingDataset(Dataset):
@@ -15,7 +15,9 @@ class LanguageModelingDataset(Dataset):
 
     """
 
-    def __init__(self, encoded_tokens, max_contiguous_pad_length=1, batch_size=64, shuffle=True):
+    def __init__(
+        self, encoded_tokens, max_contiguous_pad_length=1, batch_size=64, shuffle=True
+    ):
         """Initialization method.
 
         Args:
@@ -26,19 +28,21 @@ class LanguageModelingDataset(Dataset):
 
         """
 
-        logger.info('Overriding class: Dataset -> LanguageModelingDataset.')
+        logger.info("Overriding class: Dataset -> LanguageModelingDataset.")
 
         super(LanguageModelingDataset, self).__init__(shuffle)
 
         # Creates the sequences and maps their inputs and targets
-        sequences = self._create_sequences(encoded_tokens, encoded_tokens.ndim, max_contiguous_pad_length)
+        sequences = self._create_sequences(
+            encoded_tokens, encoded_tokens.ndim, max_contiguous_pad_length
+        )
         mapped_sequences = sequences.map(self._create_input_target)
 
         # Builds up the dataset class
         self._build(mapped_sequences, batch_size)
-        
-        logger.debug('Batch size: %d | Shuffle: %s.', batch_size, self.shuffle)
-        logger.info('Class overrided.')
+
+        logger.debug("Batch size: %d | Shuffle: %s.", batch_size, self.shuffle)
+        logger.info("Class overrided.")
 
     def _create_sequences(self, encoded_tokens, rank, max_contiguous_pad_length):
         """Creates sequences of the desired length.
@@ -60,7 +64,9 @@ class LanguageModelingDataset(Dataset):
         # be parsed into individual sequences
         if rank == 1:
             # Creates the sequences
-            sequences = sequences.batch(max_contiguous_pad_length + 1, drop_remainder=True)
+            sequences = sequences.batch(
+                max_contiguous_pad_length + 1, drop_remainder=True
+            )
 
         return sequences
 

@@ -1,14 +1,13 @@
 """Relational Memory Core generator.
 """
 import tensorflow as tf
-
 from tensorflow.keras.layers import RNN, Dense, Embedding
 
-import nalp.utils.logging as l
 from nalp.core import Generator
 from nalp.models.layers.relational_memory_cell import RelationalMemoryCell
+from nalp.utils import logging
 
-logger = l.get_logger(__name__)
+logger = logging.get_logger(__name__)
 
 
 class RMCGenerator(Generator):
@@ -21,8 +20,17 @@ class RMCGenerator(Generator):
 
     """
 
-    def __init__(self, encoder=None, vocab_size=1, embedding_size=32,
-                 n_slots=3, n_heads=5, head_size=10, n_blocks=1, n_layers=3):
+    def __init__(
+        self,
+        encoder=None,
+        vocab_size=1,
+        embedding_size=32,
+        n_slots=3,
+        n_heads=5,
+        head_size=10,
+        n_blocks=1,
+        n_layers=3,
+    ):
         """Initialization method.
 
         Args:
@@ -37,37 +45,34 @@ class RMCGenerator(Generator):
 
         """
 
-        logger.info('Overriding class: Generator -> RMCGenerator.')
+        logger.info("Overriding class: Generator -> RMCGenerator.")
 
-        super(RMCGenerator, self).__init__(name='G_rmc')
+        super(RMCGenerator, self).__init__(name="G_rmc")
 
         # Creates a property for holding the used encoder
         self.encoder = encoder
 
         # Creates an embedding layer
-        self.embedding = Embedding(
-            vocab_size, embedding_size, name='embedding')
+        self.embedding = Embedding(vocab_size, embedding_size, name="embedding")
 
         # Creates a relational memory cell
-        self.cell = RelationalMemoryCell(n_slots, n_heads,
-                                         head_size, n_blocks, n_layers,
-                                         name='rmc_cell')
+        self.cell = RelationalMemoryCell(
+            n_slots, n_heads, head_size, n_blocks, n_layers, name="rmc_cell"
+        )
 
         # Creates the RNN loop itself
-        self.rnn = RNN(self.cell, name='rnn_layer',
-                       return_sequences=True,
-                       stateful=True)
+        self.rnn = RNN(
+            self.cell, name="rnn_layer", return_sequences=True, stateful=True
+        )
 
         # Creates the linear (Dense) layer
-        self.linear = Dense(vocab_size, name='out')
+        self.linear = Dense(vocab_size, name="out")
 
-        logger.info('Class overrided.')
+        logger.info("Class overrided.")
 
     @property
     def encoder(self):
-        """obj: An encoder generic object.
-
-        """
+        """obj: An encoder generic object."""
 
         return self._encoder
 
@@ -95,7 +100,9 @@ class RMCGenerator(Generator):
         x = self.embedding(x)
 
         # We need to apply the input into the first recurrent layer
-        x = self.rnn(x, initial_state=self.cell.get_initial_state(batch_size=self.batch_size))
+        x = self.rnn(
+            x, initial_state=self.cell.get_initial_state(batch_size=self.batch_size)
+        )
 
         # The input also suffers a linear combination to output correct shape
         x = self.linear(x)

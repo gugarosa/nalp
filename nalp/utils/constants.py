@@ -3,10 +3,10 @@
 
 # Reserved tokens that are used to indicate fixed patterns,
 # such as start-of-sentence, end-of-sentence, padding and unknown
-SOS = '<SOS>'
-EOS = '<EOS>'
-PAD = '<PAD>'
-UNK = '<UNK>'
+SOS = "<SOS>"
+EOS = "<EOS>"
+PAD = "<PAD>"
+UNK = "<UNK>"
 
 # A buffer size constant defines the maximum amount of
 # buffer that should be used when shuffling a dataset

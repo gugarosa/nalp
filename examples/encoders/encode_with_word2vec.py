@@ -2,7 +2,7 @@ from nalp.corpus import TextCorpus
 from nalp.encoders import Word2vecEncoder
 
 # Creating a TextCorpus from file
-corpus = TextCorpus(from_file='data/text/chapter1_harry.txt', corpus_type='word')
+corpus = TextCorpus(from_file="data/text/chapter1_harry.txt", corpus_type="word")
 
 # Creating an Word2vecEncoder and learning encoding
 encoder = Word2vecEncoder()

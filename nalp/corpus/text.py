@@ -1,11 +1,10 @@
 """Text-related corpus.
 """
 
-import nalp.utils.loader as l
-import nalp.utils.logging as log
 from nalp.core import Corpus
+from nalp.utils import loader, logging
 
-logger = log.get_logger(__name__)
+logger = logging.get_logger(__name__)
 
 
 class TextCorpus(Corpus):
@@ -16,7 +15,9 @@ class TextCorpus(Corpus):
 
     """
 
-    def __init__(self, tokens=None, from_file=None, corpus_type='char', min_frequency=1):
+    def __init__(
+        self, tokens=None, from_file=None, corpus_type="char", min_frequency=1
+    ):
         """Initialization method.
 
         Args:
@@ -27,14 +28,14 @@ class TextCorpus(Corpus):
 
         """
 
-        logger.info('Overriding class: Corpus -> TextCorpus.')
+        logger.info("Overriding class: Corpus -> TextCorpus.")
 
         super(TextCorpus, self).__init__(min_frequency=min_frequency)
 
         # Checks if there are not pre-loaded tokens
         if not tokens:
             # Loads the text from file
-            text = l.load_txt(from_file)
+            text = loader.load_txt(from_file)
 
             # Creates a tokenizer based on desired type
             pipe = self._create_tokenizer(corpus_type)
@@ -52,6 +53,10 @@ class TextCorpus(Corpus):
         # Builds the vocabulary based on the tokens
         self._build()
 
-        logger.debug('Tokens: %d | Minimum frequency: %d | Vocabulary size: %d.',
-                     len(self.tokens), self.min_frequency, len(self.vocab))
-        logger.info('TextCorpus created.')
+        logger.debug(
+            "Tokens: %d | Minimum frequency: %d | Vocabulary size: %d.",
+            len(self.tokens),
+            self.min_frequency,
+            len(self.vocab),
+        )
+        logger.info("TextCorpus created.")

@@ -3,10 +3,10 @@
 
 from tensorflow import data
 
-import nalp.utils.logging as l
 from nalp.core import Dataset
+from nalp.utils import logging
 
-logger = l.get_logger(__name__)
+logger = logging.get_logger(__name__)
 
 
 class ImageDataset(Dataset):
@@ -15,7 +15,9 @@ class ImageDataset(Dataset):
 
     """
 
-    def __init__(self, images, batch_size=256, shape=None, normalize=True, shuffle=True):
+    def __init__(
+        self, images, batch_size=256, shape=None, normalize=True, shuffle=True
+    ):
         """Initialization method.
 
         Args:
@@ -27,7 +29,7 @@ class ImageDataset(Dataset):
 
         """
 
-        logger.info('Overriding class: Dataset -> ImageDataset.')
+        logger.info("Overriding class: Dataset -> ImageDataset.")
 
         super(ImageDataset, self).__init__(shuffle)
 
@@ -37,9 +39,14 @@ class ImageDataset(Dataset):
         # Building up the dataset class
         self._build(processed_images, batch_size)
 
-        logger.debug('Size: %s | Batch size: %d | Normalization: %s | Shuffle: %s.',
-                     shape, batch_size, normalize, self.shuffle)
-        logger.info('Class overrided.')
+        logger.debug(
+            "Size: %s | Batch size: %d | Normalization: %s | Shuffle: %s.",
+            shape,
+            batch_size,
+            normalize,
+            self.shuffle,
+        )
+        logger.info("Class overrided.")
 
     def _preprocess(self, images, shape, normalize):
         """Pre-process an array of images by reshaping and normalizing, if necessary.
@@ -54,7 +61,7 @@ class ImageDataset(Dataset):
 
         """
 
-        images = images.astype('float32')
+        images = images.astype("float32")
 
         if shape:
             images = images.reshape(shape)

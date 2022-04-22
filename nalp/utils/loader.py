@@ -3,9 +3,9 @@
 
 from mido import MidiFile
 
-import nalp.utils.logging as l
+from nalp.utils import logging
 
-logger = l.get_logger(__name__)
+logger = logging.get_logger(__name__)
 
 
 def load_txt(file_name):
@@ -19,17 +19,17 @@ def load_txt(file_name):
 
     """
 
-    logger.debug('Loading %s ...', file_name)
+    logger.debug("Loading %s ...", file_name)
 
     try:
-        file = open(file_name, 'rb')
+        file = open(file_name, "rb")
 
-        text = file.read().decode(encoding='utf-8')
+        text = file.read().decode(encoding="utf-8")
 
         return text
 
     except FileNotFoundError:
-        e = f'File not found: {file_name}.'
+        e = f"File not found: {file_name}."
 
         logger.error(e)
 
@@ -47,7 +47,7 @@ def load_audio(file_name):
 
     """
 
-    logger.debug('Loading %s ...', file_name)
+    logger.debug("Loading %s ...", file_name)
 
     try:
         audio = MidiFile(file_name)
@@ -55,7 +55,7 @@ def load_audio(file_name):
         return audio
 
     except FileNotFoundError:
-        e = f'File not found: {file_name}.'
+        e = f"File not found: {file_name}."
 
         logger.error(e)
 

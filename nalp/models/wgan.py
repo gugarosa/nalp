@@ -4,12 +4,12 @@
 import tensorflow as tf
 from tensorflow.keras.utils import Progbar
 
-import nalp.utils.logging as l
 from nalp.core import Adversarial
 from nalp.models.discriminators import ConvDiscriminator
 from nalp.models.generators import ConvGenerator
+from nalp.utils import logging
 
-logger = l.get_logger(__name__)
+logger = logging.get_logger(__name__)
 
 
 class WGAN(Adversarial):
@@ -27,8 +27,17 @@ class WGAN(Adversarial):
 
     """
 
-    def __init__(self, input_shape=(28, 28, 1), noise_dim=100, n_samplings=3, alpha=0.3, dropout_rate=0.3,
-                 model_type='wc', clip=0.01, penalty=10):
+    def __init__(
+        self,
+        input_shape=(28, 28, 1),
+        noise_dim=100,
+        n_samplings=3,
+        alpha=0.3,
+        dropout_rate=0.3,
+        model_type="wc",
+        clip=0.01,
+        penalty=10,
+    ):
         """Initialization method.
 
         Args:
@@ -43,7 +52,7 @@ class WGAN(Adversarial):
 
         """
 
-        logger.info('Overriding class: Adversarial -> WGAN.')
+        logger.info("Overriding class: Adversarial -> WGAN.")
 
         # Creating the discriminator network
         D = ConvDiscriminator(n_samplings, alpha, dropout_rate)
@@ -51,7 +60,7 @@ class WGAN(Adversarial):
         # Creating the generator network
         G = ConvGenerator(input_shape, noise_dim, n_samplings, alpha)
 
-        super(WGAN, self).__init__(D, G, name='wgan')
+        super(WGAN, self).__init__(D, G, name="wgan")
 
         # Defining the type of penalization to be used
         self.model_type = model_type
@@ -62,18 +71,22 @@ class WGAN(Adversarial):
         # Defining the gradient penalty coefficient as a property for further usage
         self.penalty_lambda = penalty
 
-        logger.debug('Input: %s | Noise: %d | Number of samplings: %d | '
-                     'Activation rate: %s | Dropout rate: %s | Type: %s.',
-                     input_shape, noise_dim, n_samplings,
-                     alpha, dropout_rate, model_type)
+        logger.debug(
+            "Input: %s | Noise: %d | Number of samplings: %d | "
+            "Activation rate: %s | Dropout rate: %s | Type: %s.",
+            input_shape,
+            noise_dim,
+            n_samplings,
+            alpha,
+            dropout_rate,
+            model_type,
+        )
 
-        logger.info('Class overrided.')
+        logger.info("Class overrided.")
 
     @property
     def model_type(self):
-        """str: Whether should use weight clipping (wc) or gradient penalty (gp).
-
-        """
+        """str: Whether should use weight clipping (wc) or gradient penalty (gp)."""
 
         return self._model_type
 
@@ -83,9 +96,7 @@ class WGAN(Adversarial):
 
     @property
     def clip(self):
-        """float: Clipping value for the Lipschitz constrain.
-
-        """
+        """float: Clipping value for the Lipschitz constrain."""
 
         return self._clip
 
@@ -95,9 +106,7 @@ class WGAN(Adversarial):
 
     @property
     def penalty_lambda(self):
-        """int: Coefficient for the gradient penalty.
-
-        """
+        """int: Coefficient for the gradient penalty."""
 
         return self._penalty_lambda
 
@@ -135,8 +144,9 @@ class WGAN(Adversarial):
         penalty_gradients = tape.gradient(y_penalty, x_penalty)
 
         # Calculates the norm of the penalization gradients
-        penalty_gradients_norm = tf.sqrt(tf.reduce_sum(
-            tf.square(penalty_gradients), [1, 2, 3]))
+        penalty_gradients_norm = tf.sqrt(
+            tf.reduce_sum(tf.square(penalty_gradients), [1, 2, 3])
+        )
 
         # Calculates the gradient penalty
         penalty = tf.reduce_mean((penalty_gradients_norm - 1) ** 2)
@@ -168,7 +178,7 @@ class WGAN(Adversarial):
             D_loss = -tf.reduce_mean(y_real) + tf.reduce_mean(y_fake)
 
             # Checks if WGAN is using gradient penalty
-            if self.model_type == 'gp':
+            if self.model_type == "gp":
                 # Calculates the penalization score
                 penalty = self._gradient_penalty(x, x_fake)
 
@@ -179,17 +189,18 @@ class WGAN(Adversarial):
         D_gradients = tape.gradient(D_loss, self.D.trainable_variables)
 
         # Applies the discriminator's gradients using an optimizer
-        self.D_optimizer.apply_gradients(
-            zip(D_gradients, self.D.trainable_variables))
+        self.D_optimizer.apply_gradients(zip(D_gradients, self.D.trainable_variables))
 
         # Updates the discriminator's loss state
         self.D_loss.update_state(D_loss)
 
         # Checks if WGAN is using weight clipping
-        if self.model_type == 'wc':
+        if self.model_type == "wc":
             # Clips the weights
-            [w.assign(tf.clip_by_value(w, -self.clip, self.clip))
-             for w in self.D.trainable_variables]
+            [
+                w.assign(tf.clip_by_value(w, -self.clip, self.clip))
+                for w in self.D.trainable_variables
+            ]
 
     @tf.function
     def G_step(self, x):
@@ -218,8 +229,7 @@ class WGAN(Adversarial):
         G_gradients = tape.gradient(G_loss, self.G.trainable_variables)
 
         # Applies the generator's gradients using an optimizer
-        self.G_optimizer.apply_gradients(
-            zip(G_gradients, self.G.trainable_variables))
+        self.G_optimizer.apply_gradients(zip(G_gradients, self.G.trainable_variables))
 
         # Updates the generator's loss state
         self.G_loss.update_state(G_loss)
@@ -234,20 +244,20 @@ class WGAN(Adversarial):
 
         """
 
-        logger.info('Fitting model ...')
+        logger.info("Fitting model ...")
 
         # Gathering the amount of batches
         n_batches = tf.data.experimental.cardinality(batches).numpy()
 
         for e in range(epochs):
-            logger.info('Epoch %d/%d', e+1, epochs)
+            logger.info("Epoch %d/%d", e + 1, epochs)
 
             # Resetting states to further append losses
             self.G_loss.reset_states()
             self.D_loss.reset_states()
 
             # Defining a customized progress bar
-            b = Progbar(n_batches, stateful_metrics=['loss(G)', 'loss(D)'])
+            b = Progbar(n_batches, stateful_metrics=["loss(G)", "loss(D)"])
 
             for batch in batches:
                 # Iterate through all possible critic steps
@@ -259,11 +269,20 @@ class WGAN(Adversarial):
                 self.G_step(batch)
 
                 # Adding corresponding values to the progress bar
-                b.add(1, values=[('loss(G)', self.G_loss.result()),
-                                 ('loss(D)', self.D_loss.result())])
+                b.add(
+                    1,
+                    values=[
+                        ("loss(G)", self.G_loss.result()),
+                        ("loss(D)", self.D_loss.result()),
+                    ],
+                )
 
             # Dumps the losses to history
-            self.history['G_loss'].append(self.G_loss.result().numpy())
-            self.history['D_loss'].append(self.D_loss.result().numpy())
+            self.history["G_loss"].append(self.G_loss.result().numpy())
+            self.history["D_loss"].append(self.D_loss.result().numpy())
 
-            logger.to_file('Loss(G): %s | Loss(D): %s', self.G_loss.result().numpy(), self.D_loss.result().numpy())
+            logger.to_file(
+                "Loss(G): %s | Loss(D): %s",
+                self.G_loss.result().numpy(),
+                self.D_loss.result().numpy(),
+            )

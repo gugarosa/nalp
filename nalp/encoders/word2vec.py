@@ -6,10 +6,10 @@ import multiprocessing
 import numpy as np
 from gensim.models.word2vec import Word2Vec as W2V
 
-import nalp.utils.logging as l
 from nalp.core.encoder import Encoder
+from nalp.utils import logging
 
-logger = l.get_logger(__name__)
+logger = logging.get_logger(__name__)
 
 
 class Word2vecEncoder(Encoder):
@@ -19,18 +19,24 @@ class Word2vecEncoder(Encoder):
     """
 
     def __init__(self):
-        """Initizaliation method.
+        """Initizaliation method."""
 
-        """
-
-        logger.info('Overriding class: Encoder -> Word2vecEncoder.')
+        logger.info("Overriding class: Encoder -> Word2vecEncoder.")
 
         super(Word2vecEncoder, self)
 
-        logger.info('Class overrided.')
+        logger.info("Class overrided.")
 
-    def learn(self, tokens, max_features=128, window_size=5, min_count=1,
-              algorithm=0, learning_rate=0.01, iterations=1000):
+    def learn(
+        self,
+        tokens,
+        max_features=128,
+        window_size=5,
+        min_count=1,
+        algorithm=0,
+        learning_rate=0.01,
+        iterations=1000,
+    ):
         """Learns a Word2Vec representation based on the its methodology.
 
         One can use CBOW or Skip-gram algorithm for the learning procedure.
@@ -46,9 +52,16 @@ class Word2vecEncoder(Encoder):
 
         """
 
-        self.encoder = W2V(sentences=[tokens], vector_size=max_features, window=window_size, min_count=min_count,
-                           sg=algorithm, alpha=learning_rate, epochs=iterations,
-                           workers=multiprocessing.cpu_count())
+        self.encoder = W2V(
+            sentences=[tokens],
+            vector_size=max_features,
+            window=window_size,
+            min_count=min_count,
+            sg=algorithm,
+            alpha=learning_rate,
+            epochs=iterations,
+            workers=multiprocessing.cpu_count(),
+        )
 
     def encode(self, tokens):
         """Encodes the data into a Word2Vec representation.
@@ -59,7 +72,7 @@ class Word2vecEncoder(Encoder):
         """
 
         if not self.encoder:
-            e = 'You need to call learn() prior to encode() method.'
+            e = "You need to call learn() prior to encode() method."
 
             logger.error(e)
 
@@ -88,12 +101,14 @@ class Word2vecEncoder(Encoder):
         """
 
         if not self.encoder:
-            e = 'You need to call learn() prior to decode() method.'
+            e = "You need to call learn() prior to decode() method."
 
             logger.error(e)
 
             raise RuntimeError(e)
 
-        decoded_tokens = [self.encoder.wv.most_similar(positive=[t])[0][0] for t in encoded_tokens]
+        decoded_tokens = [
+            self.encoder.wv.most_similar(positive=[t])[0][0] for t in encoded_tokens
+        ]
 
         return decoded_tokens

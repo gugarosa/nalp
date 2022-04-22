@@ -3,10 +3,10 @@
 
 from tensorflow.keras.layers import RNN, Dense, Embedding, SimpleRNNCell
 
-import nalp.utils.logging as l
 from nalp.core import Generator
+from nalp.utils import logging
 
-logger = l.get_logger(__name__)
+logger = logging.get_logger(__name__)
 
 
 class StackedRNNGenerator(Generator):
@@ -18,7 +18,9 @@ class StackedRNNGenerator(Generator):
 
     """
 
-    def __init__(self, encoder=None, vocab_size=1, embedding_size=32, hidden_size=(64, 64)):
+    def __init__(
+        self, encoder=None, vocab_size=1, embedding_size=32, hidden_size=(64, 64)
+    ):
         """Initialization method.
 
         Args:
@@ -29,36 +31,36 @@ class StackedRNNGenerator(Generator):
 
         """
 
-        logger.info('Overriding class: Generator -> StackedRNNGenerator.')
+        logger.info("Overriding class: Generator -> StackedRNNGenerator.")
 
-        super(StackedRNNGenerator, self).__init__(name='G_stacked_rnn')
+        super(StackedRNNGenerator, self).__init__(name="G_stacked_rnn")
 
         # Creates a property for holding the used encoder
         self.encoder = encoder
 
         # Creates an embedding layer
-        self.embedding = Embedding(vocab_size, embedding_size, name='embedding')
+        self.embedding = Embedding(vocab_size, embedding_size, name="embedding")
 
         # Creating a stack of RNN cells
-        self.cells = [SimpleRNNCell(size, name=f'rnn_cell{i}') for (
-            i, size) in enumerate(hidden_size)]
+        self.cells = [
+            SimpleRNNCell(size, name=f"rnn_cell{i}")
+            for (i, size) in enumerate(hidden_size)
+        ]
 
         # Creates the RNN loop itself
-        self.rnn = RNN(self.cells, name='rnn_layer',
-                       return_sequences=True,
-                       stateful=True)
+        self.rnn = RNN(
+            self.cells, name="rnn_layer", return_sequences=True, stateful=True
+        )
 
         # Creates the linear (Dense) layer
-        self.linear = Dense(vocab_size, name='out')
+        self.linear = Dense(vocab_size, name="out")
 
-        logger.debug('Number of cells: %d.', len(hidden_size))
-        logger.info('Class overrided.')
+        logger.debug("Number of cells: %d.", len(hidden_size))
+        logger.info("Class overrided.")
 
     @property
     def encoder(self):
-        """obj: An encoder generic object.
-
-        """
+        """obj: An encoder generic object."""
 
         return self._encoder
 

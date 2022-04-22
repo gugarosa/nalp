@@ -2,9 +2,13 @@
 """
 
 import tensorflow as tf
-from tensorflow.keras.layers import AbstractRNNCell, Dense, LayerNormalization, MultiHeadAttention
-from tensorflow.python.keras import (activations, constraints, initializers,
-                                     regularizers)
+from tensorflow.keras.layers import (
+    AbstractRNNCell,
+    Dense,
+    LayerNormalization,
+    MultiHeadAttention,
+)
+from tensorflow.python.keras import activations, constraints, initializers, regularizers
 
 
 class RelationalMemoryCell(AbstractRNNCell):
@@ -16,11 +20,27 @@ class RelationalMemoryCell(AbstractRNNCell):
 
     """
 
-    def __init__(self, n_slots, n_heads, head_size, n_blocks=1, n_layers=3,
-                 activation='tanh', recurrent_activation='hard_sigmoid', forget_bias=1.0,
-                 kernel_initializer='glorot_uniform', recurrent_initializer='orthogonal', bias_initializer='zeros',
-                 kernel_regularizer=None, recurrent_regularizer=None, bias_regularizer=None,
-                 kernel_constraint=None, recurrent_constraint=None, bias_constraint=None, **kwargs):
+    def __init__(
+        self,
+        n_slots,
+        n_heads,
+        head_size,
+        n_blocks=1,
+        n_layers=3,
+        activation="tanh",
+        recurrent_activation="hard_sigmoid",
+        forget_bias=1.0,
+        kernel_initializer="glorot_uniform",
+        recurrent_initializer="orthogonal",
+        bias_initializer="zeros",
+        kernel_regularizer=None,
+        recurrent_regularizer=None,
+        bias_regularizer=None,
+        kernel_constraint=None,
+        recurrent_constraint=None,
+        bias_constraint=None,
+        **kwargs
+    ):
         """Initialization method.
 
         Args:
@@ -92,8 +112,9 @@ class RelationalMemoryCell(AbstractRNNCell):
         # Creating the feed-forward network
         # It is composed by linear layers and normalization ones
         self.before_norm = LayerNormalization()
-        self.linear = [Dense(self.slot_size, activation='relu')
-                       for _ in range(n_layers)]
+        self.linear = [
+            Dense(self.slot_size, activation="relu") for _ in range(n_layers)
+        ]
         self.after_norm = LayerNormalization()
 
         # Creating the Multi-Head Attention layer
@@ -118,28 +139,28 @@ class RelationalMemoryCell(AbstractRNNCell):
         # Defining a property to hold the `W` matrices
         self.kernel = self.add_weight(
             shape=(self.slot_size, self.n_gates),
-            name='kernel',
+            name="kernel",
             initializer=self.kernel_initializer,
             regularizer=self.kernel_regularizer,
-            constraint=self.kernel_constraint
+            constraint=self.kernel_constraint,
         )
 
         # Defining a property to hold the `U` matrices
         self.recurrent_kernel = self.add_weight(
             shape=(self.slot_size, self.n_gates),
-            name='recurrent_kernel',
+            name="recurrent_kernel",
             initializer=self.recurrent_initializer,
             regularizer=self.recurrent_regularizer,
-            constraint=self.recurrent_constraint
+            constraint=self.recurrent_constraint,
         )
 
         # Defining a property to hold the `b` vectors
         self.bias = self.add_weight(
             shape=(self.n_gates,),
-            name='bias',
+            name="bias",
             initializer=self.bias_initializer,
             regularizer=self.bias_regularizer,
-            constraint=self.bias_constraint
+            constraint=self.bias_constraint,
         )
 
         # Marking the built property as `True`
@@ -163,7 +184,9 @@ class RelationalMemoryCell(AbstractRNNCell):
             concat_memory = tf.concat([inputs, memory], 1)
 
             # Passes down the multi-head attention layer
-            att_memory, _ = self.attn(memory, concat_memory, return_attention_scores=True)
+            att_memory, _ = self.attn(
+                memory, concat_memory, return_attention_scores=True
+            )
 
             # Passes down the first normalization layer
             norm_memory = self.before_norm(att_memory + memory)
@@ -172,9 +195,9 @@ class RelationalMemoryCell(AbstractRNNCell):
             linear_memory = norm_memory
 
             # For every linear layer
-            for l in self.linear:
+            for layer in self.linear:
                 # Passes down the layer
-                linear_memory = l(linear_memory)
+                linear_memory = layer(linear_memory)
 
             # Calculates the final memory from the network with another normalization layer
             memory = self.after_norm(norm_memory + linear_memory)
@@ -200,12 +223,10 @@ class RelationalMemoryCell(AbstractRNNCell):
         inputs = tf.expand_dims(self.projector(inputs), 1)
 
         # Reshaping the previous hidden state tensor
-        h_prev = tf.reshape(
-            h_prev, [h_prev.shape[0], self.n_slots, self.slot_size])
+        h_prev = tf.reshape(h_prev, [h_prev.shape[0], self.n_slots, self.slot_size])
 
         # Reshaping the previous memory tensor
-        m_prev = tf.reshape(
-            m_prev, [m_prev.shape[0], self.n_slots, self.slot_size])
+        m_prev = tf.reshape(m_prev, [m_prev.shape[0], self.n_slots, self.slot_size])
 
         # Copying the inputs for the forget and input gates
         inputs_f = inputs
@@ -237,7 +258,8 @@ class RelationalMemoryCell(AbstractRNNCell):
 
         # Calculating current memory state
         m = self.recurrent_activation(
-            x_f + self.forget_bias) * m_prev + self.recurrent_activation(x_i) * self.activation(att_m)
+            x_f + self.forget_bias
+        ) * m_prev + self.recurrent_activation(x_i) * self.activation(att_m)
 
         # Calculating current hidden state
         h = self.activation(m)
@@ -278,7 +300,7 @@ class RelationalMemoryCell(AbstractRNNCell):
         # If the slot size is smaller than number of slots
         elif self.slot_size < self.n_slots:
             # Just gather the tensor until the desired size
-            states = states[:, :, :self.slot_size]
+            states = states[:, :, : self.slot_size]
 
         # Reshapes to a flatten output
         states = tf.reshape(states, (states.shape[0], -1))
@@ -286,31 +308,29 @@ class RelationalMemoryCell(AbstractRNNCell):
         return states, states
 
     def get_config(self):
-        """Gets the configuration of the layer for further serialization.
-
-        """
+        """Gets the configuration of the layer for further serialization."""
 
         config = {
-            'n_slots': self.n_slots,
-            'slot_size': self.slot_size,
-            'n_heads': self.n_heads,
-            'head_size': self.head_size,
-            'n_blocks': self.n_blocks,
-            'n_layers': self.n_layers,
-            'activation': activations.serialize(self.activation),
-            'recurrent_activation': activations.serialize(self.recurrent_activation),
-            'forget_bias': self.forget_bias,
-            'kernel_initializer': initializers.serialize(self.kernel_initializer),
-            'recurrent_initializer': initializers.serialize(self.recurrent_initializer),
-            'bias_initializer': initializers.serialize(self.bias_initializer),
-            'kernel_regularizer': regularizers.serialize(self.kernel_regularizer),
-            'recurrent_regularizer': regularizers.serialize(self.recurrent_regularizer),
-            'bias_regularizer': regularizers.serialize(self.bias_regularizer),
-            'kernel_constraint': constraints.serialize(self.kernel_constraint),
-            'recurrent_constraint': constraints.serialize(self.recurrent_constraint),
-            'bias_constraint': constraints.serialize(self.bias_constraint),
-            'units': self.units,
-            'n_gates': self.n_gates
+            "n_slots": self.n_slots,
+            "slot_size": self.slot_size,
+            "n_heads": self.n_heads,
+            "head_size": self.head_size,
+            "n_blocks": self.n_blocks,
+            "n_layers": self.n_layers,
+            "activation": activations.serialize(self.activation),
+            "recurrent_activation": activations.serialize(self.recurrent_activation),
+            "forget_bias": self.forget_bias,
+            "kernel_initializer": initializers.serialize(self.kernel_initializer),
+            "recurrent_initializer": initializers.serialize(self.recurrent_initializer),
+            "bias_initializer": initializers.serialize(self.bias_initializer),
+            "kernel_regularizer": regularizers.serialize(self.kernel_regularizer),
+            "recurrent_regularizer": regularizers.serialize(self.recurrent_regularizer),
+            "bias_regularizer": regularizers.serialize(self.bias_regularizer),
+            "kernel_constraint": constraints.serialize(self.kernel_constraint),
+            "recurrent_constraint": constraints.serialize(self.recurrent_constraint),
+            "bias_constraint": constraints.serialize(self.bias_constraint),
+            "units": self.units,
+            "n_gates": self.n_gates,
         }
         base_config = super(RelationalMemoryCell, self).get_config()
 

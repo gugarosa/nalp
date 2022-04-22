@@ -3,10 +3,10 @@
 
 from tensorflow.keras.layers import RNN, Dense, Embedding, SimpleRNNCell
 
-import nalp.utils.logging as l
 from nalp.core import Generator
+from nalp.utils import logging
 
-logger = l.get_logger(__name__)
+logger = logging.get_logger(__name__)
 
 
 class RNNGenerator(Generator):
@@ -29,34 +29,32 @@ class RNNGenerator(Generator):
 
         """
 
-        logger.info('Overriding class: Generator -> RNNGenerator.')
+        logger.info("Overriding class: Generator -> RNNGenerator.")
 
-        super(RNNGenerator, self).__init__(name='G_rnn')
+        super(RNNGenerator, self).__init__(name="G_rnn")
 
         # Creates a property for holding the used encoder
         self.encoder = encoder
 
         # Creates an embedding layer
-        self.embedding = Embedding(vocab_size, embedding_size, name='embedding')
+        self.embedding = Embedding(vocab_size, embedding_size, name="embedding")
 
         # Creates a simple RNN cell
-        self.cell = SimpleRNNCell(hidden_size, name='rnn_cell')
+        self.cell = SimpleRNNCell(hidden_size, name="rnn_cell")
 
         # Creates the RNN loop itself
-        self.rnn = RNN(self.cell, name='rnn_layer',
-                       return_sequences=True,
-                       stateful=True)
+        self.rnn = RNN(
+            self.cell, name="rnn_layer", return_sequences=True, stateful=True
+        )
 
         # Creates the linear (Dense) layer
-        self.linear = Dense(vocab_size, name='out')
+        self.linear = Dense(vocab_size, name="out")
 
-        logger.info('Class overrided.')
+        logger.info("Class overrided.")
 
     @property
     def encoder(self):
-        """obj: An encoder generic object.
-
-        """
+        """obj: An encoder generic object."""
 
         return self._encoder
 

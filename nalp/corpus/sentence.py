@@ -5,11 +5,10 @@ from collections import Counter
 from itertools import chain
 
 import nalp.utils.constants as c
-import nalp.utils.loader as l
-import nalp.utils.logging as log
 from nalp.core import Corpus
+from nalp.utils import loader, logging
 
-logger = log.get_logger(__name__)
+logger = logging.get_logger(__name__)
 
 
 class SentenceCorpus(Corpus):
@@ -20,8 +19,15 @@ class SentenceCorpus(Corpus):
 
     """
 
-    def __init__(self, tokens=None, from_file=None, corpus_type='char', min_frequency=1,
-                 max_pad_length=None, sos_eos_tokens=True):
+    def __init__(
+        self,
+        tokens=None,
+        from_file=None,
+        corpus_type="char",
+        min_frequency=1,
+        max_pad_length=None,
+        sos_eos_tokens=True,
+    ):
         """Initialization method.
 
         Args:
@@ -34,14 +40,14 @@ class SentenceCorpus(Corpus):
 
         """
 
-        logger.info('Overriding class: Corpus -> SentenceCorpus.')
+        logger.info("Overriding class: Corpus -> SentenceCorpus.")
 
         super(SentenceCorpus, self).__init__(min_frequency=min_frequency)
 
         # Checks if there are not pre-loaded tokens
         if not tokens:
             # Loads the sentences from file
-            sentences = l.load_txt(from_file).splitlines()
+            sentences = loader.load_txt(from_file).splitlines()
 
             # Creates a tokenizer based on desired type
             pipe = self._create_tokenizer(corpus_type)
@@ -62,16 +68,19 @@ class SentenceCorpus(Corpus):
         # Builds the vocabulary based on the tokens
         self._build()
 
-        logger.debug('Sentences: %d | Minimum frequency: %d | Maximum pad length: %s | '
-                     'Use <SOS> and <EOS>: %s | Vocabulary size: %d.',
-                     len(self.tokens), self.min_frequency, max_pad_length,
-                     sos_eos_tokens, len(self.vocab))
-        logger.info('SentenceCorpus created.')
+        logger.debug(
+            "Sentences: %d | Minimum frequency: %d | Maximum pad length: %s | "
+            "Use <SOS> and <EOS>: %s | Vocabulary size: %d.",
+            len(self.tokens),
+            self.min_frequency,
+            max_pad_length,
+            sos_eos_tokens,
+            len(self.vocab),
+        )
+        logger.info("SentenceCorpus created.")
 
     def _check_token_frequency(self):
-        """Cuts tokens that do not meet a minimum frequency value.
-
-        """
+        """Cuts tokens that do not meet a minimum frequency value."""
 
         # Calculates the frequency of tokens
         tokens_frequency = Counter(chain.from_iterable(self.tokens))
@@ -117,9 +126,7 @@ class SentenceCorpus(Corpus):
                 self.tokens[i].append(c.EOS)
 
     def _build(self):
-        """Builds the vocabulary based on the tokens.
-
-        """
+        """Builds the vocabulary based on the tokens."""
 
         # Creates the vocabulary
         self.vocab = sorted(set(chain.from_iterable(self.tokens)).union({c.UNK}))

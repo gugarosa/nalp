@@ -3,10 +3,10 @@
 
 from tensorflow.keras.layers import RNN, Dense, LSTMCell
 
-import nalp.utils.logging as l
 from nalp.core import Discriminator
+from nalp.utils import logging
 
-logger = l.get_logger(__name__)
+logger = logging.get_logger(__name__)
 
 
 class LSTMDiscriminator(Discriminator):
@@ -27,25 +27,25 @@ class LSTMDiscriminator(Discriminator):
 
         """
 
-        logger.info('Overriding class: Discriminator -> LSTMDiscriminator.')
+        logger.info("Overriding class: Discriminator -> LSTMDiscriminator.")
 
-        super(LSTMDiscriminator, self).__init__(name='D_lstm')
+        super(LSTMDiscriminator, self).__init__(name="D_lstm")
 
         # Creates an embedding layer
-        self.embedding = Dense(embedding_size, name='embedding')
+        self.embedding = Dense(embedding_size, name="embedding")
 
         # Creates a LSTM cell
-        self.cell = LSTMCell(hidden_size, name='lstm_cell')
+        self.cell = LSTMCell(hidden_size, name="lstm_cell")
 
         # Creates the RNN loop itself
-        self.rnn = RNN(self.cell, name='rnn_layer',
-                       return_sequences=True,
-                       stateful=True)
+        self.rnn = RNN(
+            self.cell, name="rnn_layer", return_sequences=True, stateful=True
+        )
 
         # And finally, defining the output layer
-        self.out = Dense(1, name='out')
+        self.out = Dense(1, name="out")
 
-        logger.info('Class overrided.')
+        logger.info("Class overrided.")
 
     def call(self, x):
         """Method that holds vital information whenever this class is called.

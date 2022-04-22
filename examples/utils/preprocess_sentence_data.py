@@ -1,8 +1,8 @@
-import nalp.utils.loader as l
 import nalp.utils.preprocess as p
+from nalp.utils import loader
 
 # Loads an input .txt file with sentences
-sentences = l.load_txt('data/sentence/coco_image_captions.txt').splitlines()
+sentences = loader.load_txt("data/sentence/coco_image_captions.txt").splitlines()
 
 # Creates character and word pre-processing pipelines
 char_pipe = p.pipeline(p.lower_case, p.valid_char, p.tokenize_to_char)

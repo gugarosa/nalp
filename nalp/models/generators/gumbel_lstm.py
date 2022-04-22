@@ -4,11 +4,11 @@
 import tensorflow as tf
 
 import nalp.utils.constants as c
-import nalp.utils.logging as l
 from nalp.models.generators import LSTMGenerator
 from nalp.models.layers import GumbelSoftmax
+from nalp.utils import logging
 
-logger = l.get_logger(__name__)
+logger = logging.get_logger(__name__)
 
 
 class GumbelLSTMGenerator(LSTMGenerator):
@@ -17,7 +17,9 @@ class GumbelLSTMGenerator(LSTMGenerator):
 
     """
 
-    def __init__(self, encoder=None, vocab_size=1, embedding_size=32, hidden_size=64, tau=5):
+    def __init__(
+        self, encoder=None, vocab_size=1, embedding_size=32, hidden_size=64, tau=5
+    ):
         """Initialization method.
 
         Args:
@@ -29,24 +31,23 @@ class GumbelLSTMGenerator(LSTMGenerator):
 
         """
 
-        logger.info('Overriding class: LSTMGenerator -> GumbelLSTMGenerator.')
+        logger.info("Overriding class: LSTMGenerator -> GumbelLSTMGenerator.")
 
         super(GumbelLSTMGenerator, self).__init__(
-            encoder, vocab_size, embedding_size, hidden_size)
+            encoder, vocab_size, embedding_size, hidden_size
+        )
 
         # Defining a property to hold the Gumbel-Softmax temperature parameter
         self.tau = tau
 
         # Creates a Gumbel-Softmax layer
-        self.gumbel = GumbelSoftmax(name='gumbel')
+        self.gumbel = GumbelSoftmax(name="gumbel")
 
-        logger.info('Class overrided.')
+        logger.info("Class overrided.")
 
     @property
     def tau(self):
-        """float: Gumbel-Softmax temperature parameter.
-
-        """
+        """float: Gumbel-Softmax temperature parameter."""
 
         return self._tau
 
@@ -229,7 +230,9 @@ class GumbelLSTMGenerator(LSTMGenerator):
 
                 # Also ensures that first index will always be true to prevent zero
                 # tokens from being sampled
-                ignored_indexes = tf.tensor_scatter_nd_update(ignored_indexes, [[0, 0]], [True])
+                ignored_indexes = tf.tensor_scatter_nd_update(
+                    ignored_indexes, [[0, 0]], [True]
+                )
 
                 # Filters the predictions and its indexes
                 preds = tf.expand_dims(preds[ignored_indexes], 0)

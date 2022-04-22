@@ -4,36 +4,30 @@
 import numpy as np
 
 import nalp.utils.constants as c
-import nalp.utils.logging as l
 from nalp.core.encoder import Encoder
+from nalp.utils import logging
 
-logger = l.get_logger(__name__)
+logger = logging.get_logger(__name__)
 
 
 class IntegerEncoder(Encoder):
-    """An IntegerEncoder class is responsible for encoding text into integers.
-
-    """
+    """An IntegerEncoder class is responsible for encoding text into integers."""
 
     def __init__(self):
-        """Initizaliation method.
+        """Initizaliation method."""
 
-        """
-
-        logger.info('Overriding class: Encoder -> IntegerEncoder.')
+        logger.info("Overriding class: Encoder -> IntegerEncoder.")
 
         super(IntegerEncoder, self)
 
         # Creates an empty decoder property
         self.decoder = None
 
-        logger.info('Class overrided.')
+        logger.info("Class overrided.")
 
     @property
     def decoder(self):
-        """dict: A decoder dictionary.
-
-        """
+        """dict: A decoder dictionary."""
 
         return self._decoder
 
@@ -68,7 +62,7 @@ class IntegerEncoder(Encoder):
         """
 
         if not self.encoder:
-            e = 'You need to call learn() prior to encode() method.'
+            e = "You need to call learn() prior to encode() method."
 
             logger.error(e)
 
@@ -78,7 +72,12 @@ class IntegerEncoder(Encoder):
 
         for token in tokens:
             if isinstance(token, (np.ndarray, list)):
-                encoded_tokens.append([self.encoder[t] if t in self.encoder else self.encoder[c.UNK] for t in token])
+                encoded_tokens.append(
+                    [
+                        self.encoder[t] if t in self.encoder else self.encoder[c.UNK]
+                        for t in token
+                    ]
+                )
 
             else:
                 if token in self.encoder:
@@ -103,7 +102,7 @@ class IntegerEncoder(Encoder):
         """
 
         if not self.decoder:
-            e = 'You need to call learn() prior to decode() method.'
+            e = "You need to call learn() prior to decode() method."
 
             logger.error(e)
 

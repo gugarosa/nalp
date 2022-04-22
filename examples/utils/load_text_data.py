@@ -1,7 +1,7 @@
-import nalp.utils.loader as l
+from nalp.utils import loader
 
 # Loads an input .txt file
-text = l.load_txt('data/text/chapter1_harry.txt')
+text = loader.load_txt("data/text/chapter1_harry.txt")
 
 # Printing loaded text
 print(text)

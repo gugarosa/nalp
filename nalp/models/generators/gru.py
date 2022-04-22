@@ -3,10 +3,10 @@
 
 from tensorflow.keras.layers import RNN, Dense, Embedding, GRUCell
 
-import nalp.utils.logging as l
 from nalp.core import Generator
+from nalp.utils import logging
 
-logger = l.get_logger(__name__)
+logger = logging.get_logger(__name__)
 
 
 class GRUGenerator(Generator):
@@ -31,35 +31,32 @@ class GRUGenerator(Generator):
 
         """
 
-        logger.info('Overriding class: Generator -> GRUGenerator.')
+        logger.info("Overriding class: Generator -> GRUGenerator.")
 
-        super(GRUGenerator, self).__init__(name='G_gru')
+        super(GRUGenerator, self).__init__(name="G_gru")
 
         # Creates a property for holding the used encoder
         self.encoder = encoder
 
         # Creates an embedding layer
-        self.embedding = Embedding(
-            vocab_size, embedding_size, name='embedding')
+        self.embedding = Embedding(vocab_size, embedding_size, name="embedding")
 
         # Creates a GRU cell
-        self.cell = GRUCell(hidden_size, name='gru')
+        self.cell = GRUCell(hidden_size, name="gru")
 
         # Creates the RNN loop itself
-        self.rnn = RNN(self.cell, name='rnn_layer',
-                       return_sequences=True,
-                       stateful=True)
+        self.rnn = RNN(
+            self.cell, name="rnn_layer", return_sequences=True, stateful=True
+        )
 
         # Creates the linear (Dense) layer
-        self.linear = Dense(vocab_size, name='out')
+        self.linear = Dense(vocab_size, name="out")
 
-        logger.info('Class overrided.')
+        logger.info("Class overrided.")
 
     @property
     def encoder(self):
-        """obj: An encoder generic object.
-
-        """
+        """obj: An encoder generic object."""
 
         return self._encoder
 

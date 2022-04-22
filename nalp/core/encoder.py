@@ -1,6 +1,7 @@
 """Encoder-related class.
 """
 
+
 class Encoder:
     """An Encoder class is responsible for receiving a Corpus and
     enconding it on a representation (i.e., integer, word2vec).
@@ -9,9 +10,7 @@ class Encoder:
 
     @property
     def encoder(self):
-        """obj: An encoder generic object.
-
-        """
+        """obj: An encoder generic object."""
 
         return self._encoder
 

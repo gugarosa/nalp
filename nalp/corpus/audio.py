@@ -1,11 +1,10 @@
 """Audio-related corpus.
 """
 
-import nalp.utils.loader as l
-import nalp.utils.logging as log
 from nalp.core import Corpus
+from nalp.utils import loader, logging
 
-logger = log.get_logger(__name__)
+logger = logging.get_logger(__name__)
 
 
 class AudioCorpus(Corpus):
@@ -25,12 +24,12 @@ class AudioCorpus(Corpus):
 
         """
 
-        logger.info('Overriding class: Corpus -> AudioCorpus.')
+        logger.info("Overriding class: Corpus -> AudioCorpus.")
 
         super(AudioCorpus, self).__init__(min_frequency=min_frequency)
 
         # Loads the audio from file
-        audio = l.load_audio(from_file)
+        audio = loader.load_audio(from_file)
 
         # Declaring an empty list to hold audio notes
         self.tokens = []
@@ -38,7 +37,7 @@ class AudioCorpus(Corpus):
         # Gathering notes
         for step in audio:
             # Checking for real note
-            if not step.is_meta and step.channel == 0 and step.type == 'note_on':
+            if not step.is_meta and step.channel == 0 and step.type == "note_on":
                 # Gathering note
                 note = step.bytes()
 
@@ -51,6 +50,10 @@ class AudioCorpus(Corpus):
         # Builds the vocabulary based on the tokens
         self._build()
 
-        logger.debug('Tokens: %d | Type: audio | Minimum frequency: %d | Vocabulary size: %d.',
-                     len(self.tokens), self.min_frequency, len(self.vocab))
-        logger.info('AudioCorpus created.')
+        logger.debug(
+            "Tokens: %d | Type: audio | Minimum frequency: %d | Vocabulary size: %d.",
+            len(self.tokens),
+            self.min_frequency,
+            len(self.vocab),
+        )
+        logger.info("AudioCorpus created.")

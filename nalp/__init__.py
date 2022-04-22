@@ -2,4 +2,4 @@
     of several modules and sub-modules.
 """
 
-__version__ = '2.0.4'
+__version__ = "2.0.4"

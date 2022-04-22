@@ -4,10 +4,10 @@
 import tensorflow as tf
 from tensorflow.keras.layers import Dense
 
-import nalp.utils.logging as l
 from nalp.core import Generator
+from nalp.utils import logging
 
-logger = l.get_logger(__name__)
+logger = logging.get_logger(__name__)
 
 
 class LinearGenerator(Generator):
@@ -27,9 +27,9 @@ class LinearGenerator(Generator):
 
         """
 
-        logger.info('Overriding class: Generator -> LinearGenerator.')
+        logger.info("Overriding class: Generator -> LinearGenerator.")
 
-        super(LinearGenerator, self).__init__(name='G_linear')
+        super(LinearGenerator, self).__init__(name="G_linear")
 
         # Defining a property for the LeakyReLU activation
         self.alpha = alpha
@@ -38,19 +38,18 @@ class LinearGenerator(Generator):
         self.noise_dim = noise_dim
 
         # Defining a list for holding the linear layers
-        self.linear = [Dense(
-            128 * (i + 1), name=f'linear_{i}') for i in range(n_samplings)]
+        self.linear = [
+            Dense(128 * (i + 1), name=f"linear_{i}") for i in range(n_samplings)
+        ]
 
         # Defining the output layer with a `tanh` activation for restraining interval to [-1, 1]
-        self.out = Dense(input_shape[0], activation='tanh', name='out')
+        self.out = Dense(input_shape[0], activation="tanh", name="out")
 
-        logger.info('Class overrided.')
+        logger.info("Class overrided.")
 
     @property
     def alpha(self):
-        """float: LeakyReLU activation threshold.
-
-        """
+        """float: LeakyReLU activation threshold."""
 
         return self._alpha
 
@@ -60,9 +59,7 @@ class LinearGenerator(Generator):
 
     @property
     def noise_dim(self):
-        """int: Amount of noise dimensions.
-
-        """
+        """int: Amount of noise dimensions."""
 
         return self._noise_dim
 

@@ -1,12 +1,12 @@
 """Deep Convolutional Generative Adversarial Network.
 """
 
-import nalp.utils.logging as l
 from nalp.core import Adversarial
 from nalp.models.discriminators import ConvDiscriminator
 from nalp.models.generators import ConvGenerator
+from nalp.utils import logging
 
-logger = l.get_logger(__name__)
+logger = logging.get_logger(__name__)
 
 
 class DCGAN(Adversarial):
@@ -19,7 +19,14 @@ class DCGAN(Adversarial):
 
     """
 
-    def __init__(self, input_shape=(28, 28, 1), noise_dim=100, n_samplings=3, alpha=0.3, dropout_rate=0.3):
+    def __init__(
+        self,
+        input_shape=(28, 28, 1),
+        noise_dim=100,
+        n_samplings=3,
+        alpha=0.3,
+        dropout_rate=0.3,
+    ):
         """Initialization method.
 
         Args:
@@ -31,7 +38,7 @@ class DCGAN(Adversarial):
 
         """
 
-        logger.info('Overriding class: Adversarial -> DCGAN.')
+        logger.info("Overriding class: Adversarial -> DCGAN.")
 
         # Creating the discriminator network
         D = ConvDiscriminator(n_samplings, alpha, dropout_rate)
@@ -39,10 +46,15 @@ class DCGAN(Adversarial):
         # Creating the generator network
         G = ConvGenerator(input_shape, noise_dim, n_samplings, alpha)
 
-        super(DCGAN, self).__init__(D, G, name='dcgan')
+        super(DCGAN, self).__init__(D, G, name="dcgan")
 
-        logger.debug('Input: %s | Noise: %d | Number of samplings: %d | '
-                     'Activation rate: %s | Dropout rate: %s.',
-                     input_shape, noise_dim, n_samplings,
-                     alpha, dropout_rate)
-        logger.info('Class overrided.')
+        logger.debug(
+            "Input: %s | Noise: %d | Number of samplings: %d | "
+            "Activation rate: %s | Dropout rate: %s.",
+            input_shape,
+            noise_dim,
+            n_samplings,
+            alpha,
+            dropout_rate,
+        )
+        logger.info("Class overrided.")

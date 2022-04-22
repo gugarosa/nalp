@@ -5,9 +5,9 @@ import re
 
 import nltk
 
-import nalp.utils.logging as l
+from nalp.utils import logging
 
-logger = l.get_logger(__name__)
+logger = logging.get_logger(__name__)
 
 
 def lower_case(s):
@@ -35,7 +35,7 @@ def valid_char(s):
 
     """
 
-    return re.sub('[^a-zA-z0-9\s]', '', s)
+    return re.sub("[^a-zA-z0-9\s]", "", s)
 
 
 def tokenize_to_char(s):
@@ -63,7 +63,7 @@ def tokenize_to_word(s):
 
     """
 
-    return nltk.regexp_tokenize(s, pattern='\s+', gaps=True)
+    return nltk.regexp_tokenize(s, pattern="\s+", gaps=True)
 
 
 def pipeline(*func):
@@ -83,6 +83,6 @@ def pipeline(*func):
 
         return x
 
-    logger.debug('Pipeline created with %s.', str(func))
+    logger.debug("Pipeline created with %s.", str(func))
 
     return process

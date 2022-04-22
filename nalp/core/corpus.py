@@ -4,10 +4,10 @@
 from collections import Counter
 
 import nalp.utils.constants as c
-import nalp.utils.logging as l
 import nalp.utils.preprocess as p
+from nalp.utils import logging
 
-logger = l.get_logger(__name__)
+logger = logging.get_logger(__name__)
 
 
 class Corpus:
@@ -21,18 +21,14 @@ class Corpus:
     """
 
     def __init__(self, min_frequency=1):
-        """Initialization method.
-
-        """
+        """Initialization method."""
 
         # Minimum token frequency
         self.min_frequency = min_frequency
 
     @property
     def tokens(self):
-        """list: List of input tokens.
-
-        """
+        """list: List of input tokens."""
 
         return self._tokens
 
@@ -42,9 +38,7 @@ class Corpus:
 
     @property
     def vocab(self):
-        """list: Vocabulary tokens.
-
-        """
+        """list: Vocabulary tokens."""
 
         return self._vocab
 
@@ -54,9 +48,7 @@ class Corpus:
 
     @property
     def vocab_size(self):
-        """int: Vocabulary size.
-
-        """
+        """int: Vocabulary size."""
 
         return self._vocab_size
 
@@ -66,9 +58,7 @@ class Corpus:
 
     @property
     def vocab_index(self):
-        """dict: Maps vocabulary tokens to indexes.
-
-        """
+        """dict: Maps vocabulary tokens to indexes."""
 
         return self._vocab_index
 
@@ -78,9 +68,7 @@ class Corpus:
 
     @property
     def index_vocab(self):
-        """dict: Maps indexes to vocabulary tokens.
-
-        """
+        """dict: Maps indexes to vocabulary tokens."""
 
         return self._index_vocab
 
@@ -90,9 +78,7 @@ class Corpus:
 
     @property
     def min_frequency(self):
-        """int: Minimum token frequency.
-
-        """
+        """int: Minimum token frequency."""
 
         return self._min_frequency
 
@@ -111,22 +97,20 @@ class Corpus:
 
         """
 
-        if corpus_type not in ['char', 'word']:
-            e = 'Corpus type should be `char` or `word`.'
+        if corpus_type not in ["char", "word"]:
+            e = "Corpus type should be `char` or `word`."
 
             logger.error(e)
 
             raise RuntimeError(e)
 
-        if corpus_type == 'char':
+        if corpus_type == "char":
             return p.pipeline(p.lower_case, p.valid_char, p.tokenize_to_char)
 
         return p.pipeline(p.lower_case, p.valid_char, p.tokenize_to_word)
 
     def _check_token_frequency(self):
-        """Cuts tokens that do not meet a minimum frequency value.
-
-        """
+        """Cuts tokens that do not meet a minimum frequency value."""
 
         # Calculates the frequency of tokens
         tokens_frequency = Counter(self.tokens)
@@ -140,9 +124,7 @@ class Corpus:
                 self.tokens[i] = c.UNK
 
     def _build(self):
-        """Builds the vocabulary based on the tokens.
-
-        """
+        """Builds the vocabulary based on the tokens."""
 
         # Creates the vocabulary
         self.vocab = sorted(set(self.tokens).union({c.UNK}))

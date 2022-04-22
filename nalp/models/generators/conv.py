@@ -4,10 +4,10 @@
 import tensorflow as tf
 from tensorflow.keras.layers import BatchNormalization, Conv2DTranspose, Dense
 
-import nalp.utils.logging as l
 from nalp.core import Generator
+from nalp.utils import logging
 
-logger = l.get_logger(__name__)
+logger = logging.get_logger(__name__)
 
 
 class ConvGenerator(Generator):
@@ -16,7 +16,9 @@ class ConvGenerator(Generator):
 
     """
 
-    def __init__(self, input_shape=(28, 28, 1), noise_dim=100, n_samplings=3, alpha=0.3):
+    def __init__(
+        self, input_shape=(28, 28, 1), noise_dim=100, n_samplings=3, alpha=0.3
+    ):
         """Initialization method.
 
         Args:
@@ -27,9 +29,9 @@ class ConvGenerator(Generator):
 
         """
 
-        logger.info('Overriding class: Generator -> ConvGenerator.')
+        logger.info("Overriding class: Generator -> ConvGenerator.")
 
-        super(ConvGenerator, self).__init__(name='G_conv')
+        super(ConvGenerator, self).__init__(name="G_conv")
 
         # Defining an alpha property for the LeakyReLU activation
         self.alpha = alpha
@@ -51,37 +53,63 @@ class ConvGenerator(Generator):
             # If it is the first upsampling
             if i == n_samplings:
                 # Appends a linear layer with a custom amount of units
-                self.sampling.append(Dense(self.filter_size ** 2 * 64 * self.sampling_factor,
-                                           use_bias=False, name=f'linear_{i}'))
+                self.sampling.append(
+                    Dense(
+                        self.filter_size**2 * 64 * self.sampling_factor,
+                        use_bias=False,
+                        name=f"linear_{i}",
+                    )
+                )
 
             # If it is the second upsampling
             elif i == n_samplings - 1:
                 # Appends a convolutional layer with (1, 1) strides
-                self.sampling.append(Conv2DTranspose(64 * i, (5, 5), strides=(1, 1),
-                                                     padding='same', use_bias=False, name=f'conv_{i}'))
+                self.sampling.append(
+                    Conv2DTranspose(
+                        64 * i,
+                        (5, 5),
+                        strides=(1, 1),
+                        padding="same",
+                        use_bias=False,
+                        name=f"conv_{i}",
+                    )
+                )
 
             # If it is the rest of the upsamplings
             else:
                 # Appends a convolutional layer with (2, 2) strides
-                self.sampling.append(Conv2DTranspose(64 * i, (5, 5), strides=(2, 2),
-                                                     padding='same', use_bias=False, name=f'conv_{i}'))
+                self.sampling.append(
+                    Conv2DTranspose(
+                        64 * i,
+                        (5, 5),
+                        strides=(2, 2),
+                        padding="same",
+                        use_bias=False,
+                        name=f"conv_{i}",
+                    )
+                )
 
         # Defining a list for holding the batch normalization layers
-        self.bn = [BatchNormalization(name=f'bn_{i}')
-                   for i in range(n_samplings, 0, -1)]
+        self.bn = [
+            BatchNormalization(name=f"bn_{i}") for i in range(n_samplings, 0, -1)
+        ]
 
         # Defining the output layer, which will be a convolutional transpose layer with `n_channels` filters
-        self.out = Conv2DTranspose(input_shape[2], (5, 5), strides=(2, 2),
-                                   padding='same', use_bias=False,
-                                   activation='tanh', name='out')
+        self.out = Conv2DTranspose(
+            input_shape[2],
+            (5, 5),
+            strides=(2, 2),
+            padding="same",
+            use_bias=False,
+            activation="tanh",
+            name="out",
+        )
 
-        logger.info('Class overrided.')
+        logger.info("Class overrided.")
 
     @property
     def alpha(self):
-        """float: LeakyReLU activation threshold.
-
-        """
+        """float: LeakyReLU activation threshold."""
 
         return self._alpha
 
@@ -91,9 +119,7 @@ class ConvGenerator(Generator):
 
     @property
     def noise_dim(self):
-        """int: Amount of noise dimensions.
-
-        """
+        """int: Amount of noise dimensions."""
 
         return self._noise_dim
 
@@ -103,9 +129,7 @@ class ConvGenerator(Generator):
 
     @property
     def sampling_factor(self):
-        """int: Sampling factor used to calculate the upsampling.
-
-        """
+        """int: Sampling factor used to calculate the upsampling."""
 
         return self._sampling_factor
 
@@ -115,9 +139,7 @@ class ConvGenerator(Generator):
 
     @property
     def filter_size(self):
-        """int: Initial size of the filter.
-
-        """
+        """int: Initial size of the filter."""
 
         return self._filter_size
 
@@ -146,7 +168,14 @@ class ConvGenerator(Generator):
             if i == 0:
                 # Reshapes the tensor for the convolutional layer
                 x = tf.reshape(
-                    x, [x.shape[0], self.filter_size, self.filter_size, 64 * self.sampling_factor])
+                    x,
+                    [
+                        x.shape[0],
+                        self.filter_size,
+                        self.filter_size,
+                        64 * self.sampling_factor,
+                    ],
+                )
 
         # Passing down output layer
         x = self.out(x)

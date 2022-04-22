@@ -4,10 +4,10 @@
 import tensorflow as tf
 from tensorflow.keras.layers import Dense
 
-import nalp.utils.logging as l
 from nalp.core import Discriminator
+from nalp.utils import logging
 
-logger = l.get_logger(__name__)
+logger = logging.get_logger(__name__)
 
 
 class LinearDiscriminator(Discriminator):
@@ -25,27 +25,26 @@ class LinearDiscriminator(Discriminator):
 
         """
 
-        logger.info('Overriding class: Discriminator -> LinearDiscriminator.')
+        logger.info("Overriding class: Discriminator -> LinearDiscriminator.")
 
-        super(LinearDiscriminator, self).__init__(name='D_linear')
+        super(LinearDiscriminator, self).__init__(name="D_linear")
 
         # Defining a property for the LeakyReLU activation
         self.alpha = alpha
 
         # Defining a list for holding the linear layers
-        self.linear = [Dense(
-            128 * i, name=f'linear_{i}') for i in range(n_samplings, 0, -1)]
+        self.linear = [
+            Dense(128 * i, name=f"linear_{i}") for i in range(n_samplings, 0, -1)
+        ]
 
         # Defining the output as a logit unit that decides whether input is real or fake
-        self.out = Dense(1, name='out')
+        self.out = Dense(1, name="out")
 
-        logger.info('Class overrided.')
+        logger.info("Class overrided.")
 
     @property
     def alpha(self):
-        """float: LeakyReLU activation threshold.
-
-        """
+        """float: LeakyReLU activation threshold."""
 
         return self._alpha
 

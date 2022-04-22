@@ -6,9 +6,9 @@ from tensorflow.keras import Model
 from tensorflow.keras.utils import Progbar
 
 import nalp.utils.constants as c
-import nalp.utils.logging as l
+from nalp.utils import logging
 
-logger = l.get_logger(__name__)
+logger = logging.get_logger(__name__)
 
 
 class Discriminator(Model):
@@ -17,7 +17,7 @@ class Discriminator(Model):
 
     """
 
-    def __init__(self, name=''):
+    def __init__(self, name=""):
         """Initialization method.
 
         Note that basic variables shared by all childs should be declared here, e.g., layers.
@@ -53,7 +53,7 @@ class Generator(Model):
 
     """
 
-    def __init__(self, name=''):
+    def __init__(self, name=""):
         """Initialization method.
 
         Note that basic variables shared by all childs should be declared here, e.g., layers.
@@ -229,7 +229,9 @@ class Generator(Model):
 
                 # Also ensures that first index will always be true to prevent zero
                 # tokens from being sampled
-                ignored_indexes = tf.tensor_scatter_nd_update(ignored_indexes, [[0, 0]], [True])
+                ignored_indexes = tf.tensor_scatter_nd_update(
+                    ignored_indexes, [[0, 0]], [True]
+                )
 
                 # Filters the predictions and its indexes
                 preds = tf.expand_dims(preds[ignored_indexes], 0)
@@ -259,7 +261,7 @@ class Adversarial(Model):
 
     """
 
-    def __init__(self, discriminator, generator, name=''):
+    def __init__(self, discriminator, generator, name=""):
         """Initialization method.
 
         Args:
@@ -282,9 +284,7 @@ class Adversarial(Model):
 
     @property
     def D(self):
-        """Discriminator: Discriminator architecture.
-
-        """
+        """Discriminator: Discriminator architecture."""
 
         return self._D
 
@@ -294,9 +294,7 @@ class Adversarial(Model):
 
     @property
     def G(self):
-        """Generator: Generator architecture.
-
-        """
+        """Generator: Generator architecture."""
 
         return self._G
 
@@ -306,9 +304,7 @@ class Adversarial(Model):
 
     @property
     def history(self):
-        """dict: History dictionary.
-
-        """
+        """dict: History dictionary."""
 
         return self._history
 
@@ -333,12 +329,12 @@ class Adversarial(Model):
         self.loss = tf.nn.sigmoid_cross_entropy_with_logits
 
         # Defining both loss metrics
-        self.D_loss = tf.metrics.Mean(name='D_loss')
-        self.G_loss = tf.metrics.Mean(name='G_loss')
+        self.D_loss = tf.metrics.Mean(name="D_loss")
+        self.G_loss = tf.metrics.Mean(name="G_loss")
 
         # Storing losses as history keys
-        self.history['D_loss'] = []
-        self.history['G_loss'] = []
+        self.history["D_loss"] = []
+        self.history["G_loss"] = []
 
     def _discriminator_loss(self, y_real, y_fake):
         """Calculates the loss out of the discriminator architecture.
@@ -418,32 +414,40 @@ class Adversarial(Model):
 
         """
 
-        logger.info('Fitting model ...')
+        logger.info("Fitting model ...")
 
         # Gathering the amount of batches
         n_batches = tf.data.experimental.cardinality(batches).numpy()
 
         for e in range(epochs):
-            logger.info('Epoch %d/%d', e+1, epochs)
+            logger.info("Epoch %d/%d", e + 1, epochs)
 
             # Resetting states to further append losses
             self.G_loss.reset_states()
             self.D_loss.reset_states()
 
             # Defining a customized progress bar
-            b = Progbar(n_batches, stateful_metrics=['loss(G)', 'loss(D)'])
+            b = Progbar(n_batches, stateful_metrics=["loss(G)", "loss(D)"])
 
             for batch in batches:
                 # Performs the optimization step
                 self.step(batch)
 
                 # Adding corresponding values to the progress bar
-                b.add(1, values=[('loss(G)', self.G_loss.result()),
-                                 ('loss(D)', self.D_loss.result())])
+                b.add(
+                    1,
+                    values=[
+                        ("loss(G)", self.G_loss.result()),
+                        ("loss(D)", self.D_loss.result()),
+                    ],
+                )
 
             # Dumps the losses to history
-            self.history['G_loss'].append(self.G_loss.result().numpy())
-            self.history['D_loss'].append(self.D_loss.result().numpy())
+            self.history["G_loss"].append(self.G_loss.result().numpy())
+            self.history["D_loss"].append(self.D_loss.result().numpy())
 
-            logger.to_file('Loss(G): %s | Loss(D): %s',
-                        self.G_loss.result().numpy(), self.D_loss.result().numpy())
+            logger.to_file(
+                "Loss(G): %s | Loss(D): %s",
+                self.G_loss.result().numpy(),
+                self.D_loss.result().numpy(),
+            )

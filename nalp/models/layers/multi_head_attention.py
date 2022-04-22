@@ -33,7 +33,7 @@ def scaled_dot_product_attention(q, k, v, mask):
 
     if mask is not None:
         # Adds the mask to the scaled attention logits
-        scaled_attention_logits += (mask * c.EPSILON)
+        scaled_attention_logits += mask * c.EPSILON
 
     # Calculates the attention weights
     attention_weights = tf.nn.softmax(scaled_attention_logits, -1)
@@ -143,14 +143,12 @@ class MultiHeadAttention(Layer):
         return output, attn_weights
 
     def get_config(self):
-        """Gets the configuration of the layer for further serialization.
-
-        """
+        """Gets the configuration of the layer for further serialization."""
 
         config = {
-            'n_features': self.n_features,
-            'n_heads': self.n_heads,
-            'depth': self.depth
+            "n_features": self.n_features,
+            "n_heads": self.n_heads,
+            "depth": self.depth,
         }
         base_config = super(MultiHeadAttention, self).get_config()
 

@@ -1,7 +1,7 @@
-import nalp.utils.loader as l
+from nalp.utils import loader
 
 # Loads an input .mid file
-audio = l.load_audio('data/audio/sample.mid')
+audio = loader.load_audio("data/audio/sample.mid")
 
 # Printing loaded audio
 print(audio)

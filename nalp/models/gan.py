@@ -1,12 +1,12 @@
 """Generative Adversarial Network.
 """
 
-import nalp.utils.logging as l
 from nalp.core import Adversarial
 from nalp.models.discriminators import LinearDiscriminator
 from nalp.models.generators import LinearGenerator
+from nalp.utils import logging
 
-logger = l.get_logger(__name__)
+logger = logging.get_logger(__name__)
 
 
 class GAN(Adversarial):
@@ -29,7 +29,7 @@ class GAN(Adversarial):
 
         """
 
-        logger.info('Overriding class: Adversarial -> GAN.')
+        logger.info("Overriding class: Adversarial -> GAN.")
 
         # Creating the discriminator network
         D = LinearDiscriminator(n_samplings, alpha)
@@ -37,10 +37,13 @@ class GAN(Adversarial):
         # Creating the generator network
         G = LinearGenerator(input_shape, noise_dim, n_samplings, alpha)
 
-        super(GAN, self).__init__(D, G, name='gan')
+        super(GAN, self).__init__(D, G, name="gan")
 
-        logger.debug('Input: %s | Noise: %d | '
-                     'Number of samplings: %d | Activation rate: %s.',
-                     input_shape, noise_dim,
-                     n_samplings, alpha)
-        logger.info('Class overrided.')
+        logger.debug(
+            "Input: %s | Noise: %d | " "Number of samplings: %d | Activation rate: %s.",
+            input_shape,
+            noise_dim,
+            n_samplings,
+            alpha,
+        )
+        logger.info("Class overrided.")

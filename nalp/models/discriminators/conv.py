@@ -4,10 +4,10 @@
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, Dense, Dropout
 
-import nalp.utils.logging as l
 from nalp.core import Discriminator
+from nalp.utils import logging
 
-logger = l.get_logger(__name__)
+logger = logging.get_logger(__name__)
 
 
 class ConvDiscriminator(Discriminator):
@@ -26,30 +26,34 @@ class ConvDiscriminator(Discriminator):
 
         """
 
-        logger.info('Overriding class: Discriminator -> ConvDiscriminator.')
+        logger.info("Overriding class: Discriminator -> ConvDiscriminator.")
 
-        super(ConvDiscriminator, self).__init__(name='D_conv')
+        super(ConvDiscriminator, self).__init__(name="D_conv")
 
         # Defining a property for the LeakyReLU activation
         self.alpha = alpha
 
         # Defining a list for holding the convolutional layers
-        self.conv = [Conv2D(
-            64 * (i + 1), (5, 5), strides=(2, 2), padding='same', name=f'conv_{i}') for i in range(n_samplings)]
+        self.conv = [
+            Conv2D(
+                64 * (i + 1), (5, 5), strides=(2, 2), padding="same", name=f"conv_{i}"
+            )
+            for i in range(n_samplings)
+        ]
 
         # Defining a list for holding the dropout layers
-        self.drop = [Dropout(dropout_rate, name=f'drop_{i}') for i in range(n_samplings)]
+        self.drop = [
+            Dropout(dropout_rate, name=f"drop_{i}") for i in range(n_samplings)
+        ]
 
         # Defining the output as a logit unit that decides whether input is real or fake
-        self.out = Dense(1, name='out')
+        self.out = Dense(1, name="out")
 
-        logger.info('Class overrided.')
+        logger.info("Class overrided.")
 
     @property
     def alpha(self):
-        """float: LeakyReLU activation threshold.
-
-        """
+        """float: LeakyReLU activation threshold."""
 
         return self._alpha
 

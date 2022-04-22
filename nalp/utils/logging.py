@@ -5,16 +5,13 @@ import logging
 import sys
 from logging.handlers import TimedRotatingFileHandler
 
-FORMATTER = logging.Formatter(
-    '%(asctime)s - %(name)s — %(levelname)s — %(message)s')
-LOG_FILE = 'nalp.log'
+FORMATTER = logging.Formatter("%(asctime)s - %(name)s — %(levelname)s — %(message)s")
+LOG_FILE = "nalp.log"
 LOG_LEVEL = logging.DEBUG
 
 
 class Logger(logging.Logger):
-    """A customized Logger file that enables the possibility of only logging to file.
-
-    """
+    """A customized Logger file that enables the possibility of only logging to file."""
 
     def to_file(self, msg, *args, **kwargs):
         """Logs the message only to the logging file.
@@ -58,7 +55,7 @@ def get_timed_file_handler():
     """
 
     # Creates a timed rotating file handler for logger
-    file_handler = TimedRotatingFileHandler(LOG_FILE, delay=True, when='midnight')
+    file_handler = TimedRotatingFileHandler(LOG_FILE, delay=True, when="midnight")
     file_handler.setFormatter(FORMATTER)
 
     return file_handler
