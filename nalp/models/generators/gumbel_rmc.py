@@ -1,9 +1,12 @@
 """Gumbel Relational Memory Core generator.
 """
 
+from typing import List, Optional, Tuple
+
 import tensorflow as tf
 
 import nalp.utils.constants as c
+from nalp.encoders.integer import IntegerEncoder
 from nalp.models.generators import RMCGenerator
 from nalp.models.layers import GumbelSoftmax
 from nalp.utils import logging
@@ -19,28 +22,28 @@ class GumbelRMCGenerator(RMCGenerator):
 
     def __init__(
         self,
-        encoder=None,
-        vocab_size=1,
-        embedding_size=32,
-        n_slots=3,
-        n_heads=5,
-        head_size=10,
-        n_blocks=1,
-        n_layers=3,
-        tau=5,
+        encoder: Optional[IntegerEncoder] = None,
+        vocab_size: Optional[int] = 1,
+        embedding_size: Optional[int] = 32,
+        n_slots: Optional[int] = 3,
+        n_heads: Optional[int] = 5,
+        head_size: Optional[int] = 10,
+        n_blocks: Optional[int] = 1,
+        n_layers: Optional[int] = 3,
+        tau: Optional[float] = 5,
     ):
         """Initialization method.
 
         Args:
-            encoder (IntegerEncoder): An index to vocabulary encoder.
-            vocab_size (int): The size of the vocabulary.
-            embedding_size (int): The size of the embedding layer.
-            n_slots (int): Number of memory slots.
-            n_heads (int): Number of attention heads.
-            head_size (int): Size of each attention head.
-            n_blocks (int): Number of feed-forward networks.
-            n_layers (int): Amout of layers per feed-forward network.
-            tau (float): Gumbel-Softmax temperature parameter.
+            encoder: An index to vocabulary encoder.
+            vocab_size: The size of the vocabulary.
+            embedding_size: The size of the embedding layer.
+            n_slots: Number of memory slots.
+            n_heads: Number of attention heads.
+            head_size: Size of each attention head.
+            n_blocks: Number of feed-forward networks.
+            n_layers: Amout of layers per feed-forward network.
+            tau: Gumbel-Softmax temperature parameter.
 
         """
 
@@ -66,23 +69,23 @@ class GumbelRMCGenerator(RMCGenerator):
         logger.info("Class overrided.")
 
     @property
-    def tau(self):
-        """float: Gumbel-Softmax temperature parameter."""
+    def tau(self) -> float:
+        """Gumbel-Softmax temperature parameter."""
 
         return self._tau
 
     @tau.setter
-    def tau(self, tau):
+    def tau(self, tau: float) -> None:
         self._tau = tau
 
-    def call(self, x):
+    def call(self, x: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
         """Method that holds vital information whenever this class is called.
 
         Args:
-            x (tf.tensor): A tensorflow's tensor holding input data.
+            x: A tensorflow's tensor holding input data.
 
         Returns:
-            Logit-based predictions, Gumbel-Softmax outputs and predicted token.
+            (Tuple[tf.Tensor, tf.Tensor, tf.Tensor]): Logit-based predictions, Gumbel-Softmax outputs and predicted token.
 
         """
 
@@ -100,16 +103,18 @@ class GumbelRMCGenerator(RMCGenerator):
 
         return x, x_g, y_g
 
-    def generate_greedy_search(self, start, max_length=100):
+    def generate_greedy_search(
+        self, start: str, max_length: Optional[int] = 100
+    ) -> List[str]:
         """Generates text by using greedy search, where the sampled
         token is always sampled according to the maximum probability.
 
         Args:
-            start (str): The start string to generate the text.
-            max_length (int): Maximum length of generated text.
+            start: The start string to generate the text.
+            max_length: Maximum length of generated text.
 
         Returns:
-            A list holding the generated text.
+            (List[str]): Generated text.
 
         """
 
@@ -145,17 +150,22 @@ class GumbelRMCGenerator(RMCGenerator):
 
         return sampled_tokens
 
-    def generate_temperature_sampling(self, start, max_length=100, temperature=1.0):
+    def generate_temperature_sampling(
+        self,
+        start: str,
+        max_length: Optional[int] = 100,
+        temperature: Optional[float] = 1.0,
+    ):
         """Generates text by using temperature sampling, where the sampled
         token is sampled according to a multinomial/categorical distribution.
 
         Args:
-            start (str): The start string to generate the text.
-            max_length (int): Length of generated text.
-            temperature (float): A temperature value to sample the token.
+            start: The start string to generate the text.
+            max_length: Length of generated text.
+            temperature: A temperature value to sample the token.
 
         Returns:
-            A list holding the generated text.
+            (List[str]): Generated text.
 
         """
 
@@ -197,19 +207,25 @@ class GumbelRMCGenerator(RMCGenerator):
 
         return sampled_tokens
 
-    def generate_top_sampling(self, start, max_length=100, k=0, p=0.0):
+    def generate_top_sampling(
+        self,
+        start: str,
+        max_length: Optional[int] = 100,
+        k: Optional[int] = 0,
+        p: Optional[float] = 0.0,
+    ):
         """Generates text by using top-k and top-p sampling, where the sampled
         token is sampled according to the `k` most likely words distribution, as well
         as to the maximim cumulative probability `p`.
 
         Args:
-            start (str): The start string to generate the text.
-            max_length (int): Length of generated text.
-            k (int): Indicates the amount of likely words.
-            p (float): Maximum cumulative probability to be thresholded.
+            start: The start string to generate the text.
+            max_length: Length of generated text.
+            k: Indicates the amount of likely words.
+            p: Maximum cumulative probability to be thresholded.
 
         Returns:
-            A list holding the generated text.
+            (List[str]): Generated text.
 
         """
 

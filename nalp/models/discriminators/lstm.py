@@ -1,6 +1,9 @@
 """Long Short-Term Memory discriminator.
 """
 
+from typing import Optional
+
+import tensorflow as tf
 from tensorflow.keras.layers import RNN, Dense, LSTMCell
 
 from nalp.core import Discriminator
@@ -18,12 +21,14 @@ class LSTMDiscriminator(Discriminator):
 
     """
 
-    def __init__(self, embedding_size=32, hidden_size=64):
+    def __init__(
+        self, embedding_size: Optional[int] = 32, hidden_size: Optional[int] = 64
+    ) -> None:
         """Initialization method.
 
         Args:
-            embedding_size (int): The size of the embedding layer.
-            hidden_size (int): The amount of hidden neurons.
+            embedding_size: The size of the embedding layer.
+            hidden_size: The amount of hidden neurons.
 
         """
 
@@ -47,14 +52,14 @@ class LSTMDiscriminator(Discriminator):
 
         logger.info("Class overrided.")
 
-    def call(self, x):
+    def call(self, x: tf.Tensor) -> tf.Tensor:
         """Method that holds vital information whenever this class is called.
 
         Args:
-            x (tf.tensor): A tensorflow's tensor holding input data.
+            x: A tensorflow's tensor holding input data.
 
         Returns:
-            The same tensor after passing through each defined layer.
+            (tf.Tensor): The same tensor after passing through each defined layer.
 
         """
 

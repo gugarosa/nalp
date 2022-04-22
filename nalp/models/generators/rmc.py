@@ -1,9 +1,12 @@
 """Relational Memory Core generator.
 """
+from typing import Optional
+
 import tensorflow as tf
 from tensorflow.keras.layers import RNN, Dense, Embedding
 
 from nalp.core import Generator
+from nalp.encoders.integer import IntegerEncoder
 from nalp.models.layers.relational_memory_cell import RelationalMemoryCell
 from nalp.utils import logging
 
@@ -22,26 +25,26 @@ class RMCGenerator(Generator):
 
     def __init__(
         self,
-        encoder=None,
-        vocab_size=1,
-        embedding_size=32,
-        n_slots=3,
-        n_heads=5,
-        head_size=10,
-        n_blocks=1,
-        n_layers=3,
-    ):
+        encoder: Optional[IntegerEncoder] = None,
+        vocab_size: Optional[int] = 1,
+        embedding_size: Optional[int] = 32,
+        n_slots: Optional[int] = 3,
+        n_heads: Optional[int] = 5,
+        head_size: Optional[int] = 10,
+        n_blocks: Optional[int] = 1,
+        n_layers: Optional[int] = 3,
+    ) -> None:
         """Initialization method.
 
         Args:
-            encoder (IntegerEncoder): An index to vocabulary encoder.
-            vocab_size (int): The size of the vocabulary.
-            embedding_size (int): The size of the embedding layer.
-            n_slots (int): Number of memory slots.
-            n_heads (int): Number of attention heads.
-            head_size (int): Size of each attention head.
-            n_blocks (int): Number of feed-forward networks.
-            n_layers (int): Amout of layers per feed-forward network.
+            encoder: An index to vocabulary encoder.
+            vocab_size: The size of the vocabulary.
+            embedding_size: The size of the embedding layer.
+            n_slots: Number of memory slots.
+            n_heads: Number of attention heads.
+            head_size: Size of each attention head.
+            n_blocks: Number of feed-forward networks.
+            n_layers: Amout of layers per feed-forward network.
 
         """
 
@@ -71,23 +74,23 @@ class RMCGenerator(Generator):
         logger.info("Class overrided.")
 
     @property
-    def encoder(self):
-        """obj: An encoder generic object."""
+    def encoder(self) -> IntegerEncoder:
+        """An encoder generic object."""
 
         return self._encoder
 
     @encoder.setter
-    def encoder(self, encoder):
+    def encoder(self, encoder: IntegerEncoder) -> None:
         self._encoder = encoder
 
-    def call(self, x):
+    def call(self, x: tf.Tensor) -> tf.Tensor:
         """Method that holds vital information whenever this class is called.
 
         Args:
-            x (tf.tensor): A tensorflow's tensor holding input data.
+            x: A tensorflow's tensor holding input data.
 
         Returns:
-            The same tensor after passing through each defined layer.
+            (tf.Tensor): The same tensor after passing through each defined layer.
 
         """
 

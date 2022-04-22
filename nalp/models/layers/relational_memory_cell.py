@@ -1,6 +1,8 @@
 """Relational-Memory Cell layer.
 """
 
+from typing import Any, Dict, List, Optional, Tuple
+
 import tensorflow as tf
 from tensorflow.keras.layers import (
     AbstractRNNCell,
@@ -22,45 +24,45 @@ class RelationalMemoryCell(AbstractRNNCell):
 
     def __init__(
         self,
-        n_slots,
-        n_heads,
-        head_size,
-        n_blocks=1,
-        n_layers=3,
-        activation="tanh",
-        recurrent_activation="hard_sigmoid",
-        forget_bias=1.0,
-        kernel_initializer="glorot_uniform",
-        recurrent_initializer="orthogonal",
-        bias_initializer="zeros",
-        kernel_regularizer=None,
-        recurrent_regularizer=None,
-        bias_regularizer=None,
-        kernel_constraint=None,
-        recurrent_constraint=None,
-        bias_constraint=None,
+        n_slots: int,
+        n_heads: int,
+        head_size: int,
+        n_blocks: Optional[int] = 1,
+        n_layers: Optional[int] = 3,
+        activation: Optional[str] = "tanh",
+        recurrent_activation: Optional[str] = "hard_sigmoid",
+        forget_bias: Optional[float] = 1.0,
+        kernel_initializer: Optional[str] = "glorot_uniform",
+        recurrent_initializer: Optional[str] = "orthogonal",
+        bias_initializer: Optional[str] = "zeros",
+        kernel_regularizer: Optional[str] = None,
+        recurrent_regularizer: Optional[str] = None,
+        bias_regularizer: Optional[str] = None,
+        kernel_constraint: Optional[str] = None,
+        recurrent_constraint: Optional[str] = None,
+        bias_constraint: Optional[str] = None,
         **kwargs
     ):
         """Initialization method.
 
         Args:
-            n_slots (int): Number of memory slots.
-            n_heads (int): Number of attention heads.
-            head_size (int): Size of each attention head.
-            n_blocks (int): Number of feed-forward networks.
-            n_layers (int): Amout of layers per feed-forward network.
-            activation (str): Output activation function.
-            recurrent_activation (str): Recurrent step activation function.
-            forget_bias (float): Forget gate bias values.
-            kernel_initializer (str): Kernel initializer function.
-            recurrent_initializer (str): Recurrent kernel initializer function.
-            bias_initializer (str): Bias initializer function.
-            kernel_regularizer (str): Kernel regularizer function.
-            recurrent_regularizer (str): Recurrent kernel regularizer function.
-            bias_regularizer (str): Bias regularizer function.
-            kernel_constraint (str): Kernel constraint function.
-            recurrent_constraint (str): Recurrent kernel constraint function.
-            bias_constraint (str): Bias constraint function.
+            n_slots: Number of memory slots.
+            n_heads: Number of attention heads.
+            head_size: Size of each attention head.
+            n_blocks: Number of feed-forward networks.
+            n_layers: Amout of layers per feed-forward network.
+            activation: Output activation function.
+            recurrent_activation: Recurrent step activation function.
+            forget_bias: Forget gate bias values.
+            kernel_initializer: Kernel initializer function.
+            recurrent_initializer: Recurrent kernel initializer function.
+            bias_initializer: Bias initializer function.
+            kernel_regularizer: Kernel regularizer function.
+            recurrent_regularizer: Recurrent kernel regularizer function.
+            bias_regularizer: Bias regularizer function.
+            kernel_constraint: Kernel constraint function.
+            recurrent_constraint: Recurrent kernel constraint function.
+            bias_constraint: Bias constraint function.
 
         """
 
@@ -121,18 +123,18 @@ class RelationalMemoryCell(AbstractRNNCell):
         self.attn = MultiHeadAttention(self.slot_size, self.n_heads)
 
     @property
-    def state_size(self):
+    def state_size(self) -> List[int, int]:
         return [self.units, self.units]
 
     @property
-    def output_size(self):
+    def output_size(self) -> int:
         return self.units
 
-    def build(self, input_shape):
+    def build(self, input_shape: tf.Tensor) -> None:
         """Builds up the cell according to its input shape.
 
         Args:
-            input_shape (tf.tensor): Tensor holding the input shape.
+            input_shape: Tensor holding the input shape.
 
         """
 
@@ -166,15 +168,15 @@ class RelationalMemoryCell(AbstractRNNCell):
         # Marking the built property as `True`
         self.built = True
 
-    def _attend_over_memory(self, inputs, memory):
+    def _attend_over_memory(self, inputs: tf.Tensor, memory: tf.Tensor) -> tf.Tensor:
         """Performs an Attention mechanism over the current memory.
 
         Args:
-            inputs (tf.tensor): An input tensor.
-            memory (tf.tensor): Current memory tensor.
+            inputs: An input tensor.
+            memory: Current memory tensor.
 
         Returns:
-            Updated current memory based on Multi-Head Attention mechanism.
+            (tf.Tensor): Updated current memory based on Multi-Head Attention mechanism.
 
         """
 
@@ -204,15 +206,17 @@ class RelationalMemoryCell(AbstractRNNCell):
 
         return memory
 
-    def call(self, inputs, states):
+    def call(
+        self, inputs: tf.Tensor, states: List[tf.Tensor]
+    ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
         """Method that holds vital information whenever this class is called.
 
         Args:
-            inputs (tf.tensor): An input tensor.
-            states (list): A list holding previous states and memories.
+            inputs: An input tensor.
+            states: A list holding previous states and memories.
 
         Returns:
-            Output states as well as current state and memory.
+            (Tuple[tf.Tensor, List[tf.Tensor]]): Output states as well as current state and memory.
 
         """
 
@@ -270,16 +274,21 @@ class RelationalMemoryCell(AbstractRNNCell):
 
         return h, [h, m]
 
-    def get_initial_state(self, inputs=None, batch_size=None, dtype=None):
+    def get_initial_state(
+        self,
+        inputs: Optional[tf.Tensor] = None,
+        batch_size: Optional[int] = None,
+        dtype: Optional[tf.DType] = None,
+    ) -> Tuple[tf.Tensor, tf.Tensor]:
         """Gets the cell initial state by creating an identity matrix.
 
         Args:
-            inputs (tf.tensor): An input tensor.
-            batch_size (int): Size of the batch.
-            dtype (dtype): Dtype from input tensor.
+            inputs: An input tensor.
+            batch_size: Size of the batch.
+            dtype: Dtype from input tensor.
 
         Returns:
-            Initial states.
+            (Tuple[tf.Tensor, tf.Tensor]): Initial states.
 
         """
 
@@ -307,8 +316,13 @@ class RelationalMemoryCell(AbstractRNNCell):
 
         return states, states
 
-    def get_config(self):
-        """Gets the configuration of the layer for further serialization."""
+    def get_config(self) -> Dict[str, Any]:
+        """Gets the configuration of the layer for further serialization.
+
+        Returns:
+            (Dict[str, Any]): Configuration dictionary.
+
+        """
 
         config = {
             "n_slots": self.n_slots,

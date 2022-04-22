@@ -1,6 +1,8 @@
 """Convolutional discriminator.
 """
 
+from typing import Optional
+
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, Dense, Dropout
 
@@ -16,13 +18,18 @@ class ConvDiscriminator(Discriminator):
 
     """
 
-    def __init__(self, n_samplings=3, alpha=0.3, dropout_rate=0.3):
+    def __init__(
+        self,
+        n_samplings: Optional[int] = 3,
+        alpha: Optional[float] = 0.3,
+        dropout_rate: Optional[float] = 0.3,
+    ) -> None:
         """Initialization method.
 
         Args:
-            n_samplings (int): Number of downsamplings to perform.
-            alpha (float): LeakyReLU activation threshold.
-            dropout_rate (float): Dropout activation rate.
+            n_samplings: Number of downsamplings to perform.
+            alpha: LeakyReLU activation threshold.
+            dropout_rate: Dropout activation rate.
 
         """
 
@@ -52,24 +59,24 @@ class ConvDiscriminator(Discriminator):
         logger.info("Class overrided.")
 
     @property
-    def alpha(self):
-        """float: LeakyReLU activation threshold."""
+    def alpha(self) -> float:
+        """LeakyReLU activation threshold."""
 
         return self._alpha
 
     @alpha.setter
-    def alpha(self, alpha):
+    def alpha(self, alpha: float) -> None:
         self._alpha = alpha
 
-    def call(self, x, training=True):
+    def call(self, x: tf.Tensor, training: Optional[bool] = True) -> tf.Tensor:
         """Method that holds vital information whenever this class is called.
 
         Args:
-            x (tf.tensor): A tensorflow's tensor holding input data.
-            training (bool): Whether architecture is under training or not.
+            x: A tensorflow's tensor holding input data.
+            training: Whether architecture is under training or not.
 
         Returns:
-            The same tensor after passing through each defined layer.
+            (tf.Tensor): The same tensor after passing through each defined layer.
 
         """
 

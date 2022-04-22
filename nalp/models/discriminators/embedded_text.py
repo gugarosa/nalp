@@ -1,6 +1,8 @@
 """Embedded-text discriminator.
 """
 
+from typing import Optional, Tuple
+
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, Dense, Dropout, Embedding, MaxPool1D
 
@@ -18,22 +20,22 @@ class EmbeddedTextDiscriminator(Discriminator):
 
     def __init__(
         self,
-        vocab_size=1,
-        max_length=1,
-        embedding_size=32,
-        n_filters=(64),
-        filters_size=(1),
-        dropout_rate=0.25,
-    ):
+        vocab_size: Optional[int] = 1,
+        max_length: Optional[int] = 1,
+        embedding_size: Optional[int] = 32,
+        n_filters: Optional[Tuple[int, ...]] = (64),
+        filters_size: Optional[Tuple[int, ...]] = (1),
+        dropout_rate: Optional[float] = 0.25,
+    ) -> None:
         """Initialization method.
 
         Args:
-            vocab_size (int): The size of the vocabulary.
-            max_length (int): Maximum length of the sequences.
-            embedding_size (int): The size of the embedding layer.
-            n_filters (tuple): Number of filters to be applied.
-            filters_size (tuple): Size of filters to be applied.
-            dropout_rate (float): Dropout activation rate.
+            vocab_size: The size of the vocabulary.
+            max_length: Maximum length of the sequences.
+            embedding_size: The size of the embedding layer.
+            n_filters: Number of filters to be applied.
+            filters_size: Size of filters to be applied.
+            dropout_rate: Dropout activation rate.
 
         """
 
@@ -72,15 +74,15 @@ class EmbeddedTextDiscriminator(Discriminator):
 
         logger.info("Class overrided.")
 
-    def call(self, x, training=True):
+    def call(self, x: tf.Tensor, training: Optional[bool] = True) -> tf.Tensor:
         """Method that holds vital information whenever this class is called.
 
         Args:
-            x (tf.tensor): A tensorflow's tensor holding input data.
-            training (bool): Whether architecture is under training or not.
+            x: A tensorflow's tensor holding input data.
+            training: Whether architecture is under training or not.
 
         Returns:
-            The same tensor after passing through each defined layer.
+            (tf.Tensor): The same tensor after passing through each defined layer.
 
         """
 

@@ -1,20 +1,22 @@
 """Gumbel-Softmax layer.
 """
 
+from typing import Any, Dict, Optional, Tuple
+
 import tensorflow as tf
 from tensorflow.keras.layers import Layer
 
 import nalp.utils.constants as c
 
 
-def gumbel_distribution(input_shape):
+def gumbel_distribution(input_shape: Tuple[int, ...]) -> tf.Tensor:
     """Samples a tensor from a Gumbel distribution.
 
     Args:
-        input_shape (tuple): Shape of tensor to be sampled.
+        input_shape: Shape of tensor to be sampled.
 
     Returns:
-        An input_shape tensor sampled from a Gumbel distribution.
+        (tf.Tensor): An input_shape tensor sampled from a Gumbel distribution.
 
     """
 
@@ -38,11 +40,11 @@ class GumbelSoftmax(Layer):
 
     """
 
-    def __init__(self, axis=-1, **kwargs):
+    def __init__(self, axis: Optional[int] = -1, **kwargs) -> None:
         """Initialization method.
 
         Args:
-            axis (int): Axis to perform the softmax operation.
+            axis: Axis to perform the softmax operation.
 
         """
 
@@ -51,15 +53,15 @@ class GumbelSoftmax(Layer):
         # Defining a property for holding the intended axis
         self.axis = axis
 
-    def call(self, inputs, tau):
+    def call(self, inputs: tf.Tensor, tau: float) -> Tuple[tf.Tensor, tf.Tensor]:
         """Method that holds vital information whenever this class is called.
 
         Args:
-            x (tf.tensor): A tensorflow's tensor holding input data.
-            tau (float): Gumbel-Softmax temperature parameter.
+            x: A tensorflow's tensor holding input data.
+            tau: Gumbel-Softmax temperature parameter.
 
         Returns:
-            Gumbel-Softmax output and its argmax token.
+            (Tuple[tf.Tensor, tf.Tensor]): Gumbel-Softmax output and its argmax token.
 
         """
 
@@ -74,8 +76,13 @@ class GumbelSoftmax(Layer):
 
         return x, y
 
-    def get_config(self):
-        """Gets the configuration of the layer for further serialization."""
+    def get_config(self) -> Dict[str, Any]:
+        """Gets the configuration of the layer for further serialization.
+
+        Returns:
+            (Dict[str, Any]): Configuration dictionary.
+
+        """
 
         config = {"axis": self.axis}
         base_config = super(GumbelSoftmax, self).get_config()

@@ -1,6 +1,8 @@
 """Convolutional generator.
 """
 
+from typing import Optional, Tuple
+
 import tensorflow as tf
 from tensorflow.keras.layers import BatchNormalization, Conv2DTranspose, Dense
 
@@ -17,15 +19,19 @@ class ConvGenerator(Generator):
     """
 
     def __init__(
-        self, input_shape=(28, 28, 1), noise_dim=100, n_samplings=3, alpha=0.3
-    ):
+        self,
+        input_shape: Optional[Tuple[int, int, int]] = (28, 28, 1),
+        noise_dim: Optional[int] = 100,
+        n_samplings: Optional[int] = 3,
+        alpha: Optional[float] = 0.3,
+    ) -> None:
         """Initialization method.
 
         Args:
-            input_shape (tuple): An input shape for the tensor.
-            noise_dim (int): Amount of noise dimensions.
-            n_samplings (int): Number of upsamplings to perform.
-            alpha (float): LeakyReLU activation threshold.
+            input_shape: An input shape for the tensor.
+            noise_dim: Amount of noise dimensions.
+            n_samplings: Number of upsamplings to perform.
+            alpha: LeakyReLU activation threshold.
 
         """
 
@@ -108,54 +114,54 @@ class ConvGenerator(Generator):
         logger.info("Class overrided.")
 
     @property
-    def alpha(self):
-        """float: LeakyReLU activation threshold."""
+    def alpha(self) -> float:
+        """LeakyReLU activation threshold."""
 
         return self._alpha
 
     @alpha.setter
-    def alpha(self, alpha):
+    def alpha(self, alpha: float) -> None:
         self._alpha = alpha
 
     @property
-    def noise_dim(self):
-        """int: Amount of noise dimensions."""
+    def noise_dim(self) -> int:
+        """Amount of noise dimensions."""
 
         return self._noise_dim
 
     @noise_dim.setter
-    def noise_dim(self, noise_dim):
+    def noise_dim(self, noise_dim: int) -> None:
         self._noise_dim = noise_dim
 
     @property
-    def sampling_factor(self):
-        """int: Sampling factor used to calculate the upsampling."""
+    def sampling_factor(self) -> int:
+        """Sampling factor used to calculate the upsampling."""
 
         return self._sampling_factor
 
     @sampling_factor.setter
-    def sampling_factor(self, sampling_factor):
+    def sampling_factor(self, sampling_factor: int) -> None:
         self._sampling_factor = sampling_factor
 
     @property
-    def filter_size(self):
-        """int: Initial size of the filter."""
+    def filter_size(self) -> int:
+        """Initial size of the filter."""
 
         return self._filter_size
 
     @filter_size.setter
-    def filter_size(self, filter_size):
+    def filter_size(self, filter_size: int) -> None:
         self._filter_size = filter_size
 
-    def call(self, x, training=True):
+    def call(self, x: tf.Tensor, training: Optional[bool] = True) -> tf.Tensor:
         """Method that holds vital information whenever this class is called.
 
         Args:
-            x (tf.tensor): A tensorflow's tensor holding input data.
-            training (bool): Whether architecture is under training or not.
+            x: A tensorflow's tensor holding input data.
+            training: Whether architecture is under training or not.
 
         Returns:
-            The same tensor after passing through each defined layer.
+            (tf.Tensor): The same tensor after passing through each defined layer.
 
         """
 

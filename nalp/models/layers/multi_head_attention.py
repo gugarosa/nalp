@@ -1,24 +1,28 @@
 """Multi-Head Attention layer.
 """
 
+from typing import Any, Dict, Optional, Tuple
+
 import tensorflow as tf
 from tensorflow.keras.layers import Dense, Layer
 
 import nalp.utils.constants as c
 
 
-def scaled_dot_product_attention(q, k, v, mask):
+def scaled_dot_product_attention(
+    q: tf.Tensor, k: tf.Tensor, v: tf.Tensor, mask: tf.Tensor
+) -> Tuple[tf.Tensor, tf.Tensor]:
     """Calculate the attention weights, such that q, k, v must have matching
     leading dimensions, and k, v must have matching penultimate dimension.
 
     Args:
-        q (tf.tensor): Query tensor.
-        k (tf.tensor): Key tensor.
-        v (tf.tensor): Value tensor.
-        mask (tf.tensor): Mask to be applied.
+        q: Query tensor.
+        k: Key tensor.
+        v: Value tensor.
+        mask: Mask to be applied.
 
     Returns:
-        An attention-based output tensor and its attention weights.
+        (Tuple[tf.Tensor, tf.Tensor]): An attention-based output tensor and its attention weights.
 
     """
 
@@ -53,12 +57,12 @@ class MultiHeadAttention(Layer):
 
     """
 
-    def __init__(self, n_features, n_heads, **kwargs):
+    def __init__(self, n_features: int, n_heads: int, **kwargs) -> None:
         """Initialization method.
 
         Args:
-            n_features (int): Number of input features.
-            n_heads (int): Number of attention heads.
+            n_features: Number of input features.
+            n_heads: Number of attention heads.
 
         """
 
@@ -88,14 +92,14 @@ class MultiHeadAttention(Layer):
         # Creating the final linear layer
         self.out = Dense(n_features)
 
-    def _split_heads(self, x):
+    def _split_heads(self, x: tf.Tensor) -> tf.Tensor:
         """Split the last tensor dimension into (n_heads, depth) and transposes its result.
 
         Args:
-            x (tf.tensor): Tensor to be splitted and transposed.
+            x: Tensor to be splitted and transposed.
 
         Returns:
-            Splitted and transposed tensor into shape equal to (batch_size, n_heads, length, depth).
+            (tf.Tensor): Splitted and transposed tensor into shape equal to (batch_size, n_heads, length, depth).
 
         """
 
@@ -104,17 +108,19 @@ class MultiHeadAttention(Layer):
 
         return tf.transpose(x, perm=[0, 2, 1, 3])
 
-    def call(self, q, k, v, mask=None):
+    def call(
+        self, q: tf.Tensor, k: tf.Tensor, v: tf.Tensor, mask: Optional[tf.Tensor] = None
+    ) -> Tuple[tf.Tensor, tf.Tensor]:
         """Method that holds vital information whenever this class is called.
 
         Args:
-            q (tf.tensor): Query tensor.
-            k (tf.tensor): Key tensor.
-            v (tf.tensor): Value tensor.
-            mask (tf.tensor): Mask to be applied.
+            q: Query tensor.
+            k: Key tensor.
+            v: Value tensor.
+            mask: Mask to be applied.
 
         Returns:
-            An attention-based output tensor and its attention weights.
+            (Tuple[tf.Tensor, tf.Tensor]): An attention-based output tensor and its attention weights.
 
         """
 
@@ -142,8 +148,13 @@ class MultiHeadAttention(Layer):
 
         return output, attn_weights
 
-    def get_config(self):
-        """Gets the configuration of the layer for further serialization."""
+    def get_config(self) -> Dict[str, Any]:
+        """Gets the configuration of the layer for further serialization.
+
+        Returns:
+            (Dict[str, Any]): Configuration dictionary.
+
+        """
 
         config = {
             "n_features": self.n_features,
