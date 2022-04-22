@@ -2,6 +2,7 @@
 """
 
 from collections import Counter
+from typing import Any, Dict, List, Optional
 
 import nalp.utils.constants as c
 import nalp.utils.preprocess as p
@@ -20,80 +21,80 @@ class Corpus:
 
     """
 
-    def __init__(self, min_frequency=1):
+    def __init__(self, min_frequency: Optional[int] = 1) -> None:
         """Initialization method."""
 
         # Minimum token frequency
         self.min_frequency = min_frequency
 
     @property
-    def tokens(self):
-        """list: List of input tokens."""
+    def tokens(self) -> List[str]:
+        """List of input tokens."""
 
         return self._tokens
 
     @tokens.setter
-    def tokens(self, tokens):
+    def tokens(self, tokens: List[str]) -> None:
         self._tokens = tokens
 
     @property
-    def vocab(self):
-        """list: Vocabulary tokens."""
+    def vocab(self) -> List[str]:
+        """Vocabulary tokens."""
 
         return self._vocab
 
     @vocab.setter
-    def vocab(self, vocab):
+    def vocab(self, vocab: List[str]) -> None:
         self._vocab = vocab
 
     @property
-    def vocab_size(self):
-        """int: Vocabulary size."""
+    def vocab_size(self) -> int:
+        """Vocabulary size."""
 
         return self._vocab_size
 
     @vocab_size.setter
-    def vocab_size(self, vocab_size):
+    def vocab_size(self, vocab_size: int) -> None:
         self._vocab_size = vocab_size
 
     @property
-    def vocab_index(self):
-        """dict: Maps vocabulary tokens to indexes."""
+    def vocab_index(self) -> Dict[str, Any]:
+        """Maps vocabulary tokens to indexes."""
 
         return self._vocab_index
 
     @vocab_index.setter
-    def vocab_index(self, vocab_index):
+    def vocab_index(self, vocab_index: Dict[str, Any]) -> None:
         self._vocab_index = vocab_index
 
     @property
-    def index_vocab(self):
-        """dict: Maps indexes to vocabulary tokens."""
+    def index_vocab(self) -> Dict[str, Any]:
+        """Maps indexes to vocabulary tokens."""
 
         return self._index_vocab
 
     @index_vocab.setter
-    def index_vocab(self, index_vocab):
+    def index_vocab(self, index_vocab: Dict[str, Any]) -> None:
         self._index_vocab = index_vocab
 
     @property
-    def min_frequency(self):
-        """int: Minimum token frequency."""
+    def min_frequency(self) -> int:
+        """Minimum token frequency."""
 
         return self._min_frequency
 
     @min_frequency.setter
-    def min_frequency(self, min_frequency):
+    def min_frequency(self, min_frequency: int) -> None:
         self._min_frequency = min_frequency
 
-    def _create_tokenizer(self, corpus_type):
+    def _create_tokenizer(self, corpus_type: str) -> callable:
         """Creates a tokenizer based on the input type.
 
         Args:
-            corpus_type (str): A type to create the tokenizer. Should be `char` or `word`.
+            corpus_type: A type to create the tokenizer. Should be `char` or `word`.
 
         Returns:
-            The created tokenizer.
+            (callable): The created tokenizer.
 
         """
 
@@ -109,7 +110,7 @@ class Corpus:
 
         return p.pipeline(p.lower_case, p.valid_char, p.tokenize_to_word)
 
-    def _check_token_frequency(self):
+    def _check_token_frequency(self) -> None:
         """Cuts tokens that do not meet a minimum frequency value."""
 
         # Calculates the frequency of tokens
@@ -123,7 +124,7 @@ class Corpus:
                 # Replaces with an unknown token
                 self.tokens[i] = c.UNK
 
-    def _build(self):
+    def _build(self) -> None:
         """Builds the vocabulary based on the tokens."""
 
         # Creates the vocabulary

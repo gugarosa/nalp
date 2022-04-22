@@ -1,6 +1,8 @@
 """Audio-related corpus.
 """
 
+from typing import Optional
+
 from nalp.core import Corpus
 from nalp.utils import loader, logging
 
@@ -15,12 +17,12 @@ class AudioCorpus(Corpus):
 
     """
 
-    def __init__(self, from_file, min_frequency=1):
+    def __init__(self, from_file: str, min_frequency: Optional[int] = 1) -> None:
         """Initialization method.
 
         Args:
-            from_file (str): An input file to load the audio.
-            min_frequency (int): Minimum frequency of individual tokens.
+            from_file: An input file to load the audio.
+            min_frequency: Minimum frequency of individual tokens.
 
         """
 

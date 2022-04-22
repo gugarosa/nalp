@@ -3,6 +3,7 @@
 
 import logging
 import sys
+from logging import StreamHandler
 from logging.handlers import TimedRotatingFileHandler
 
 FORMATTER = logging.Formatter("%(asctime)s - %(name)s — %(levelname)s — %(message)s")
@@ -13,11 +14,11 @@ LOG_LEVEL = logging.DEBUG
 class Logger(logging.Logger):
     """A customized Logger file that enables the possibility of only logging to file."""
 
-    def to_file(self, msg, *args, **kwargs):
+    def to_file(self, msg: str, *args, **kwargs) -> None:
         """Logs the message only to the logging file.
 
         Args:
-            msg (str): Message to be logged.
+            msg: Message to be logged.
 
         """
 
@@ -31,26 +32,26 @@ class Logger(logging.Logger):
         self.handlers[0].setLevel(LOG_LEVEL)
 
 
-def get_console_handler():
+def get_console_handler() -> StreamHandler:
     """Gets a console handler to handle logging into console.
 
     Returns:
-        A handler to output information into console.
+        (StreamHandler): Handler to output information into console.
 
     """
 
     # Creates a stream handler for logger
-    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler = StreamHandler(sys.stdout)
     console_handler.setFormatter(FORMATTER)
 
     return console_handler
 
 
-def get_timed_file_handler():
+def get_timed_file_handler() -> TimedRotatingFileHandler:
     """Gets a timed file handler to handle logging into files.
 
     Returns:
-        A handler to output information into timed files.
+        (TimedRotatingFileHandler): Handler to output information into timed files.
 
     """
 
@@ -61,14 +62,14 @@ def get_timed_file_handler():
     return file_handler
 
 
-def get_logger(logger_name):
-    """Gets a log and make it avaliable for further use.
+def get_logger(logger_name: str) -> Logger:
+    """Gets a logger and make it avaliable for further use.
 
     Args:
-        logger_name (str): The name of the logger.
+        logger_name: The name of the logger.
 
     Returns:
-        A handler to output information into console's.
+        (Logger): Logger instance.
 
     """
 

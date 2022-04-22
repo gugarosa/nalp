@@ -1,6 +1,8 @@
 """Integer-based encoding.
 """
 
+from typing import Any, Dict, List
+
 import numpy as np
 
 import nalp.utils.constants as c
@@ -13,7 +15,7 @@ logger = logging.get_logger(__name__)
 class IntegerEncoder(Encoder):
     """An IntegerEncoder class is responsible for encoding text into integers."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initizaliation method."""
 
         logger.info("Overriding class: Encoder -> IntegerEncoder.")
@@ -26,21 +28,23 @@ class IntegerEncoder(Encoder):
         logger.info("Class overrided.")
 
     @property
-    def decoder(self):
-        """dict: A decoder dictionary."""
+    def decoder(self) -> Dict[str, Any]:
+        """Decoder dictionary."""
 
         return self._decoder
 
     @decoder.setter
-    def decoder(self, decoder):
+    def decoder(self, decoder: Dict[str, Any]) -> None:
         self._decoder = decoder
 
-    def learn(self, dictionary, reverse_dictionary):
+    def learn(
+        self, dictionary: Dict[str, Any], reverse_dictionary: Dict[str, Any]
+    ) -> None:
         """Learns an integer vectorization encoding.
 
         Args:
-            dictionary (dict): The vocabulary to index mapping.
-            reverse_dictionary (dict): The index to vocabulary mapping.
+            dictionary: The vocabulary to index mapping.
+            reverse_dictionary: The index to vocabulary mapping.
 
         """
 
@@ -50,14 +54,14 @@ class IntegerEncoder(Encoder):
         # Creates the decoder property
         self.decoder = reverse_dictionary
 
-    def encode(self, tokens):
+    def encode(self, tokens: List[str]) -> np.array:
         """Encodes new tokens based on previous learning.
 
         Args:
-            tokens (list): A list of tokens to be encoded.
+            tokens: A list of tokens to be encoded.
 
         Returns:
-            A numpy array of encoded tokens.
+            (np.array): Encoded tokens.
 
         """
 
@@ -90,14 +94,14 @@ class IntegerEncoder(Encoder):
 
         return encoded_tokens
 
-    def decode(self, encoded_tokens):
+    def decode(self, encoded_tokens: np.array) -> List[str]:
         """Decodes the encoding back to tokens.
 
         Args:
-            encoded_tokens (np.array): A numpy array containing the encoded tokens.
+            encoded_tokens: A numpy array containing the encoded tokens.
 
         Returns:
-            A list of decoded tokens.
+            (List[str]): Decoded tokens.
 
         """
 

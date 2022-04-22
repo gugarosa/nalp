@@ -1,6 +1,8 @@
 """Data-loading utilities.
 """
 
+from typing import List
+
 from mido import MidiFile
 
 from nalp.utils import logging
@@ -8,14 +10,14 @@ from nalp.utils import logging
 logger = logging.get_logger(__name__)
 
 
-def load_txt(file_name):
+def load_txt(file_name: str) -> str:
     """Loads a .txt file.
 
     Args:
-        file_name (str): The file name to be loaded.
+        file_name: The file name to be loaded.
 
     Returns:
-        A string with the loaded text.
+        (str): Loaded text.
 
     """
 
@@ -36,14 +38,14 @@ def load_txt(file_name):
         raise
 
 
-def load_audio(file_name):
+def load_audio(file_name: str) -> List[str]:
     """Loads an audio .mid file.
 
     Args:
-        file_name (str): The file name to be loaded.
+        file_name: The file name to be loaded.
 
     Returns:
-        A list with the loaded notes.
+        (List[str]): Loaded notes.
 
     """
 

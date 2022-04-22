@@ -3,6 +3,7 @@
 
 from collections import Counter
 from itertools import chain
+from typing import List, Optional
 
 import nalp.utils.constants as c
 from nalp.core import Corpus
@@ -21,22 +22,22 @@ class SentenceCorpus(Corpus):
 
     def __init__(
         self,
-        tokens=None,
-        from_file=None,
-        corpus_type="char",
-        min_frequency=1,
-        max_pad_length=None,
-        sos_eos_tokens=True,
-    ):
+        tokens: Optional[List[str]] = None,
+        from_file: Optional[str] = None,
+        corpus_type: Optional[str] = "char",
+        min_frequency: Optional[int] = 1,
+        max_pad_length: Optional[int] = None,
+        sos_eos_tokens: Optional[bool] = True,
+    ) -> None:
         """Initialization method.
 
         Args:
-            tokens (list): A list of tokens.
-            from_file (str): An input file to load the sentences.
-            corpus_type (str): The desired type to tokenize the sentences. Should be `char` or `word`.
-            min_frequency (int): Minimum frequency of individual tokens.
-            max_pad_length (int): Maximum length to pad the tokens.
-            sos_eos_tokens (bool): Whether start-of-sentence and end-of-sentence tokens should be used.
+            tokens: A list of tokens.
+            from_file: An input file to load the sentences.
+            corpus_type: The desired type to tokenize the sentences. Should be `char` or `word`.
+            min_frequency: Minimum frequency of individual tokens.
+            max_pad_length: Maximum length to pad the tokens.
+            sos_eos_tokens: Whether start-of-sentence and end-of-sentence tokens should be used.
 
         """
 
@@ -79,7 +80,7 @@ class SentenceCorpus(Corpus):
         )
         logger.info("SentenceCorpus created.")
 
-    def _check_token_frequency(self):
+    def _check_token_frequency(self) -> None:
         """Cuts tokens that do not meet a minimum frequency value."""
 
         # Calculates the frequency of tokens
@@ -95,12 +96,12 @@ class SentenceCorpus(Corpus):
                     # Replaces with an unknown token
                     self.tokens[i][j] = c.UNK
 
-    def _pad_token(self, max_pad_length, sos_eos_tokens):
+    def _pad_token(self, max_pad_length: int, sos_eos_tokens: bool) -> None:
         """Pads the tokens into a fixed length.
 
         Args:
-            max_pad_length (int): Maximum length to pad the tokens.
-            sos_eos_tokens (bool): Whether start-of-sentence and end-of-sentence tokens should be used.
+            max_pad_length: Maximum length to pad the tokens.
+            sos_eos_tokens: Whether start-of-sentence and end-of-sentence tokens should be used.
 
         """
 
@@ -125,7 +126,7 @@ class SentenceCorpus(Corpus):
                 self.tokens[i].insert(0, c.SOS)
                 self.tokens[i].append(c.EOS)
 
-    def _build(self):
+    def _build(self) -> None:
         """Builds the vocabulary based on the tokens."""
 
         # Creates the vocabulary

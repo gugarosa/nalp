@@ -1,6 +1,8 @@
 """Text-related corpus.
 """
 
+from typing import List, Optional
+
 from nalp.core import Corpus
 from nalp.utils import loader, logging
 
@@ -16,15 +18,19 @@ class TextCorpus(Corpus):
     """
 
     def __init__(
-        self, tokens=None, from_file=None, corpus_type="char", min_frequency=1
-    ):
+        self,
+        tokens: Optional[List[str]] = None,
+        from_file: Optional[str] = None,
+        corpus_type: Optional[str] = "char",
+        min_frequency: Optional[int] = 1,
+    ) -> None:
         """Initialization method.
 
         Args:
-            tokens (list): A list of tokens.
-            from_file (str): An input file to load the text.
-            corpus_type (str): The desired type to tokenize the text. Should be `char` or `word`.
-            min_frequency (int): Minimum frequency of individual tokens.
+            tokens: A list of tokens.
+            from_file: An input file to load the text.
+            corpus_type: The desired type to tokenize the text. Should be `char` or `word`.
+            min_frequency: Minimum frequency of individual tokens.
 
         """
 

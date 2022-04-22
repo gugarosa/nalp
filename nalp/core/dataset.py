@@ -1,7 +1,9 @@
 """Dataset-related class.
 """
 
-from tensorflow import data
+from typing import Optional
+
+import tensorflow as tf
 
 import nalp.utils.constants as c
 
@@ -12,11 +14,11 @@ class Dataset:
 
     """
 
-    def __init__(self, shuffle=True):
+    def __init__(self, shuffle: Optional[bool] = True) -> None:
         """Initialization method.
 
         Args:
-            shuffle (bool): Whether batches should be shuffled or not.
+            shuffle: Whether batches should be shuffled or not.
 
         """
 
@@ -24,31 +26,31 @@ class Dataset:
         self.shuffle = shuffle
 
     @property
-    def shuffle(self):
-        """bool: Whether data should be shuffled or not."""
+    def shuffle(self) -> bool:
+        """Whether data should be shuffled or not."""
 
         return self._shuffle
 
     @shuffle.setter
-    def shuffle(self, shuffle):
+    def shuffle(self, shuffle: bool) -> None:
         self._shuffle = shuffle
 
     @property
-    def batches(self):
-        """tf.data.Dataset: An instance of tensorflow's dataset batches."""
+    def batches(self) -> tf.data.Dataset:
+        """An instance of tensorflow's dataset batches."""
 
         return self._batches
 
     @batches.setter
-    def batches(self, batches):
+    def batches(self, batches: tf.data.Dataset) -> None:
         self._batches = batches
 
-    def _build(self, sliced_data, batch_size):
+    def _build(self, sliced_data: tf.Tensor, batch_size: int) -> None:
         """Builds the batches based on the pre-processed images.
 
         Args:
-            sliced_data (tf.tensor): Slices of tensor-based data.
-            batch_size (int): Size of batches.
+            sliced_data: Slices of tensor-based data.
+            batch_size: Size of batches.
 
         """
 
@@ -57,5 +59,5 @@ class Dataset:
 
         # Transforms the sequences into batches
         self.batches = sliced_data.batch(batch_size, drop_remainder=True).prefetch(
-            data.experimental.AUTOTUNE
+            tf.data.experimental.AUTOTUNE
         )

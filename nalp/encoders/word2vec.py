@@ -2,6 +2,7 @@
 """
 
 import multiprocessing
+from typing import List, Optional
 
 import numpy as np
 from gensim.models.word2vec import Word2Vec as W2V
@@ -18,7 +19,7 @@ class Word2vecEncoder(Encoder):
 
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initizaliation method."""
 
         logger.info("Overriding class: Encoder -> Word2vecEncoder.")
@@ -29,26 +30,26 @@ class Word2vecEncoder(Encoder):
 
     def learn(
         self,
-        tokens,
-        max_features=128,
-        window_size=5,
-        min_count=1,
-        algorithm=0,
-        learning_rate=0.01,
-        iterations=1000,
+        tokens: List[str],
+        max_features: Optional[int] = 128,
+        window_size: Optional[int] = 5,
+        min_count: Optional[int] = 1,
+        algorithm: Optional[bool] = 0,
+        learning_rate: Optional[float] = 0.01,
+        iterations: Optional[int] = 1000,
     ):
         """Learns a Word2Vec representation based on the its methodology.
 
         One can use CBOW or Skip-gram algorithm for the learning procedure.
 
         Args:
-            tokens (list): A list of tokens.
-            max_features (int): Maximum number of features to be fitted.
-            window_size (int): Maximum distance between current and predicted word.
-            min_count (int): Minimum count of words for its use.
-            algorithm (bool): 1 for skip-gram, while 0 for CBOW.
-            learning_rate (float): Value of the learning rate.
-            iterations (int): Number of iterations.
+            tokens: A list of tokens.
+            max_features: Maximum number of features to be fitted.
+            window_size: Maximum distance between current and predicted word.
+            min_count: Minimum count of words for its use.
+            algorithm: 1 for skip-gram, while 0 for CBOW.
+            learning_rate: Value of the learning rate.
+            iterations: Number of iterations.
 
         """
 
@@ -63,11 +64,11 @@ class Word2vecEncoder(Encoder):
             workers=multiprocessing.cpu_count(),
         )
 
-    def encode(self, tokens):
+    def encode(self, tokens: List[str]) -> None:
         """Encodes the data into a Word2Vec representation.
 
         Args:
-            tokens (list): A list of tokens to be encoded.
+            tokens: Tokens to be encoded.
 
         """
 
@@ -89,14 +90,14 @@ class Word2vecEncoder(Encoder):
 
         return encoded_tokens
 
-    def decode(self, encoded_tokens):
+    def decode(self, encoded_tokens: np.array) -> List[str]:
         """Decodes the encoding back to tokens.
 
         Args:
-            encoded_tokens (np.array): A numpy array containing the encoded tokens.
+            encoded_tokens: A numpy array containing the encoded tokens.
 
         Returns:
-            A list of decoded tokens.
+            (List[str]): Decoded tokens.
 
         """
 

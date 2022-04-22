@@ -1,11 +1,14 @@
 """Model-related classes.
 """
 
+from typing import Any, Dict, List, Optional
+
 import tensorflow as tf
 from tensorflow.keras import Model
 from tensorflow.keras.utils import Progbar
 
 import nalp.utils.constants as c
+from nalp.core.dataset import Dataset
 from nalp.utils import logging
 
 logger = logging.get_logger(__name__)
@@ -17,30 +20,30 @@ class Discriminator(Model):
 
     """
 
-    def __init__(self, name=""):
+    def __init__(self, name: Optional[str] = "") -> None:
         """Initialization method.
 
         Note that basic variables shared by all childs should be declared here, e.g., layers.
 
         Args:
-            name (str): The model's identifier string.
+            name: The model's identifier string.
 
         """
 
         super(Discriminator, self).__init__(name=name)
 
-    def call(self, x, training=True):
+    def call(self, x: tf.Tensor, training: Optional[bool] = True) -> None:
         """Method that holds vital information whenever this class is called.
 
         Note that you will need to implement this method directly on its child. Essentially,
         each neural network has its own forward pass implementation.
 
         Args:
-            x (tf.tensor): A tensorflow's tensor holding input data.
-            training (bool): Whether architecture is under training or not.
+            x: A tensorflow's tensor holding input data.
+            training: Whether architecture is under training or not.
 
         Raises:
-            NotImplementedError
+            NotImplementedError.
 
         """
 
@@ -53,45 +56,47 @@ class Generator(Model):
 
     """
 
-    def __init__(self, name=""):
+    def __init__(self, name: Optional[str] = "") -> None:
         """Initialization method.
 
         Note that basic variables shared by all childs should be declared here, e.g., layers.
 
         Args:
-            name (str): The model's identifier string.
+            name: The model's identifier string.
 
         """
 
         super(Generator, self).__init__(name=name)
 
-    def call(self, x, training=True):
+    def call(self, x: tf.Tensor, training: Optional[bool] = True) -> None:
         """Method that holds vital information whenever this class is called.
 
         Note that you will need to implement this method directly on its child. Essentially,
         each neural network has its own forward pass implementation.
 
         Args:
-            x (tf.tensor): A tensorflow's tensor holding input data.
-            training (bool): Whether architecture is under training or not.
+            x: A tensorflow's tensor holding input data.
+            training: Whether architecture is under training or not.
 
         Raises:
-            NotImplementedError
+            NotImplementedError.
 
         """
 
         raise NotImplementedError
 
-    def generate_greedy_search(self, start, max_length=100):
+    def generate_greedy_search(
+        self, start: str, max_length: Optional[int] = 100
+    ) -> List[str]:
         """Generates text by using greedy search, where the sampled
         token is always sampled according to the maximum probability.
 
         Args:
-            start (str): The start string to generate the text.
-            max_length (int): Maximum length of generated text.
+            start: The start string to generate the text.
+            max_length: Maximum length of generated text.
 
         Returns:
-            A list holding the generated text.
+            (List[str]): Generated text.
 
         """
 
@@ -127,17 +132,22 @@ class Generator(Model):
 
         return sampled_tokens
 
-    def generate_temperature_sampling(self, start, max_length=100, temperature=1.0):
+    def generate_temperature_sampling(
+        self,
+        start: str,
+        max_length: Optional[int] = 100,
+        temperature: Optional[float] = 1.0,
+    ) -> List[str]:
         """Generates text by using temperature sampling, where the sampled
         token is sampled according to a multinomial/categorical distribution.
 
         Args:
-            start (str): The start string to generate the text.
-            max_length (int): Length of generated text.
-            temperature (float): A temperature value to sample the token.
+            start: The start string to generate the text.
+            max_length: Length of generated text.
+            temperature: A temperature value to sample the token.
 
         Returns:
-            A list holding the generated text.
+            (List[str]): Generated text.
 
         """
 
@@ -176,19 +186,25 @@ class Generator(Model):
 
         return sampled_tokens
 
-    def generate_top_sampling(self, start, max_length=100, k=0, p=0.0):
+    def generate_top_sampling(
+        self,
+        start: str,
+        max_length: Optional[int] = 100,
+        k: Optional[int] = 0,
+        p: Optional[float] = 0.0,
+    ) -> List[str]:
         """Generates text by using top-k and top-p sampling, where the sampled
         token is sampled according to the `k` most likely words distribution, as well
-        as to the maximim cumulative probability `p`.
+        as to the maximum cumulative probability `p`.
 
         Args:
-            start (str): The start string to generate the text.
-            max_length (int): Length of generated text.
-            k (int): Indicates the amount of likely words.
-            p (float): Maximum cumulative probability to be thresholded.
+            start: The start string to generate the text.
+            max_length: Length of generated text.
+            k: Indicates the amount of likely words.
+            p: Maximum cumulative probability to be thresholded.
 
         Returns:
-            A list holding the generated text.
+            (List[str]): Generated text.
 
         """
 
@@ -261,13 +277,18 @@ class Adversarial(Model):
 
     """
 
-    def __init__(self, discriminator, generator, name=""):
+    def __init__(
+        self,
+        discriminator: Discriminator,
+        generator: Generator,
+        name: Optional[str] = "",
+    ) -> None:
         """Initialization method.
 
         Args:
-            discriminator (Discriminator): Network's discriminator architecture.
-            generator (Generator): Network's generator architecture.
-            name (str): The model's identifier string.
+            discriminator: Network's discriminator architecture.
+            generator: Network's generator architecture.
+            name: The model's identifier string.
 
         """
 
@@ -283,41 +304,43 @@ class Adversarial(Model):
         self.history = {}
 
     @property
-    def D(self):
-        """Discriminator: Discriminator architecture."""
+    def D(self) -> Discriminator:
+        """Discriminator architecture."""
 
         return self._D
 
     @D.setter
-    def D(self, D):
+    def D(self, D: Discriminator) -> None:
         self._D = D
 
     @property
-    def G(self):
-        """Generator: Generator architecture."""
+    def G(self) -> Generator:
+        """Generator architecture."""
 
         return self._G
 
     @G.setter
-    def G(self, G):
+    def G(self, G: Generator) -> None:
         self._G = G
 
     @property
-    def history(self):
-        """dict: History dictionary."""
+    def history(self) -> Dict[str, Any]:
+        """History dictionary."""
 
         return self._history
 
     @history.setter
-    def history(self, history):
+    def history(self, history: Dict[str, Any]) -> None:
         self._history = history
 
-    def compile(self, d_optimizer, g_optimizer):
+    def compile(
+        self, d_optimizer: tf.keras.optimizers, g_optimizer: tf.keras.optimizers
+    ) -> None:
         """Main building method.
 
         Args:
-            d_optimizer (tf.keras.optimizers): An optimizer instance for the discriminator.
-            g_optimizer (tf.keras.optimizers): An optimizer instance for the generator.
+            d_optimizer: An optimizer instance for the discriminator.
+            g_optimizer: An optimizer instance for the generator.
 
         """
 
@@ -336,15 +359,15 @@ class Adversarial(Model):
         self.history["D_loss"] = []
         self.history["G_loss"] = []
 
-    def _discriminator_loss(self, y_real, y_fake):
+    def _discriminator_loss(self, y_real: tf.Tensor, y_fake: tf.Tensor) -> tf.Tensor:
         """Calculates the loss out of the discriminator architecture.
 
         Args:
-            y_real (tf.tensor): A tensor containing the real data targets.
-            y_fake (tf.tensor): A tensor containing the fake data targets.
+            y_real: A tensor containing the real data targets.
+            y_fake: A tensor containing the fake data targets.
 
         Returns:
-            The loss based on the discriminator network.
+            (tf.Tensor): The loss based on the discriminator network.
 
         """
 
@@ -353,14 +376,14 @@ class Adversarial(Model):
 
         return tf.reduce_mean(real_loss) + tf.reduce_mean(fake_loss)
 
-    def _generator_loss(self, y_fake):
+    def _generator_loss(self, y_fake: tf.Tensor) -> tf.Tensor:
         """Calculates the loss out of the generator architecture.
 
         Args:
-            y_fake (tf.tensor): A tensor containing the fake data targets.
+            y_fake: A tensor containing the fake data targets.
 
         Returns:
-            The loss based on the generator network.
+            (tf.Tensor): The loss based on the generator network.
 
         """
 
@@ -369,11 +392,11 @@ class Adversarial(Model):
         return tf.reduce_mean(loss)
 
     @tf.function
-    def step(self, x):
+    def step(self, x: tf.Tensor) -> None:
         """Performs a single batch optimization step.
 
         Args:
-            x (tf.tensor): A tensor containing the inputs.
+            x: A tensor containing the inputs.
 
         """
 
@@ -405,12 +428,12 @@ class Adversarial(Model):
         self.G_loss.update_state(G_loss)
         self.D_loss.update_state(D_loss)
 
-    def fit(self, batches, epochs=100):
+    def fit(self, batches: Dataset, epochs: Optional[int] = 100) -> None:
         """Trains the model.
 
         Args:
-            batches (Dataset): Training batches containing samples.
-            epochs (int): The maximum number of training epochs.
+            batches: Training batches containing samples.
+            epochs: The maximum number of training epochs.
 
         """
 

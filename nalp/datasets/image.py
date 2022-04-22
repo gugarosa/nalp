@@ -1,7 +1,10 @@
 """Imaging dataset class.
 """
 
-from tensorflow import data
+from typing import Optional, Tuple
+
+import numpy as np
+import tensorflow as tf
 
 from nalp.core import Dataset
 from nalp.utils import logging
@@ -16,16 +19,21 @@ class ImageDataset(Dataset):
     """
 
     def __init__(
-        self, images, batch_size=256, shape=None, normalize=True, shuffle=True
-    ):
+        self,
+        images: np.array,
+        batch_size: Optional[int] = 256,
+        shape: Optional[Tuple[int, int]] = None,
+        normalize: Optional[bool] = True,
+        shuffle: Optional[bool] = True,
+    ) -> None:
         """Initialization method.
 
         Args:
-            images (np.array): An array of images.
-            batch_size (int): Size of batches.
-            shape (tuple): A tuple containing the shape if the array should be forced to reshape.
-            normalize (bool): Whether images should be normalized between -1 and 1.
-            shuffle (bool): Whether batches should be shuffled or not.
+            images: An array of images.
+            batch_size: Size of batches.
+            shape: A tuple containing the shape if the array should be forced to reshape.
+            normalize: Whether images should be normalized between -1 and 1.
+            shuffle: Whether batches should be shuffled or not.
 
         """
 
@@ -48,16 +56,18 @@ class ImageDataset(Dataset):
         )
         logger.info("Class overrided.")
 
-    def _preprocess(self, images, shape, normalize):
+    def _preprocess(
+        self, images: np.array, shape: Tuple[int, int], normalize: bool
+    ) -> tf.data.Dataset:
         """Pre-process an array of images by reshaping and normalizing, if necessary.
 
         Args:
-            images (np.array): An array of images.
-            shape (tuple): A tuple containing the shape if the array should be forced to reshape.
-            normalize (bool): Whether images should be normalized between -1 and 1.
+            images: An array of images.
+            shape: A tuple containing the shape if the array should be forced to reshape.
+            normalize: Whether images should be normalized between -1 and 1.
 
         Returns:
-            Slices of pre-processed tensor-based images.
+            (tf.data.Dataset): Slices of pre-processed tensor-based images.
 
         """
 
@@ -70,6 +80,6 @@ class ImageDataset(Dataset):
             images = (images - 127.5) / 127.5
 
         # Slices the arrays into tensors
-        images = data.Dataset.from_tensor_slices(images)
+        images = tf.data.Dataset.from_tensor_slices(images)
 
         return images
