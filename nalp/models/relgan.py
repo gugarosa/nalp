@@ -1,10 +1,14 @@
 """Relational Generative Adversarial Network.
 """
 
+from typing import Optional, Tuple
+
 import tensorflow as tf
 from tensorflow.keras.utils import Progbar
 
 from nalp.core import Adversarial
+from nalp.core.dataset import Dataset
+from nalp.encoders.integer import IntegerEncoder
 from nalp.models.discriminators import TextDiscriminator
 from nalp.models.generators import GumbelRMCGenerator
 from nalp.utils import logging
@@ -23,36 +27,36 @@ class RelGAN(Adversarial):
 
     def __init__(
         self,
-        encoder=None,
-        vocab_size=1,
-        max_length=1,
-        embedding_size=32,
-        n_slots=3,
-        n_heads=5,
-        head_size=10,
-        n_blocks=1,
-        n_layers=3,
-        n_filters=(64),
-        filters_size=(1),
-        dropout_rate=0.25,
-        tau=5,
+        encoder: Optional[IntegerEncoder] = None,
+        vocab_size: Optional[int] = 1,
+        max_length: Optional[int] = 1,
+        embedding_size: Optional[int] = 32,
+        n_slots: Optional[int] = 3,
+        n_heads: Optional[int] = 5,
+        head_size: Optional[int] = 10,
+        n_blocks: Optional[int] = 1,
+        n_layers: Optional[int] = 3,
+        n_filters: Optional[Tuple[int, ...]] = (64),
+        filters_size: Optional[Tuple[int, ...]] = (1),
+        dropout_rate: Optional[float] = 0.25,
+        tau: Optional[float] = 5.0,
     ):
         """Initialization method.
 
         Args:
-            encoder (IntegerEncoder): An index to vocabulary encoder for the generator.
-            vocab_size (int): The size of the vocabulary for both discriminator and generator.
-            max_length (int): Maximum length of the sequences for the discriminator.
-            embedding_size (int): The size of the embedding layer for both discriminator and generator.
-            n_slots (int): Number of memory slots for the generator.
-            n_heads (int): Number of attention heads for the generator.
-            head_size (int): Size of each attention head for the generator.
-            n_blocks (int): Number of feed-forward networks for the generator.
-            n_layers (int): Amout of layers per feed-forward network for the generator.
-            n_filters (tuple): Number of filters to be applied in the discriminator.
-            filters_size (tuple): Size of filters to be applied in the discriminator.
-            dropout_rate (float): Dropout activation rate.
-            tau (float): Gumbel-Softmax temperature parameter.
+            encoder: An index to vocabulary encoder for the generator.
+            vocab_size: The size of the vocabulary for both discriminator and generator.
+            max_length: Maximum length of the sequences for the discriminator.
+            embedding_size: The size of the embedding layer for both discriminator and generator.
+            n_slots: Number of memory slots for the generator.
+            n_heads: Number of attention heads for the generator.
+            head_size: Size of each attention head for the generator.
+            n_blocks: Number of feed-forward networks for the generator.
+            n_layers: Amout of layers per feed-forward network for the generator.
+            n_filters: Number of filters to be applied in the discriminator.
+            filters_size: Size of filters to be applied in the discriminator.
+            dropout_rate: Dropout activation rate.
+            tau: Gumbel-Softmax temperature parameter.
 
         """
 
@@ -87,32 +91,37 @@ class RelGAN(Adversarial):
         logger.info("Class overrided.")
 
     @property
-    def vocab_size(self):
-        """int: The size of the vocabulary."""
+    def vocab_size(self) -> int:
+        """The size of the vocabulary."""
 
         return self._vocab_size
 
     @vocab_size.setter
-    def vocab_size(self, vocab_size):
+    def vocab_size(self, vocab_size: int) -> None:
         self._vocab_size = vocab_size
 
     @property
-    def init_tau(self):
-        """float: Gumbel-Softmax initial temperature."""
+    def init_tau(self) -> float:
+        """Gumbel-Softmax initial temperature."""
 
         return self._init_tau
 
     @init_tau.setter
-    def init_tau(self, init_tau):
+    def init_tau(self, init_tau: float) -> None:
         self._init_tau = init_tau
 
-    def compile(self, pre_optimizer, d_optimizer, g_optimizer):
+    def compile(
+        self,
+        pre_optimizer: tf.keras.optimizers,
+        d_optimizer: tf.keras.optimizers,
+        g_optimizer: tf.keras.optimizers,
+    ) -> None:
         """Main building method.
 
         Args:
-            pre_optimizer (tf.keras.optimizers): An optimizer instance for pre-training the generator.
-            d_optimizer (tf.keras.optimizers): An optimizer instance for the discriminator.
-            g_optimizer (tf.keras.optimizers): An optimizer instance for the generator.
+            pre_optimizer: An optimizer instance for pre-training the generator.
+            d_optimizer: An optimizer instance for the discriminator.
+            g_optimizer: An optimizer instance for the generator.
 
         """
 
@@ -133,15 +142,15 @@ class RelGAN(Adversarial):
         self.history["D_loss"] = []
         self.history["G_loss"] = []
 
-    def generate_batch(self, x):
+    def generate_batch(self, x: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
         """Generates a batch of tokens by feeding to the network the
         current token (t) and predicting the next token (t+1).
 
         Args:
-            x (tf.tensor): A tensor containing the inputs.
+            x: A tensor containing the inputs.
 
         Returns:
-            A (batch_size, length) tensor of generated tokens and a
+            (Tuple[tf.Tensor, tf.Tensor]): A (batch_size, length) tensor of generated tokens and a
             (batch_size, length, vocab_size) tensor of predictions.
 
         """
@@ -177,15 +186,15 @@ class RelGAN(Adversarial):
 
         return sampled_batch, sampled_preds
 
-    def _discriminator_loss(self, y_real, y_fake):
+    def _discriminator_loss(self, y_real: tf.Tensor, y_fake: tf.Tensor) -> tf.Tensor:
         """Calculates the loss out of the discriminator architecture.
 
         Args:
-            y_real (tf.tensor): A tensor containing the real data targets.
-            y_fake (tf.tensor): A tensor containing the fake data targets.
+            y_real: A tensor containing the real data targets.
+            y_fake: A tensor containing the fake data targets.
 
         Returns:
-            The loss based on the discriminator network.
+            (tf.Tensor): The loss based on the discriminator network.
 
         """
 
@@ -193,15 +202,15 @@ class RelGAN(Adversarial):
 
         return tf.reduce_mean(loss)
 
-    def _generator_loss(self, y_real, y_fake):
+    def _generator_loss(self, y_real: tf.Tensor, y_fake: tf.Tensor) -> tf.Tensor:
         """Calculates the loss out of the generator architecture.
 
         Args:
-            y_real (tf.tensor): A tensor containing the real data targets.
-            y_fake (tf.tensor): A tensor containing the fake data targets.
+            y_real: A tensor containing the real data targets.
+            y_fake: A tensor containing the fake data targets.
 
         Returns:
-            The loss based on the generator network.
+            (tf.Tensor): The loss based on the generator network.
 
         """
 
@@ -210,12 +219,12 @@ class RelGAN(Adversarial):
         return tf.reduce_mean(loss)
 
     @tf.function
-    def G_pre_step(self, x, y):
+    def G_pre_step(self, x: tf.Tensor, y: tf.Tensor) -> None:
         """Performs a single batch optimization pre-fitting step over the generator.
 
         Args:
-            x (tf.tensor): A tensor containing the inputs.
-            y (tf.tensor): A tensor containing the inputs' labels.
+            x: A tensor containing the inputs.
+            y: A tensor containing the inputs' labels.
 
         """
 
@@ -239,12 +248,12 @@ class RelGAN(Adversarial):
         self.G_loss.update_state(loss)
 
     @tf.function
-    def step(self, x, y):
+    def step(self, x: tf.Tensor, y: tf.Tensor) -> None:
         """Performs a single batch optimization step.
 
         Args:
-            x (tf.tensor): A tensor containing the inputs.
-            y (tf.tensor): A tensor containing the inputs' labels.
+            x: A tensor containing the inputs.
+            y: A tensor containing the inputs' labels.
 
         """
 
@@ -277,12 +286,12 @@ class RelGAN(Adversarial):
         self.G_loss.update_state(G_loss)
         self.D_loss.update_state(D_loss)
 
-    def pre_fit(self, batches, epochs=100):
+    def pre_fit(self, batches: Dataset, epochs: Optional[int] = 100) -> None:
         """Pre-trains the model.
 
         Args:
-            batches (Dataset): Pre-training batches containing samples.
-            epochs (int): The maximum number of pre-training epochs.
+            batches: Pre-training batches containing samples.
+            epochs: The maximum number of pre-training epochs.
 
         """
 
@@ -312,12 +321,12 @@ class RelGAN(Adversarial):
 
             logger.to_file("Loss(G): %s", self.G_loss.result().numpy())
 
-    def fit(self, batches, epochs=100):
+    def fit(self, batches: Dataset, epochs: Optional[int] = 100) -> None:
         """Trains the model.
 
         Args:
-            batches (Dataset): Training batches containing samples.
-            epochs (int): The maximum number of training epochs.
+            batches: Training batches containing samples.
+            epochs: The maximum number of training epochs.
 
         """
 

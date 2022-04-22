@@ -1,12 +1,16 @@
 """Maximum-Likelihood Augmented Discrete Generative Adversarial Network.
 """
 
+from typing import Optional, Tuple
+
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.utils import Progbar
 
 import nalp.utils.constants as c
 from nalp.core import Adversarial
+from nalp.core.dataset import Dataset
+from nalp.encoders.integer import IntegerEncoder
 from nalp.models.discriminators import EmbeddedTextDiscriminator
 from nalp.models.generators import LSTMGenerator
 from nalp.utils import logging
@@ -26,28 +30,28 @@ class MaliGAN(Adversarial):
 
     def __init__(
         self,
-        encoder=None,
-        vocab_size=1,
-        max_length=1,
-        embedding_size=32,
-        hidden_size=64,
-        n_filters=(64),
-        filters_size=(1),
-        dropout_rate=0.25,
-        temperature=1,
-    ):
+        encoder: Optional[IntegerEncoder] = None,
+        vocab_size: Optional[int] = 1,
+        max_length: Optional[int] = 1,
+        embedding_size: Optional[int] = 32,
+        hidden_size: Optional[int] = 64,
+        n_filters: Optional[Tuple[int, ...]] = (64),
+        filters_size: Optional[Tuple[int, ...]] = (1),
+        dropout_rate: Optional[float] = 0.25,
+        temperature: Optional[float] = 1.0,
+    ) -> None:
         """Initialization method.
 
         Args:
-            encoder (IntegerEncoder): An index to vocabulary encoder for the generator.
-            vocab_size (int): The size of the vocabulary for both discriminator and generator.
-            max_length (int): Maximum length of the sequences for the discriminator.
-            embedding_size (int): The size of the embedding layer for both discriminator and generator.
-            hidden_size (int): The amount of hidden neurons for the generator.
-            n_filters (tuple): Number of filters to be applied in the discriminator.
-            filters_size (tuple): Size of filters to be applied in the discriminator.
-            dropout_rate (float): Dropout activation rate.
-            temperature (float): Temperature value to sample the token.
+            encoder: An index to vocabulary encoder for the generator.
+            vocab_size: The size of the vocabulary for both discriminator and generator.
+            max_length: Maximum length of the sequences for the discriminator.
+            embedding_size: The size of the embedding layer for both discriminator and generator.
+            hidden_size: The amount of hidden neurons for the generator.
+            n_filters: Number of filters to be applied in the discriminator.
+            filters_size: Size of filters to be applied in the discriminator.
+            dropout_rate: Dropout activation rate.
+            temperature: Temperature value to sample the token.
 
         """
 
@@ -77,32 +81,37 @@ class MaliGAN(Adversarial):
         logger.info("Class overrided.")
 
     @property
-    def vocab_size(self):
-        """int: The size of the vocabulary."""
+    def vocab_size(self) -> int:
+        """The size of the vocabulary."""
 
         return self._vocab_size
 
     @vocab_size.setter
-    def vocab_size(self, vocab_size):
+    def vocab_size(self, vocab_size: int) -> None:
         self._vocab_size = vocab_size
 
     @property
-    def T(self):
-        """float: Temperature value to sample the token."""
+    def T(self) -> float:
+        """Temperature value to sample the token."""
 
         return self._T
 
     @T.setter
-    def T(self, T):
+    def T(self, T: float) -> None:
         self._T = T
 
-    def compile(self, pre_optimizer, d_optimizer, g_optimizer):
+    def compile(
+        self,
+        pre_optimizer: tf.keras.optimizers,
+        d_optimizer: tf.keras.optimizers,
+        g_optimizer: tf.keras.optimizers,
+    ) -> None:
         """Main building method.
 
         Args:
-            pre_optimizer (tf.keras.optimizers): An optimizer instance for pre-training the generator.
-            d_optimizer (tf.keras.optimizers): An optimizer instance for the discriminator.
-            g_optimizer (tf.keras.optimizers): An optimizer instance for the generator.
+            pre_optimizer: An optimizer instance for pre-training the generator.
+            d_optimizer: An optimizer instance for the discriminator.
+            g_optimizer: An optimizer instance for the generator.
 
         """
 
@@ -124,17 +133,18 @@ class MaliGAN(Adversarial):
         self.history["D_loss"] = []
         self.history["G_loss"] = []
 
-    def generate_batch(self, batch_size=1, length=1):
+    def generate_batch(
+        self, batch_size: Optional[int] = 1, length: Optional[int] = 1
+    ) -> tf.Tensor:
         """Generates a batch of tokens by feeding to the network the
         current token (t) and predicting the next token (t+1).
 
         Args:
-            batch_size (int): Size of the batch to be generated.
-            length (int): Length of generated tokens.
-            temperature (float): A temperature value to sample the token.
+            batch_size: Size of the batch to be generated.
+            length: Length of generated tokens.
 
         Returns:
-            A (batch_size, length) tensor of generated tokens.
+            (tf.Tensor): A (batch_size, length) tensor of generated tokens.
 
         """
 
@@ -174,11 +184,14 @@ class MaliGAN(Adversarial):
 
         return x_sampled_batch, y_sampled_batch
 
-    def _get_reward(self, x):
+    def _get_reward(self, x: tf.Tensor) -> tf.Tensor:
         """Calculates rewards over an input using a Maximum-Likelihood approach.
 
         Args:
-            x (tf.tensor): A tensor containing the inputs.
+            x: A tensor containing the inputs.
+
+        Returns:
+            (tf.Tensor): Reward over input.
 
         """
 
@@ -200,12 +213,12 @@ class MaliGAN(Adversarial):
         return rewards
 
     @tf.function
-    def G_pre_step(self, x, y):
+    def G_pre_step(self, x: tf.Tensor, y: tf.Tensor) -> None:
         """Performs a single batch optimization pre-fitting step over the generator.
 
         Args:
-            x (tf.tensor): A tensor containing the inputs.
-            y (tf.tensor): A tensor containing the inputs' labels.
+            x: A tensor containing the inputs.
+            y: A tensor containing the inputs' labels.
 
         """
 
@@ -227,13 +240,13 @@ class MaliGAN(Adversarial):
         self.G_loss.update_state(loss)
 
     @tf.function
-    def G_step(self, x, y, rewards):
+    def G_step(self, x: tf.Tensor, y: tf.Tensor, rewards: tf.Tensor) -> None:
         """Performs a single batch optimization step over the generator.
 
         Args:
-            x (tf.tensor): A tensor containing the inputs.
-            y (tf.tensor): A tensor containing the inputs' labels.
-            rewards (tf.tensor): A tensor containing the rewards for the input.
+            x : A tensor containing the inputs.
+            y: A tensor containing the inputs' labels.
+            rewards: A tensor containing the rewards for the input.
 
         """
 
@@ -255,12 +268,12 @@ class MaliGAN(Adversarial):
         self.G_loss.update_state(loss)
 
     @tf.function
-    def D_step(self, x, y):
+    def D_step(self, x: tf.Tensor, y: tf.Tensor) -> None:
         """Performs a single batch optimization step over the discriminator.
 
         Args:
-            x (tf.tensor): A tensor containing the inputs.
-            y (tf.tensor): A tensor containing the inputs' labels.
+            x: A tensor containing the inputs.
+            y: A tensor containing the inputs' labels.
 
         """
 
@@ -281,13 +294,18 @@ class MaliGAN(Adversarial):
         # Updates the discriminator's loss state
         self.D_loss.update_state(loss)
 
-    def pre_fit(self, batches, g_epochs=50, d_epochs=10):
+    def pre_fit(
+        self,
+        batches: Dataset,
+        g_epochs: Optional[int] = 50,
+        d_epochs: Optional[int] = 10,
+    ) -> None:
         """Pre-trains the model.
 
         Args:
-            batches (Dataset): Pre-training batches containing samples.
-            g_epochs (int): The maximum number of pre-training generator epochs.
-            d_epochs (int): The maximum number of pre-training discriminator epochs.
+            batches: Pre-training batches containing samples.
+            g_epochs: The maximum number of pre-training generator epochs.
+            d_epochs: The maximum number of pre-training discriminator epochs.
 
         """
 
@@ -370,13 +388,15 @@ class MaliGAN(Adversarial):
 
             logger.to_file("Loss(D): %s", self.D_loss.result().numpy())
 
-    def fit(self, batches, epochs=10, d_epochs=5):
+    def fit(
+        self, batches: Dataset, epochs: Optional[int] = 10, d_epochs: Optional[int] = 5
+    ) -> None:
         """Trains the model.
 
         Args:
-            batches (Dataset): Training batches containing samples.
-            epochs (int): The maximum number of total training epochs.
-            d_epochs (int): The maximum number of discriminator epochs per total epoch.
+            batches: Training batches containing samples.
+            epochs: The maximum number of total training epochs.
+            d_epochs: The maximum number of discriminator epochs per total epoch.
 
         """
 

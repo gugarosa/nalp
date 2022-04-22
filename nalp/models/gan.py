@@ -1,6 +1,8 @@
 """Generative Adversarial Network.
 """
 
+from typing import Optional, Tuple
+
 from nalp.core import Adversarial
 from nalp.models.discriminators import LinearDiscriminator
 from nalp.models.generators import LinearGenerator
@@ -18,14 +20,20 @@ class GAN(Adversarial):
 
     """
 
-    def __init__(self, input_shape=(784,), noise_dim=100, n_samplings=3, alpha=0.01):
+    def __init__(
+        self,
+        input_shape: Optional[Tuple[int, ...]] = (784,),
+        noise_dim: Optional[int] = 100,
+        n_samplings: Optional[int] = 3,
+        alpha: Optional[float] = 0.01,
+    ) -> None:
         """Initialization method.
 
         Args:
-            input_shape (tuple): An input shape for the Generator.
-            noise_dim (int): Amount of noise dimensions for the Generator.
-            n_samplings (int): Number of down/up samplings to perform.
-            alpha (float): LeakyReLU activation threshold.
+            input_shape: An input shape for the Generator.
+            noise_dim: Amount of noise dimensions for the Generator.
+            n_samplings: Number of down/up samplings to perform.
+            alpha: LeakyReLU activation threshold.
 
         """
 

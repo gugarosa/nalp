@@ -1,10 +1,14 @@
 """Gumbel-Softmax Generative Adversarial Network.
 """
 
+from typing import Optional, Tuple
+
 import tensorflow as tf
 from tensorflow.keras.utils import Progbar
 
 from nalp.core import Adversarial
+from nalp.core.dataset import Dataset
+from nalp.encoders.integer import IntegerEncoder
 from nalp.models.discriminators import LSTMDiscriminator
 from nalp.models.generators import GumbelLSTMGenerator
 from nalp.utils import logging
@@ -24,16 +28,21 @@ class GSGAN(Adversarial):
     """
 
     def __init__(
-        self, encoder=None, vocab_size=1, embedding_size=32, hidden_size=64, tau=5
-    ):
+        self,
+        encoder: Optional[IntegerEncoder] = None,
+        vocab_size: Optional[int] = 1,
+        embedding_size: Optional[int] = 32,
+        hidden_size: Optional[int] = 64,
+        tau: Optional[float] = 5,
+    ) -> None:
         """Initialization method.
 
         Args:
-            encoder (IntegerEncoder): An index to vocabulary encoder for the generator.
-            vocab_size (int): The size of the vocabulary for both discriminator and generator.
-            embedding_size (int): The size of the embedding layer for both discriminator and generator.
-            hidden_size (int): The amount of hidden neurons for the generator.
-            tau (float): Gumbel-Softmax temperature parameter.
+            encoder: An index to vocabulary encoder for the generator.
+            vocab_size: The size of the vocabulary for both discriminator and generator.
+            embedding_size: The size of the embedding layer for both discriminator and generator.
+            hidden_size: The amount of hidden neurons for the generator.
+            tau: Gumbel-Softmax temperature parameter.
 
         """
 
@@ -56,32 +65,37 @@ class GSGAN(Adversarial):
         logger.info("Class overrided.")
 
     @property
-    def vocab_size(self):
-        """int: The size of the vocabulary."""
+    def vocab_size(self) -> int:
+        """The size of the vocabulary."""
 
         return self._vocab_size
 
     @vocab_size.setter
-    def vocab_size(self, vocab_size):
+    def vocab_size(self, vocab_size: int) -> None:
         self._vocab_size = vocab_size
 
     @property
-    def init_tau(self):
-        """float: Gumbel-Softmax initial temperature."""
+    def init_tau(self) -> float:
+        """Gumbel-Softmax initial temperature."""
 
         return self._init_tau
 
     @init_tau.setter
-    def init_tau(self, init_tau):
+    def init_tau(self, init_tau: float) -> None:
         self._init_tau = init_tau
 
-    def compile(self, pre_optimizer, d_optimizer, g_optimizer):
+    def compile(
+        self,
+        pre_optimizer: tf.keras.optimizers,
+        d_optimizer: tf.keras.optimizers,
+        g_optimizer: tf.keras.optimizers,
+    ) -> None:
         """Main building method.
 
         Args:
-            pre_optimizer (tf.keras.optimizers): An optimizer instance for pre-training the generator.
-            d_optimizer (tf.keras.optimizers): An optimizer instance for the discriminator.
-            g_optimizer (tf.keras.optimizers): An optimizer instance for the generator.
+            pre_optimizer: An optimizer instance for pre-training the generator.
+            d_optimizer: An optimizer instance for the discriminator.
+            g_optimizer: An optimizer instance for the generator.
 
         """
 
@@ -102,7 +116,7 @@ class GSGAN(Adversarial):
         self.history["D_loss"] = []
         self.history["G_loss"] = []
 
-    def generate_batch(self, x):
+    def generate_batch(self, x: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
         """Generates a batch of tokens by feeding to the network the
         current token (t) and predicting the next token (t+1).
 
@@ -110,7 +124,7 @@ class GSGAN(Adversarial):
             x (tf.tensor): A tensor containing the inputs.
 
         Returns:
-            A (batch_size, length) tensor of generated tokens and a
+            (Tuple[tf.Tensor, tf.Tensor]): A (batch_size, length) tensor of generated tokens and a
             (batch_size, length, vocab_size) tensor of predictions.
 
         """
@@ -146,15 +160,15 @@ class GSGAN(Adversarial):
 
         return sampled_batch, sampled_preds
 
-    def _discriminator_loss(self, y_real, y_fake):
+    def _discriminator_loss(self, y_real: tf.Tensor, y_fake: tf.Tensor) -> tf.Tensor:
         """Calculates the loss out of the discriminator architecture.
 
         Args:
-            y_real (tf.tensor): A tensor containing the real data targets.
-            y_fake (tf.tensor): A tensor containing the fake data targets.
+            y_real: A tensor containing the real data targets.
+            y_fake: A tensor containing the fake data targets.
 
         Returns:
-            The loss based on the discriminator network.
+            (tf.Tensor): The loss based on the discriminator network.
 
         """
 
@@ -163,14 +177,14 @@ class GSGAN(Adversarial):
 
         return tf.reduce_mean(real_loss) + tf.reduce_mean(fake_loss)
 
-    def _generator_loss(self, y_fake):
+    def _generator_loss(self, y_fake: tf.Tensor) -> tf.Tensor:
         """Calculates the loss out of the generator architecture.
 
         Args:
-            y_fake (tf.tensor): A tensor containing the fake data targets.
+            y_fake: A tensor containing the fake data targets.
 
         Returns:
-            The loss based on the generator network.
+            (tf.Tensor): The loss based on the generator network.
 
         """
 
@@ -179,12 +193,12 @@ class GSGAN(Adversarial):
         return tf.reduce_mean(loss)
 
     @tf.function
-    def G_pre_step(self, x, y):
+    def G_pre_step(self, x: tf.Tensor, y: tf.Tensor) -> None:
         """Performs a single batch optimization pre-fitting step over the generator.
 
         Args:
-            x (tf.tensor): A tensor containing the inputs.
-            y (tf.tensor): A tensor containing the inputs' labels.
+            x: A tensor containing the inputs.
+            y: A tensor containing the inputs' labels.
 
         """
 
@@ -208,12 +222,12 @@ class GSGAN(Adversarial):
         self.G_loss.update_state(loss)
 
     @tf.function
-    def step(self, x, y):
+    def step(self, x: tf.Tensor, y: tf.Tensor) -> None:
         """Performs a single batch optimization step.
 
         Args:
-            x (tf.tensor): A tensor containing the inputs.
-            y (tf.tensor): A tensor containing the inputs' labels.
+            x: A tensor containing the inputs.
+            y: A tensor containing the inputs' labels.
 
         """
 
@@ -246,12 +260,12 @@ class GSGAN(Adversarial):
         self.D_loss.update_state(D_loss)
         self.G_loss.update_state(G_loss)
 
-    def pre_fit(self, batches, epochs=100):
+    def pre_fit(self, batches: Dataset, epochs: Optional[int] = 100) -> None:
         """Pre-trains the model.
 
         Args:
-            batches (Dataset): Pre-training batches containing samples.
-            epochs (int): The maximum number of pre-training epochs.
+            batches: Pre-training batches containing samples.
+            epochs: The maximum number of pre-training epochs.
 
         """
 
@@ -281,12 +295,12 @@ class GSGAN(Adversarial):
 
             logger.to_file("Loss(G): %s", self.G_loss.result().numpy())
 
-    def fit(self, batches, epochs=100):
+    def fit(self, batches: Dataset, epochs: Optional[int] = 100) -> None:
         """Trains the model.
 
         Args:
-            batches (Dataset): Training batches containing samples.
-            epochs (int): The maximum number of training epochs.
+            batches: Training batches containing samples.
+            epochs: The maximum number of training epochs.
 
         """
 

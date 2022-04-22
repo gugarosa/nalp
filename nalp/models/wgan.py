@@ -1,10 +1,13 @@
 """Wasserstein Generative Adversarial Network.
 """
 
+from typing import Optional, Tuple
+
 import tensorflow as tf
 from tensorflow.keras.utils import Progbar
 
 from nalp.core import Adversarial
+from nalp.core.dataset import Dataset
 from nalp.models.discriminators import ConvDiscriminator
 from nalp.models.generators import ConvGenerator
 from nalp.utils import logging
@@ -29,26 +32,26 @@ class WGAN(Adversarial):
 
     def __init__(
         self,
-        input_shape=(28, 28, 1),
-        noise_dim=100,
-        n_samplings=3,
-        alpha=0.3,
-        dropout_rate=0.3,
-        model_type="wc",
-        clip=0.01,
-        penalty=10,
+        input_shape: Optional[Tuple[int, int, int]] = (28, 28, 1),
+        noise_dim: Optional[int] = 100,
+        n_samplings: Optional[int] = 3,
+        alpha: Optional[float] = 0.3,
+        dropout_rate: Optional[float] = 0.3,
+        model_type: Optional[str] = "wc",
+        clip: Optional[float] = 0.01,
+        penalty: Optional[int] = 10,
     ):
         """Initialization method.
 
         Args:
-            input_shape (tuple): An input shape for the Generator.
-            noise_dim (int): Amount of noise dimensions for the Generator.
-            n_samplings (int): Number of down/up samplings to perform.
-            alpha (float): LeakyReLU activation threshold.
-            dropout_rate (float): Dropout activation rate.
-            model_type (str): Whether should use weight clipping (wc) or gradient penalty (gp).
-            clip (float): Clipping value for the Lipschitz constrain.
-            penalty (int): Coefficient for the gradient penalty.
+            input_shape: An input shape for the Generator.
+            noise_dim: Amount of noise dimensions for the Generator.
+            n_samplings: Number of down/up samplings to perform.
+            alpha: LeakyReLU activation threshold.
+            dropout_rate: Dropout activation rate.
+            model_type: Whether should use weight clipping (wc) or gradient penalty (gp).
+            clip: Clipping value for the Lipschitz constrain.
+            penalty: Coefficient for the gradient penalty.
 
         """
 
@@ -85,44 +88,44 @@ class WGAN(Adversarial):
         logger.info("Class overrided.")
 
     @property
-    def model_type(self):
-        """str: Whether should use weight clipping (wc) or gradient penalty (gp)."""
+    def model_type(self) -> str:
+        """Whether should use weight clipping (wc) or gradient penalty (gp)."""
 
         return self._model_type
 
     @model_type.setter
-    def model_type(self, model_type):
+    def model_type(self, model_type: str) -> None:
         self._model_type = model_type
 
     @property
-    def clip(self):
-        """float: Clipping value for the Lipschitz constrain."""
+    def clip(self) -> float:
+        """Clipping value for the Lipschitz constrain."""
 
         return self._clip
 
     @clip.setter
-    def clip(self, clip):
+    def clip(self, clip: float) -> None:
         self._clip = clip
 
     @property
-    def penalty_lambda(self):
-        """int: Coefficient for the gradient penalty."""
+    def penalty_lambda(self) -> int:
+        """Coefficient for the gradient penalty."""
 
         return self._penalty_lambda
 
     @penalty_lambda.setter
-    def penalty_lambda(self, penalty_lambda):
+    def penalty_lambda(self, penalty_lambda: int) -> None:
         self._penalty_lambda = penalty_lambda
 
-    def _gradient_penalty(self, x, x_fake):
+    def _gradient_penalty(self, x: tf.Tensor, x_fake: tf.Tensor) -> tf.Tensor:
         """Performs the gradient penalty procedure.
 
         Args:
-            x (tf.tensor): A tensor containing the real inputs.
-            x_fake (tf.tensor): A tensor containing the fake inputs.
+            x: A tensor containing the real inputs.
+            x_fake: A tensor containing the fake inputs.
 
         Returns:
-            The penalization to be applied over the loss function.
+            (tf.Tensor): The penalization to be applied over the loss function.
 
         """
 
@@ -154,11 +157,11 @@ class WGAN(Adversarial):
         return penalty
 
     @tf.function
-    def D_step(self, x):
+    def D_step(self, x: tf.Tensor) -> None:
         """Performs a single batch optimization step over the discriminator.
 
         Args:
-            x (tf.tensor): A tensor containing the inputs.
+            x: A tensor containing the inputs.
 
         """
 
@@ -203,11 +206,11 @@ class WGAN(Adversarial):
             ]
 
     @tf.function
-    def G_step(self, x):
+    def G_step(self, x: tf.Tensor) -> None:
         """Performs a single batch optimization step over the generator.
 
         Args:
-            x (tf.tensor): A tensor containing the inputs.
+            x: A tensor containing the inputs.
 
         """
 
@@ -234,13 +237,18 @@ class WGAN(Adversarial):
         # Updates the generator's loss state
         self.G_loss.update_state(G_loss)
 
-    def fit(self, batches, epochs=100, critic_steps=5):
+    def fit(
+        self,
+        batches: Dataset,
+        epochs: Optional[int] = 100,
+        critic_steps: Optional[int] = 5,
+    ) -> None:
         """Trains the model.
 
         Args:
-            batches (Dataset): Training batches containing samples.
-            epochs (int): The maximum number of training epochs.
-            critic_steps (int): Amount of discriminator epochs per training epoch.
+            batches: Training batches containing samples.
+            epochs: The maximum number of training epochs.
+            critic_steps: Amount of discriminator epochs per training epoch.
 
         """
 
