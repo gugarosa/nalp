@@ -79,12 +79,9 @@ class Word2vecEncoder(Encoder):
 
             raise RuntimeError(e)
 
-        # Gets the actual word vectors from Word2Vec class
         wv = self.encoder.wv
 
-        # Creates an encoded tokens variable to hold encoded data
         encoded_tokens = np.zeros((len(tokens), self.encoder.vector_size))
-
         for i, token in enumerate(tokens):
             encoded_tokens[i, :] = wv[token]
 

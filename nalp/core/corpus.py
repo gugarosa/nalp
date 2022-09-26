@@ -24,7 +24,6 @@ class Corpus:
     def __init__(self, min_frequency: Optional[int] = 1) -> None:
         """Initialization method."""
 
-        # Minimum token frequency
         self.min_frequency = min_frequency
 
     @property
@@ -113,26 +112,17 @@ class Corpus:
     def _check_token_frequency(self) -> None:
         """Cuts tokens that do not meet a minimum frequency value."""
 
-        # Calculates the frequency of tokens
         tokens_frequency = Counter(self.tokens)
 
-        # Iterates over every possible sentence
-        # Using index is a caveat due to lists immutable property
         for i, _ in enumerate(self.tokens):
-            # If frequency of token is smaller than minimum frequency
             if tokens_frequency[self.tokens[i]] < self.min_frequency:
-                # Replaces with an unknown token
                 self.tokens[i] = c.UNK
 
     def _build(self) -> None:
         """Builds the vocabulary based on the tokens."""
 
-        # Creates the vocabulary
         self.vocab = sorted(set(self.tokens).union({c.UNK}))
-
-        # Also, gathers the vocabulary size
         self.vocab_size = len(self.vocab)
 
-        # Creates a property mapping vocabulary to indexes and vice-versa
         self.vocab_index = {t: i for i, t in enumerate(self.vocab)}
         self.index_vocab = {i: t for i, t in enumerate(self.vocab)}

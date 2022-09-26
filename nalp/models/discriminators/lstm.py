@@ -36,18 +36,14 @@ class LSTMDiscriminator(Discriminator):
 
         super(LSTMDiscriminator, self).__init__(name="D_lstm")
 
-        # Creates an embedding layer
         self.embedding = Dense(embedding_size, name="embedding")
 
-        # Creates a LSTM cell
         self.cell = LSTMCell(hidden_size, name="lstm_cell")
 
-        # Creates the RNN loop itself
         self.rnn = RNN(
             self.cell, name="rnn_layer", return_sequences=True, stateful=True
         )
 
-        # And finally, defining the output layer
         self.out = Dense(1, name="out")
 
         logger.info("Class overrided.")
@@ -63,13 +59,8 @@ class LSTMDiscriminator(Discriminator):
 
         """
 
-        # Firstly, we apply the embedding layer
         x = self.embedding(x)
-
-        # We need to apply the input into the first recurrent layer
         x = self.rnn(x)
-
-        # The input also suffers a linear combination to output correct shape
         x = self.out(x)
 
         return x

@@ -38,25 +38,15 @@ class TextCorpus(Corpus):
 
         super(TextCorpus, self).__init__(min_frequency=min_frequency)
 
-        # Checks if there are not pre-loaded tokens
         if not tokens:
-            # Loads the text from file
             text = loader.load_txt(from_file)
 
-            # Creates a tokenizer based on desired type
             pipe = self._create_tokenizer(corpus_type)
-
-            # Retrieve the tokens
             self.tokens = pipe(text)
-
         else:
-            # Gathers them to the property
             self.tokens = tokens
 
-        # Cuts the tokens based on a minimum frequency
         self._check_token_frequency()
-
-        # Builds the vocabulary based on the tokens
         self._build()
 
         logger.debug(

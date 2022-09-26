@@ -39,18 +39,13 @@ class LinearGenerator(Generator):
 
         super(LinearGenerator, self).__init__(name="G_linear")
 
-        # Defining a property for the LeakyReLU activation
         self.alpha = alpha
-
-        # Defining a property for the input noise dimension
         self.noise_dim = noise_dim
 
-        # Defining a list for holding the linear layers
         self.linear = [
             Dense(128 * (i + 1), name=f"linear_{i}") for i in range(n_samplings)
         ]
 
-        # Defining the output layer with a `tanh` activation for restraining interval to [-1, 1]
         self.out = Dense(input_shape[0], activation="tanh", name="out")
 
         logger.info("Class overrided.")
@@ -87,12 +82,9 @@ class LinearGenerator(Generator):
 
         """
 
-        # For every possible linear layer
         for layer in self.linear:
-            # Applies the layer with a LeakyReLU activation
             x = tf.nn.leaky_relu(layer(x), self.alpha)
 
-        # Passing down the output layer
         x = self.out(x)
 
         return x

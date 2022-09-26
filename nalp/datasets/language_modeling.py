@@ -39,13 +39,11 @@ class LanguageModelingDataset(Dataset):
 
         super(LanguageModelingDataset, self).__init__(shuffle)
 
-        # Creates the sequences and maps their inputs and targets
         sequences = self._create_sequences(
             encoded_tokens, encoded_tokens.ndim, max_contiguous_pad_length
         )
         mapped_sequences = sequences.map(self._create_input_target)
 
-        # Builds up the dataset class
         self._build(mapped_sequences, batch_size)
 
         logger.debug("Batch size: %d | Shuffle: %s.", batch_size, self.shuffle)
@@ -66,13 +64,11 @@ class LanguageModelingDataset(Dataset):
 
         """
 
-        # Slices the tensors into sequences
         sequences = tf.data.Dataset.from_tensor_slices(encoded_tokens)
 
         # This means that is a contiguous sequence of tokens and needs to
         # be parsed into individual sequences
         if rank == 1:
-            # Creates the sequences
             sequences = sequences.batch(
                 max_contiguous_pad_length + 1, drop_remainder=True
             )
@@ -90,7 +86,6 @@ class LanguageModelingDataset(Dataset):
 
         """
 
-        # Maps the sequence to input and target
         _input = sequence[:-1]
         target = sequence[1:]
 

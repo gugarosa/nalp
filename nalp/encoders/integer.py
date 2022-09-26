@@ -22,7 +22,6 @@ class IntegerEncoder(Encoder):
 
         super(IntegerEncoder, self)
 
-        # Creates an empty decoder property
         self.decoder = None
 
         logger.info("Class overrided.")
@@ -48,10 +47,7 @@ class IntegerEncoder(Encoder):
 
         """
 
-        # Creates the encoder property
         self.encoder = dictionary
-
-        # Creates the decoder property
         self.decoder = reverse_dictionary
 
     def encode(self, tokens: List[str]) -> np.array:

@@ -68,58 +68,43 @@ class RelationalMemoryCell(AbstractRNNCell):
 
         super(RelationalMemoryCell, self).__init__(**kwargs)
 
-        # Number of memory slots and their sizes
         self.n_slots = n_slots
         self.slot_size = n_heads * head_size
 
-        # Number of attention heads and their sizes
         self.n_heads = n_heads
         self.head_size = head_size
 
-        # Number of feed-forward network blocks and their sizes
         self.n_blocks = n_blocks
         self.n_layers = n_layers
 
-        # Activation functions
         self.activation = activations.get(activation)
         self.recurrent_activation = activations.get(recurrent_activation)
 
-        # Forget gate bias value
         self.forget_bias = forget_bias
 
-        # `W`, `U` and `b` initializers
         self.kernel_initializer = initializers.get(kernel_initializer)
         self.recurrent_initializer = initializers.get(recurrent_initializer)
         self.bias_initializer = initializers.get(bias_initializer)
 
-        # `W`, `U` and `b` regularizers
         self.kernel_regularizer = regularizers.get(kernel_regularizer)
         self.recurrent_regularizer = regularizers.get(recurrent_regularizer)
         self.bias_regularizer = regularizers.get(bias_regularizer)
 
-        # `W`, `U` and `b` constraints
         self.kernel_constraint = constraints.get(kernel_constraint)
         self.recurrent_constraint = constraints.get(recurrent_constraint)
         self.bias_constraint = constraints.get(bias_constraint)
 
-        # Number of outputted units
         self.units = self.slot_size * n_slots
-
-        # Number of outputted units from the gates
         self.n_gates = 2 * self.slot_size
 
-        # Creating a layer for projecting the input
         self.projector = Dense(self.slot_size)
 
-        # Creating the feed-forward network
-        # It is composed by linear layers and normalization ones
         self.before_norm = LayerNormalization()
         self.linear = [
             Dense(self.slot_size, activation="relu") for _ in range(n_layers)
         ]
         self.after_norm = LayerNormalization()
 
-        # Creating the Multi-Head Attention layer
         self.attn = MultiHeadAttention(self.slot_size, self.n_heads)
 
     @property
@@ -138,7 +123,6 @@ class RelationalMemoryCell(AbstractRNNCell):
 
         """
 
-        # Defining a property to hold the `W` matrices
         self.kernel = self.add_weight(
             shape=(self.slot_size, self.n_gates),
             name="kernel",
@@ -147,7 +131,6 @@ class RelationalMemoryCell(AbstractRNNCell):
             constraint=self.kernel_constraint,
         )
 
-        # Defining a property to hold the `U` matrices
         self.recurrent_kernel = self.add_weight(
             shape=(self.slot_size, self.n_gates),
             name="recurrent_kernel",
@@ -156,7 +139,6 @@ class RelationalMemoryCell(AbstractRNNCell):
             constraint=self.recurrent_constraint,
         )
 
-        # Defining a property to hold the `b` vectors
         self.bias = self.add_weight(
             shape=(self.n_gates,),
             name="bias",
@@ -165,7 +147,6 @@ class RelationalMemoryCell(AbstractRNNCell):
             constraint=self.bias_constraint,
         )
 
-        # Marking the built property as `True`
         self.built = True
 
     def _attend_over_memory(self, inputs: tf.Tensor, memory: tf.Tensor) -> tf.Tensor:
@@ -180,28 +161,18 @@ class RelationalMemoryCell(AbstractRNNCell):
 
         """
 
-        # For every feed-forward network
         for _ in range(self.n_blocks):
-            # Concatenates the inputs with the memory
             concat_memory = tf.concat([inputs, memory], 1)
 
-            # Passes down the multi-head attention layer
             att_memory, _ = self.attn(
                 memory, concat_memory, return_attention_scores=True
             )
-
-            # Passes down the first normalization layer
             norm_memory = self.before_norm(att_memory + memory)
 
-            # Makes a copy to feed the linear layers
             linear_memory = norm_memory
-
-            # For every linear layer
             for layer in self.linear:
-                # Passes down the layer
                 linear_memory = layer(linear_memory)
 
-            # Calculates the final memory from the network with another normalization layer
             memory = self.after_norm(norm_memory + linear_memory)
 
         return memory
@@ -292,26 +263,16 @@ class RelationalMemoryCell(AbstractRNNCell):
 
         """
 
-        # Creates an identity matrix
         states = tf.eye(self.n_slots, batch_shape=[batch_size])
 
-        # If the slot size is bigger than number of slots
         if self.slot_size > self.n_slots:
-            # Calculates its difference
             diff = self.slot_size - self.n_slots
 
-            # Creates a new tensor for padding
             padding = tf.zeros((batch_size, self.n_slots, diff))
-
-            # Concatenates the initial states with the padding
             states = tf.concat([states, padding], -1)
-
-        # If the slot size is smaller than number of slots
         elif self.slot_size < self.n_slots:
-            # Just gather the tensor until the desired size
             states = states[:, :, : self.slot_size]
 
-        # Reshapes to a flatten output
         states = tf.reshape(states, (states.shape[0], -1))
 
         return states, states

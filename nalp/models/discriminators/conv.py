@@ -37,10 +37,8 @@ class ConvDiscriminator(Discriminator):
 
         super(ConvDiscriminator, self).__init__(name="D_conv")
 
-        # Defining a property for the LeakyReLU activation
         self.alpha = alpha
 
-        # Defining a list for holding the convolutional layers
         self.conv = [
             Conv2D(
                 64 * (i + 1), (5, 5), strides=(2, 2), padding="same", name=f"conv_{i}"
@@ -48,12 +46,10 @@ class ConvDiscriminator(Discriminator):
             for i in range(n_samplings)
         ]
 
-        # Defining a list for holding the dropout layers
         self.drop = [
             Dropout(dropout_rate, name=f"drop_{i}") for i in range(n_samplings)
         ]
 
-        # Defining the output as a logit unit that decides whether input is real or fake
         self.out = Dense(1, name="out")
 
         logger.info("Class overrided.")
@@ -80,12 +76,9 @@ class ConvDiscriminator(Discriminator):
 
         """
 
-        # For every possible convolutional and dropout layer
         for c, d in zip(self.conv, self.drop):
-            # Applies the convolutional layer with a LeakyReLU activation and dropout
             x = d(tf.nn.leaky_relu(c(x), self.alpha), training=training)
 
-        # Passing down the output layer
         x = self.out(x)
 
         return x

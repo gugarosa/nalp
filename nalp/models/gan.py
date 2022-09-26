@@ -39,10 +39,7 @@ class GAN(Adversarial):
 
         logger.info("Overriding class: Adversarial -> GAN.")
 
-        # Creating the discriminator network
         D = LinearDiscriminator(n_samplings, alpha)
-
-        # Creating the generator network
         G = LinearGenerator(input_shape, noise_dim, n_samplings, alpha)
 
         super(GAN, self).__init__(D, G, name="gan")

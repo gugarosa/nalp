@@ -33,15 +33,12 @@ class LinearDiscriminator(Discriminator):
 
         super(LinearDiscriminator, self).__init__(name="D_linear")
 
-        # Defining a property for the LeakyReLU activation
         self.alpha = alpha
 
-        # Defining a list for holding the linear layers
         self.linear = [
             Dense(128 * i, name=f"linear_{i}") for i in range(n_samplings, 0, -1)
         ]
 
-        # Defining the output as a logit unit that decides whether input is real or fake
         self.out = Dense(1, name="out")
 
         logger.info("Class overrided.")
@@ -68,12 +65,9 @@ class LinearDiscriminator(Discriminator):
 
         """
 
-        # For every possible linear layer
         for layer in self.linear:
-            # Applies the layer with a LeakyReLU activation
             x = tf.nn.leaky_relu(layer(x), self.alpha)
 
-        # Passing down the output layer
         x = self.out(x)
 
         return x

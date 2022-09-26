@@ -39,26 +39,15 @@ class ConvGenerator(Generator):
 
         super(ConvGenerator, self).__init__(name="G_conv")
 
-        # Defining an alpha property for the LeakyReLU activation
         self.alpha = alpha
-
-        # Defining a property for the input noise dimension
         self.noise_dim = noise_dim
 
-        # Defining a property for the sampling factor used to calculate the upsampling
         self.sampling_factor = 2 ** (n_samplings - 1)
-
-        # Defining a property for the initial size of the filter
         self.filter_size = int(input_shape[0] / self.sampling_factor)
 
-        # Defining a list for holding the upsampling layers
         self.sampling = []
-
-        # For every possible upsampling
         for i in range(n_samplings, 0, -1):
-            # If it is the first upsampling
             if i == n_samplings:
-                # Appends a linear layer with a custom amount of units
                 self.sampling.append(
                     Dense(
                         self.filter_size**2 * 64 * self.sampling_factor,
@@ -66,10 +55,7 @@ class ConvGenerator(Generator):
                         name=f"linear_{i}",
                     )
                 )
-
-            # If it is the second upsampling
             elif i == n_samplings - 1:
-                # Appends a convolutional layer with (1, 1) strides
                 self.sampling.append(
                     Conv2DTranspose(
                         64 * i,
@@ -80,10 +66,7 @@ class ConvGenerator(Generator):
                         name=f"conv_{i}",
                     )
                 )
-
-            # If it is the rest of the upsamplings
             else:
-                # Appends a convolutional layer with (2, 2) strides
                 self.sampling.append(
                     Conv2DTranspose(
                         64 * i,
@@ -95,12 +78,10 @@ class ConvGenerator(Generator):
                     )
                 )
 
-        # Defining a list for holding the batch normalization layers
         self.bn = [
             BatchNormalization(name=f"bn_{i}") for i in range(n_samplings, 0, -1)
         ]
 
-        # Defining the output layer, which will be a convolutional transpose layer with `n_channels` filters
         self.out = Conv2DTranspose(
             input_shape[2],
             (5, 5),
@@ -165,14 +146,10 @@ class ConvGenerator(Generator):
 
         """
 
-        # For every possible layer in the list
         for i, (s, bn) in enumerate(zip(self.sampling, self.bn)):
-            # Pass down the upsampling layer along with batch normalization and a LeakyReLU activation
             x = tf.nn.leaky_relu(bn(s(x), training=training), self.alpha)
 
-            # If it is the first layer, e.g., linear
             if i == 0:
-                # Reshapes the tensor for the convolutional layer
                 x = tf.reshape(
                     x,
                     [
@@ -183,7 +160,6 @@ class ConvGenerator(Generator):
                     ],
                 )
 
-        # Passing down output layer
         x = self.out(x)
 
         return x

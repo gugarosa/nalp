@@ -20,10 +20,7 @@ def gumbel_distribution(input_shape: Tuple[int, ...]) -> tf.Tensor:
 
     """
 
-    # Samples an uniform distribution based on the input shape
     uniform_dist = tf.random.uniform(input_shape, 0, 1)
-
-    # Samples from the Gumbel distribution
     gumbel_dist = -1 * tf.math.log(
         -1 * tf.math.log(uniform_dist + c.EPSILON) + c.EPSILON
     )
@@ -50,7 +47,6 @@ class GumbelSoftmax(Layer):
 
         super(GumbelSoftmax, self).__init__(**kwargs)
 
-        # Defining a property for holding the intended axis
         self.axis = axis
 
     def call(self, inputs: tf.Tensor, tau: float) -> Tuple[tf.Tensor, tf.Tensor]:
@@ -65,13 +61,9 @@ class GumbelSoftmax(Layer):
 
         """
 
-        # Adds a sampled Gumbel distribution to the input
         x = inputs + gumbel_distribution(tf.shape(inputs))
-
-        # Applying the softmax over the Gumbel-based input
         x = tf.nn.softmax(x / tau, self.axis)
 
-        # Sampling an argmax token from the Gumbel-based input
         y = tf.stop_gradient(tf.argmax(x, self.axis, tf.int32))
 
         return x, y

@@ -22,7 +22,6 @@ class Dataset:
 
         """
 
-        # Creating a property to whether data should be shuffled or not
         self.shuffle = shuffle
 
     @property
@@ -57,7 +56,6 @@ class Dataset:
         if self.shuffle:
             sliced_data = sliced_data.shuffle(c.BUFFER_SIZE)
 
-        # Transforms the sequences into batches
         self.batches = sliced_data.batch(batch_size, drop_remainder=True).prefetch(
             tf.data.experimental.AUTOTUNE
         )

@@ -41,10 +41,8 @@ class ImageDataset(Dataset):
 
         super(ImageDataset, self).__init__(shuffle)
 
-        # Pre-process an array of images
         processed_images = self._preprocess(images, shape, normalize)
 
-        # Building up the dataset class
         self._build(processed_images, batch_size)
 
         logger.debug(
@@ -79,7 +77,6 @@ class ImageDataset(Dataset):
         if normalize:
             images = (images - 127.5) / 127.5
 
-        # Slices the arrays into tensors
         images = tf.data.Dataset.from_tensor_slices(images)
 
         return images

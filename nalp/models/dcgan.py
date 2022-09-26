@@ -42,10 +42,7 @@ class DCGAN(Adversarial):
 
         logger.info("Overriding class: Adversarial -> DCGAN.")
 
-        # Creating the discriminator network
         D = ConvDiscriminator(n_samplings, alpha, dropout_rate)
-
-        # Creating the generator network
         G = ConvGenerator(input_shape, noise_dim, n_samplings, alpha)
 
         super(DCGAN, self).__init__(D, G, name="dcgan")

@@ -43,21 +43,16 @@ class LSTMGenerator(Generator):
 
         super(LSTMGenerator, self).__init__(name="G_lstm")
 
-        # Creates a property for holding the used encoder
         self.encoder = encoder
 
-        # Creates an embedding layer
         self.embedding = Embedding(vocab_size, embedding_size, name="embedding")
 
-        # Creates a LSTM cell
         self.cell = LSTMCell(hidden_size, name="lstm_cell")
 
-        # Creates the RNN loop itself
         self.rnn = RNN(
             self.cell, name="rnn_layer", return_sequences=True, stateful=True
         )
 
-        # Creates the linear (Dense) layer
         self.linear = Dense(vocab_size, name="out")
 
         logger.info("Class overrided.")
@@ -83,13 +78,8 @@ class LSTMGenerator(Generator):
 
         """
 
-        # Firstly, we apply the embedding layer
         x = self.embedding(x)
-
-        # We need to apply the input into the first recurrent layer
         x = self.rnn(x)
-
-        # The input also suffers a linear combination to output correct shape
         x = self.linear(x)
 
         return x

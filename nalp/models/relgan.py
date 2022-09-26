@@ -62,12 +62,9 @@ class RelGAN(Adversarial):
 
         logger.info("Overriding class: Adversarial -> RelGAN.")
 
-        # Creating the discriminator network
         D = TextDiscriminator(
             max_length, embedding_size, n_filters, filters_size, dropout_rate
         )
-
-        # Creating the generator network
         G = GumbelRMCGenerator(
             encoder,
             vocab_size,
@@ -82,10 +79,7 @@ class RelGAN(Adversarial):
 
         super(RelGAN, self).__init__(D, G, name="RelGAN")
 
-        # Defining a property for holding the vocabulary size
         self.vocab_size = vocab_size
-
-        # Gumbel-Softmax initial temperature
         self.init_tau = tau
 
         logger.info("Class overrided.")
@@ -125,19 +119,14 @@ class RelGAN(Adversarial):
 
         """
 
-        # Creates optimizers for pre-training, discriminator and generator
         self.P_optimizer = pre_optimizer
         self.D_optimizer = d_optimizer
         self.G_optimizer = g_optimizer
 
-        # Defining the loss function
         self.loss = tf.nn.sigmoid_cross_entropy_with_logits
-
-        # Defining both loss metrics
         self.D_loss = tf.metrics.Mean(name="D_loss")
         self.G_loss = tf.metrics.Mean(name="G_loss")
 
-        # Storing losses as history keys
         self.history["pre_G_loss"] = []
         self.history["D_loss"] = []
         self.history["G_loss"] = []
@@ -155,33 +144,21 @@ class RelGAN(Adversarial):
 
         """
 
-        # Gathers the batch size and maximum sequence length
         batch_size, max_length = x.shape[0], x.shape[1]
 
-        # Gathering the first token from the input tensor and expanding its last dimension
         start_batch = tf.expand_dims(x[:, 0], -1)
 
-        # Creating an empty tensor for holding the Gumbel-Softmax predictions
         sampled_preds = tf.zeros([batch_size, 0, self.vocab_size])
-
-        # Copying the sampled batch with the start batch tokens
         sampled_batch = start_batch
 
-        # Resetting the network states
         self.G.reset_states()
 
-        # For every possible generation
         for _ in range(max_length):
-            # Predicts the current token
             _, preds, start_batch = self.G(start_batch)
 
-            # Concatenates the predictions with the tensor
             sampled_preds = tf.concat([sampled_preds, preds], 1)
-
-            # Concatenates the sampled batch with the predicted batch
             sampled_batch = tf.concat([sampled_batch, start_batch], 1)
 
-        # Ignoring the first column to get the target sampled batch
         sampled_batch = sampled_batch[:, 1:]
 
         return sampled_batch, sampled_preds
@@ -228,23 +205,17 @@ class RelGAN(Adversarial):
 
         """
 
-        # Using tensorflow's gradient
         with tf.GradientTape() as tape:
-            # Calculate the logit-based predictions based on inputs
             logits, _, _ = self.G(x)
 
-            # Calculate the loss
             loss = tf.reduce_mean(
                 tf.nn.sparse_softmax_cross_entropy_with_logits(y, logits)
             )
 
-        # Calculate the gradient based on loss for each training variable
         gradients = tape.gradient(loss, self.G.trainable_variables)
 
-        # Apply gradients using an optimizer
         self.P_optimizer.apply_gradients(zip(gradients, self.G.trainable_variables))
 
-        # Updates the generator's loss state
         self.G_loss.update_state(loss)
 
     @tf.function
@@ -257,7 +228,6 @@ class RelGAN(Adversarial):
 
         """
 
-        # Using tensorflow's gradient
         with tf.GradientTape() as G_tape, tf.GradientTape() as D_tape:
             # Generates new data, e.g., G(x)
             _, x_fake_probs = self.generate_batch(x)
@@ -270,19 +240,15 @@ class RelGAN(Adversarial):
             y = tf.one_hot(y, self.vocab_size)
             y_real = self.D(y)
 
-            # Calculates both losses
             G_loss = self._generator_loss(y_real, y_fake)
             D_loss = self._discriminator_loss(y_real, y_fake)
 
-        # Calculate both gradients
         G_gradients = G_tape.gradient(G_loss, self.G.trainable_variables)
         D_gradients = D_tape.gradient(D_loss, self.D.trainable_variables)
 
-        # Applies both gradients using an optimizer
         self.G_optimizer.apply_gradients(zip(G_gradients, self.G.trainable_variables))
         self.D_optimizer.apply_gradients(zip(D_gradients, self.D.trainable_variables))
 
-        # Updates both loss states
         self.G_loss.update_state(G_loss)
         self.D_loss.update_state(D_loss)
 
@@ -297,26 +263,20 @@ class RelGAN(Adversarial):
 
         logger.info("Pre-fitting generator ...")
 
-        # Gathering the amount of batches
         n_batches = tf.data.experimental.cardinality(batches).numpy()
 
         for e in range(epochs):
             logger.info("Epoch %d/%d", e + 1, epochs)
 
-            # Resetting state to further append losses
             self.G_loss.reset_states()
 
-            # Defining a customized progress bar
             b = Progbar(n_batches, stateful_metrics=["loss(G)"])
 
             for x_batch, y_batch in batches:
-                # Performs the optimization step over the generator
                 self.G_pre_step(x_batch, y_batch)
 
-                # Adding corresponding values to the progress bar
                 b.add(1, values=[("loss(G)", self.G_loss.result())])
 
-            # Dump loss to history
             self.history["pre_G_loss"].append(self.G_loss.result().numpy())
 
             logger.to_file("Loss(G): %s", self.G_loss.result().numpy())
@@ -332,24 +292,19 @@ class RelGAN(Adversarial):
 
         logger.info("Fitting model ...")
 
-        # Gathering the amount of batches
         n_batches = tf.data.experimental.cardinality(batches).numpy()
 
         for e in range(epochs):
             logger.info("Epoch %d/%d", e + 1, epochs)
 
-            # Resetting states to further append losses
             self.G_loss.reset_states()
             self.D_loss.reset_states()
 
-            # Defining a customized progress bar
             b = Progbar(n_batches, stateful_metrics=["loss(G)", "loss(D)"])
 
             for x_batch, y_batch in batches:
-                # Performs the optimization step
                 self.step(x_batch, y_batch)
 
-                # Adding corresponding values to the progress bar
                 b.add(
                     1,
                     values=[
@@ -361,7 +316,6 @@ class RelGAN(Adversarial):
             # Exponentially annealing the Gumbel-Softmax temperature
             self.G.tau = self.init_tau ** ((epochs - e) / epochs)
 
-            # Dumps the losses to history
             self.history["G_loss"].append(self.G_loss.result().numpy())
             self.history["D_loss"].append(self.D_loss.result().numpy())
 

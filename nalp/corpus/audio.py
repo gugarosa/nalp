@@ -30,26 +30,16 @@ class AudioCorpus(Corpus):
 
         super(AudioCorpus, self).__init__(min_frequency=min_frequency)
 
-        # Loads the audio from file
         audio = loader.load_audio(from_file)
 
-        # Declaring an empty list to hold audio notes
         self.tokens = []
-
-        # Gathering notes
         for step in audio:
-            # Checking for real note
             if not step.is_meta and step.channel == 0 and step.type == "note_on":
-                # Gathering note
                 note = step.bytes()
 
-                # Saving to list
                 self.tokens.append(str(note[1]))
 
-        # Cuts the tokens based on a minimum frequency
         self._check_token_frequency()
-
-        # Builds the vocabulary based on the tokens
         self._build()
 
         logger.debug(

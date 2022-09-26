@@ -60,10 +60,8 @@ class GumbelRMCGenerator(RMCGenerator):
             n_layers,
         )
 
-        # Defining a property to hold the Gumbel-Softmax temperature parameter
         self.tau = tau
 
-        # Creates a Gumbel-Softmax layer
         self.gumbel = GumbelSoftmax(name="gumbel")
 
         logger.info("Class overrided.")
@@ -89,16 +87,10 @@ class GumbelRMCGenerator(RMCGenerator):
 
         """
 
-        # Firstly, we apply the embedding layer
         x = self.embedding(x)
-
-        # We need to apply the input into the first recurrent layer
         x = self.rnn(x)
-
-        # The input also suffers a linear combination to output correct shape
         x = self.linear(x)
 
-        # Lastly, we apply the Gumbel-Softmax layer
         x_g, y_g = self.gumbel(x, self.tau)
 
         return x, x_g, y_g
@@ -118,33 +110,23 @@ class GumbelRMCGenerator(RMCGenerator):
 
         """
 
-        # Encoding the start string into tokens and expanding its first dimension
         start_tokens = self.encoder.encode(start)
         start_tokens = tf.expand_dims(start_tokens, 0)
 
-        # Creating an empty list to hold the sampled_tokens
-        sampled_tokens = []
-
-        # Resetting the network states
         self.reset_states()
 
-        # For every possible generation
+        sampled_tokens = []
         for _ in range(max_length):
-            # Predicts the current token and gathers its last timestep
             _, preds, _ = self(start_tokens)
             preds = preds[:, -1, :]
 
-            # Samples a predicted token
             sampled_token = tf.argmax(preds, -1).numpy()
 
-            # Put the sampled token back to the current token
             start_tokens = tf.expand_dims(sampled_token, 0)
 
-            # Decodes the token and appends to the output list
             sampled_token = self.encoder.decode(sampled_token)[0]
             sampled_tokens.append(sampled_token)
 
-            # Checks if sampled token is an end-of-sentence and breaks the loop
             if sampled_token == c.EOS:
                 break
 
@@ -169,39 +151,27 @@ class GumbelRMCGenerator(RMCGenerator):
 
         """
 
-        # Applying Gumbel-Softmax temperature as argument
         self.tau = temperature
 
-        # Encoding the start string into tokens and expanding its first dimension
         start_tokens = self.encoder.encode(start)
         start_tokens = tf.expand_dims(start_tokens, 0)
 
-        # Creating an empty list to hold the sampled_tokens
-        sampled_tokens = []
-
-        # Resetting the network states
         self.reset_states()
 
-        # For every possible generation
+        sampled_tokens = []
         for _ in range(max_length):
-            # Predicts the current token and gathers its last timestep
             _, preds, _ = self(start_tokens)
             preds = preds[:, -1, :]
 
-            # Regularize the prediction with the temperature
             preds /= temperature
 
-            # Samples a predicted token
             sampled_token = tf.argmax(preds, -1).numpy()
 
-            # Put the sampled token back to the current token
             start_tokens = tf.expand_dims(sampled_token, 0)
 
-            # Decodes the token and appends to the output list
             sampled_token = self.encoder.decode(sampled_token)[0]
             sampled_tokens.append(sampled_token)
 
-            # Checks if sampled token is an end-of-sentence and breaks the loop
             if sampled_token == c.EOS:
                 break
 
@@ -229,48 +199,31 @@ class GumbelRMCGenerator(RMCGenerator):
 
         """
 
-        # Encoding the start string into tokens and expanding its first dimension
         start_tokens = self.encoder.encode(start)
         start_tokens = tf.expand_dims(start_tokens, 0)
 
-        # Creating an empty list to hold the sampled_tokens
-        sampled_tokens = []
-
-        # Resetting the network states
         self.reset_states()
 
-        # For every possible generation
+        sampled_tokens = []
         for _ in range(max_length):
-            # Predicts the current token and gathers its last timestep
             _, preds, _ = self(start_tokens)
             preds = preds[:, -1, :]
 
-            # Checks if there is a provided `k`
             if k > 0:
-                # Samples the top-k predictions and its indexes
                 preds, preds_indexes = tf.math.top_k(preds, k)
-
-            # If there is no provided `k`,
-            # it means that we need to sort the predictions tensor
             else:
-                # Gathers sorted predictions and its indexes
                 preds, preds_indexes = tf.math.top_k(preds, preds.shape[-1])
 
-            # Checks if there is a provided probability
             if p > 0.0:
-                # Calculates the cumulative probability over the predictions' softmax
                 cum_probs = tf.math.cumsum(tf.nn.softmax(preds), axis=-1)
-
-                # Gathers a binary mask indicating whether indexes are below threshold
-                ignored_indexes = cum_probs <= p
 
                 # Also ensures that first index will always be true to prevent zero
                 # tokens from being sampled
+                ignored_indexes = cum_probs <= p
                 ignored_indexes = tf.tensor_scatter_nd_update(
                     ignored_indexes, [[0, 0]], [True]
                 )
 
-                # Filters the predictions and its indexes
                 preds = tf.expand_dims(preds[ignored_indexes], 0)
                 preds_indexes = tf.expand_dims(preds_indexes[ignored_indexes], 0)
 
@@ -278,14 +231,11 @@ class GumbelRMCGenerator(RMCGenerator):
             index = tf.argmax(preds, -1)[0]
             sampled_token = [preds_indexes[-1][index].numpy()]
 
-            # Put the sampled token back to the current token
             start_tokens = tf.expand_dims(sampled_token, 0)
 
-            # Decodes the token and appends to the output list
             sampled_token = self.encoder.decode(sampled_token)[0]
             sampled_tokens.append(sampled_token)
 
-            # Checks if sampled token is an end-of-sentence and breaks the loop
             if sampled_token == c.EOS:
                 break
 

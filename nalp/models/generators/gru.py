@@ -45,21 +45,16 @@ class GRUGenerator(Generator):
 
         super(GRUGenerator, self).__init__(name="G_gru")
 
-        # Creates a property for holding the used encoder
         self.encoder = encoder
 
-        # Creates an embedding layer
         self.embedding = Embedding(vocab_size, embedding_size, name="embedding")
 
-        # Creates a GRU cell
         self.cell = GRUCell(hidden_size, name="gru")
 
-        # Creates the RNN loop itself
         self.rnn = RNN(
             self.cell, name="rnn_layer", return_sequences=True, stateful=True
         )
 
-        # Creates the linear (Dense) layer
         self.linear = Dense(vocab_size, name="out")
 
         logger.info("Class overrided.")
@@ -85,13 +80,8 @@ class GRUGenerator(Generator):
 
         """
 
-        # Firstly, we apply the embedding layer
         x = self.embedding(x)
-
-        # We need to apply the input into the first recurrent layer
         x = self.rnn(x)
-
-        # The input also suffers a linear combination to output correct shape
         x = self.linear(x)
 
         return x

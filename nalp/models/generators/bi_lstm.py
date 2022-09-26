@@ -43,24 +43,18 @@ class BiLSTMGenerator(Generator):
 
         super(BiLSTMGenerator, self).__init__(name="G_bi_lstm")
 
-        # Creates a property for holding the used encoder
         self.encoder = encoder
 
-        # Creates an embedding layer
         self.embedding = Embedding(vocab_size, embedding_size, name="embedding")
 
-        # Creates a forward LSTM cell
         cell_f = LSTMCell(hidden_size, name="lstm_cell_f")
 
-        # And a orward RNN layer
         self.forward = RNN(
             cell_f, name="forward_rnn", return_sequences=True, stateful=True
         )
 
-        # Creates a backward LSTM cell
         cell_b = LSTMCell(hidden_size, name="lstm_cell_b")
 
-        # And a backward RNN layer
         self.backward = RNN(
             cell_b,
             name="backward_rnn",
@@ -69,7 +63,6 @@ class BiLSTMGenerator(Generator):
             go_backwards=True,
         )
 
-        # Creates the linear (Dense) layer
         self.linear = Dense(vocab_size, name="out")
 
         logger.info("Class overrided.")
@@ -95,19 +88,12 @@ class BiLSTMGenerator(Generator):
 
         """
 
-        # Firstly, we apply the embedding layer
         x = self.embedding(x)
 
-        # Then, we pass it to the forward layer
         x_f = self.forward(x)
-
-        # We also pass it to the backward layer
         x_b = self.backward(x)
 
-        # Then, we concatenate both layers
         x = tf.concat([x_f, x_b], -1)
-
-        # The input also suffers a linear combination to output correct shape
         x = self.linear(x)
 
         return x

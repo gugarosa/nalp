@@ -43,24 +43,19 @@ class StackedRNNGenerator(Generator):
 
         super(StackedRNNGenerator, self).__init__(name="G_stacked_rnn")
 
-        # Creates a property for holding the used encoder
         self.encoder = encoder
 
-        # Creates an embedding layer
         self.embedding = Embedding(vocab_size, embedding_size, name="embedding")
 
-        # Creating a stack of RNN cells
         self.cells = [
             SimpleRNNCell(size, name=f"rnn_cell{i}")
             for (i, size) in enumerate(hidden_size)
         ]
 
-        # Creates the RNN loop itself
         self.rnn = RNN(
             self.cells, name="rnn_layer", return_sequences=True, stateful=True
         )
 
-        # Creates the linear (Dense) layer
         self.linear = Dense(vocab_size, name="out")
 
         logger.debug("Number of cells: %d.", len(hidden_size))
@@ -87,13 +82,8 @@ class StackedRNNGenerator(Generator):
 
         """
 
-        # Firstly, we apply the embedding layer
         x = self.embedding(x)
-
-        # We need to apply the input into the first recurrent layer
         x = self.rnn(x)
-
-        # The input also suffers a linear combination to output correct shape
         x = self.linear(x)
 
         return x
