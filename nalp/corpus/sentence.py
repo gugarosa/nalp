@@ -24,10 +24,10 @@ class SentenceCorpus(Corpus):
         self,
         tokens: Optional[List[str]] = None,
         from_file: Optional[str] = None,
-        corpus_type: Optional[str] = "char",
-        min_frequency: Optional[int] = 1,
-        max_pad_length: Optional[int] = None,
-        sos_eos_tokens: Optional[bool] = True,
+        corpus_type: str = "char",
+        min_frequency: int = 1,
+        max_pad_length: int = None,
+        sos_eos_tokens: bool = True,
     ) -> None:
         """Initialization method.
 

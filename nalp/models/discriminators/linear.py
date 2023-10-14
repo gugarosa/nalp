@@ -1,8 +1,6 @@
 """Linear discriminator.
 """
 
-from typing import Optional
-
 import tensorflow as tf
 from tensorflow.keras.layers import Dense
 
@@ -19,7 +17,7 @@ class LinearDiscriminator(Discriminator):
     """
 
     def __init__(
-        self, n_samplings: Optional[int] = 3, alpha: Optional[float] = 0.01
+        self, n_samplings: int = 3, alpha: float = 0.01
     ) -> None:
         """Initialization method.
 
@@ -53,7 +51,7 @@ class LinearDiscriminator(Discriminator):
     def alpha(self, alpha: float) -> None:
         self._alpha = alpha
 
-    def call(self, x: tf.Tensor, training: Optional[bool] = True) -> tf.Tensor:
+    def call(self, x: tf.Tensor, training: bool = True) -> tf.Tensor:
         """Method that holds vital information whenever this class is called.
 
         Args:

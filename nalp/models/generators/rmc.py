@@ -1,5 +1,6 @@
 """Relational Memory Core generator.
 """
+
 from typing import Optional
 
 import tensorflow as tf
@@ -26,13 +27,13 @@ class RMCGenerator(Generator):
     def __init__(
         self,
         encoder: Optional[IntegerEncoder] = None,
-        vocab_size: Optional[int] = 1,
-        embedding_size: Optional[int] = 32,
-        n_slots: Optional[int] = 3,
-        n_heads: Optional[int] = 5,
-        head_size: Optional[int] = 10,
-        n_blocks: Optional[int] = 1,
-        n_layers: Optional[int] = 3,
+        vocab_size: int = 1,
+        embedding_size: int = 32,
+        n_slots: int = 3,
+        n_heads: int = 5,
+        head_size: int = 10,
+        n_blocks: int = 1,
+        n_layers: int = 3,
     ) -> None:
         """Initialization method.
 

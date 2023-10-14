@@ -1,7 +1,7 @@
 """Convolutional generator.
 """
 
-from typing import Optional, Tuple
+from typing import Tuple
 
 import tensorflow as tf
 from tensorflow.keras.layers import BatchNormalization, Conv2DTranspose, Dense
@@ -20,10 +20,10 @@ class ConvGenerator(Generator):
 
     def __init__(
         self,
-        input_shape: Optional[Tuple[int, int, int]] = (28, 28, 1),
-        noise_dim: Optional[int] = 100,
-        n_samplings: Optional[int] = 3,
-        alpha: Optional[float] = 0.3,
+        input_shape: Tuple[int, int, int] = (28, 28, 1),
+        noise_dim: int = 100,
+        n_samplings: int = 3,
+        alpha: float = 0.3,
     ) -> None:
         """Initialization method.
 
@@ -134,7 +134,7 @@ class ConvGenerator(Generator):
     def filter_size(self, filter_size: int) -> None:
         self._filter_size = filter_size
 
-    def call(self, x: tf.Tensor, training: Optional[bool] = True) -> tf.Tensor:
+    def call(self, x: tf.Tensor, training: bool = True) -> tf.Tensor:
         """Method that holds vital information whenever this class is called.
 
         Args:

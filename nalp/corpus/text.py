@@ -21,8 +21,8 @@ class TextCorpus(Corpus):
         self,
         tokens: Optional[List[str]] = None,
         from_file: Optional[str] = None,
-        corpus_type: Optional[str] = "char",
-        min_frequency: Optional[int] = 1,
+        corpus_type: str = "char",
+        min_frequency: int = 1,
     ) -> None:
         """Initialization method.
 

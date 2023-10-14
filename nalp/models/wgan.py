@@ -1,7 +1,7 @@
 """Wasserstein Generative Adversarial Network.
 """
 
-from typing import Optional, Tuple
+from typing import Tuple
 
 import tensorflow as tf
 from tensorflow.keras.utils import Progbar
@@ -32,14 +32,14 @@ class WGAN(Adversarial):
 
     def __init__(
         self,
-        input_shape: Optional[Tuple[int, int, int]] = (28, 28, 1),
-        noise_dim: Optional[int] = 100,
-        n_samplings: Optional[int] = 3,
-        alpha: Optional[float] = 0.3,
-        dropout_rate: Optional[float] = 0.3,
-        model_type: Optional[str] = "wc",
-        clip: Optional[float] = 0.01,
-        penalty: Optional[int] = 10,
+        input_shape: Tuple[int, int, int] = (28, 28, 1),
+        noise_dim: int = 100,
+        n_samplings: int = 3,
+        alpha: float = 0.3,
+        dropout_rate: float = 0.3,
+        model_type: str = "wc",
+        clip: float = 0.01,
+        penalty: int = 10,
     ):
         """Initialization method.
 
@@ -202,8 +202,8 @@ class WGAN(Adversarial):
     def fit(
         self,
         batches: Dataset,
-        epochs: Optional[int] = 100,
-        critic_steps: Optional[int] = 5,
+        epochs: int = 100,
+        critic_steps: int = 5,
     ) -> None:
         """Trains the model.
 

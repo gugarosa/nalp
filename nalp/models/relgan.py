@@ -28,18 +28,18 @@ class RelGAN(Adversarial):
     def __init__(
         self,
         encoder: Optional[IntegerEncoder] = None,
-        vocab_size: Optional[int] = 1,
-        max_length: Optional[int] = 1,
-        embedding_size: Optional[int] = 32,
-        n_slots: Optional[int] = 3,
-        n_heads: Optional[int] = 5,
-        head_size: Optional[int] = 10,
-        n_blocks: Optional[int] = 1,
-        n_layers: Optional[int] = 3,
-        n_filters: Optional[Tuple[int, ...]] = (64),
-        filters_size: Optional[Tuple[int, ...]] = (1),
-        dropout_rate: Optional[float] = 0.25,
-        tau: Optional[float] = 5.0,
+        vocab_size: int = 1,
+        max_length: int = 1,
+        embedding_size: int = 32,
+        n_slots: int = 3,
+        n_heads: int = 5,
+        head_size: int = 10,
+        n_blocks: int = 1,
+        n_layers: int = 3,
+        n_filters: Tuple[int, ...] = (64),
+        filters_size: Tuple[int, ...] = (1),
+        dropout_rate: float = 0.25,
+        tau: float = 5.0,
     ):
         """Initialization method.
 
@@ -252,7 +252,7 @@ class RelGAN(Adversarial):
         self.G_loss.update_state(G_loss)
         self.D_loss.update_state(D_loss)
 
-    def pre_fit(self, batches: Dataset, epochs: Optional[int] = 100) -> None:
+    def pre_fit(self, batches: Dataset, epochs: int = 100) -> None:
         """Pre-trains the model.
 
         Args:
@@ -281,7 +281,7 @@ class RelGAN(Adversarial):
 
             logger.to_file("Loss(G): %s", self.G_loss.result().numpy())
 
-    def fit(self, batches: Dataset, epochs: Optional[int] = 100) -> None:
+    def fit(self, batches: Dataset, epochs: int = 100) -> None:
         """Trains the model.
 
         Args:

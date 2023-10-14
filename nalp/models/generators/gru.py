@@ -27,9 +27,9 @@ class GRUGenerator(Generator):
     def __init__(
         self,
         encoder: Optional[IntegerEncoder] = None,
-        vocab_size: Optional[int] = 1,
-        embedding_size: Optional[int] = 32,
-        hidden_size: Optional[int] = 64,
+        vocab_size: int = 1,
+        embedding_size: int = 32,
+        hidden_size: int = 64,
     ) -> None:
         """Initialization method.
 

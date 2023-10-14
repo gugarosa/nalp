@@ -1,8 +1,6 @@
 """Dataset-related class.
 """
 
-from typing import Optional
-
 import tensorflow as tf
 
 import nalp.utils.constants as c
@@ -14,7 +12,7 @@ class Dataset:
 
     """
 
-    def __init__(self, shuffle: Optional[bool] = True) -> None:
+    def __init__(self, shuffle: bool = True) -> None:
         """Initialization method.
 
         Args:

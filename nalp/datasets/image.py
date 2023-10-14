@@ -21,10 +21,10 @@ class ImageDataset(Dataset):
     def __init__(
         self,
         images: np.array,
-        batch_size: Optional[int] = 256,
+        batch_size: int = 256,
         shape: Optional[Tuple[int, int]] = None,
-        normalize: Optional[bool] = True,
-        shuffle: Optional[bool] = True,
+        normalize: bool = True,
+        shuffle: bool = True,
     ) -> None:
         """Initialization method.
 

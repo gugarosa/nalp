@@ -30,10 +30,10 @@ class GSGAN(Adversarial):
     def __init__(
         self,
         encoder: Optional[IntegerEncoder] = None,
-        vocab_size: Optional[int] = 1,
-        embedding_size: Optional[int] = 32,
-        hidden_size: Optional[int] = 64,
-        tau: Optional[float] = 5,
+        vocab_size: int = 1,
+        embedding_size: int = 32,
+        hidden_size: int = 64,
+        tau: float = 5,
     ) -> None:
         """Initialization method.
 
@@ -226,7 +226,7 @@ class GSGAN(Adversarial):
         self.D_loss.update_state(D_loss)
         self.G_loss.update_state(G_loss)
 
-    def pre_fit(self, batches: Dataset, epochs: Optional[int] = 100) -> None:
+    def pre_fit(self, batches: Dataset, epochs: int = 100) -> None:
         """Pre-trains the model.
 
         Args:
@@ -255,7 +255,7 @@ class GSGAN(Adversarial):
 
             logger.to_file("Loss(G): %s", self.G_loss.result().numpy())
 
-    def fit(self, batches: Dataset, epochs: Optional[int] = 100) -> None:
+    def fit(self, batches: Dataset, epochs: int = 100) -> None:
         """Trains the model.
 
         Args:

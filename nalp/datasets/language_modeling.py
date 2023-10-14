@@ -1,7 +1,7 @@
 """Language modeling dataset class.
 """
 
-from typing import Optional, Tuple
+from typing import Tuple
 
 import numpy as np
 import tensorflow as tf
@@ -21,9 +21,9 @@ class LanguageModelingDataset(Dataset):
     def __init__(
         self,
         encoded_tokens: np.array,
-        max_contiguous_pad_length: Optional[int] = 1,
-        batch_size: Optional[int] = 64,
-        shuffle: Optional[bool] = True,
+        max_contiguous_pad_length: int = 1,
+        batch_size: int = 64,
+        shuffle: bool = True,
     ) -> None:
         """Initialization method.
 

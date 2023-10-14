@@ -1,7 +1,7 @@
 """Text-based discriminator.
 """
 
-from typing import Optional, Tuple
+from typing import Tuple
 
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, Dense, Dropout, MaxPool1D
@@ -20,11 +20,11 @@ class TextDiscriminator(Discriminator):
 
     def __init__(
         self,
-        max_length: Optional[int] = 1,
-        embedding_size: Optional[int] = 32,
-        n_filters: Optional[Tuple[int, ...]] = (64),
-        filters_size: Optional[Tuple[int, ...]] = (1),
-        dropout_rate: Optional[float] = 0.25,
+        max_length: int = 1,
+        embedding_size: int = 32,
+        n_filters: Tuple[int, ...] = (64),
+        filters_size: Tuple[int, ...] = (1),
+        dropout_rate: float = 0.25,
     ) -> None:
         """Initialization method.
 
@@ -64,7 +64,7 @@ class TextDiscriminator(Discriminator):
 
         logger.info("Class overrided.")
 
-    def call(self, x: tf.Tensor, training: Optional[bool] = True) -> tf.Tensor:
+    def call(self, x: tf.Tensor, training: bool = True) -> tf.Tensor:
         """Method that holds vital information whenever this class is called.
 
         Args:

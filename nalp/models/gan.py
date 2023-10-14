@@ -1,7 +1,7 @@
 """Generative Adversarial Network.
 """
 
-from typing import Optional, Tuple
+from typing import Tuple
 
 from nalp.core import Adversarial
 from nalp.models.discriminators import LinearDiscriminator
@@ -22,10 +22,10 @@ class GAN(Adversarial):
 
     def __init__(
         self,
-        input_shape: Optional[Tuple[int, ...]] = (784,),
-        noise_dim: Optional[int] = 100,
-        n_samplings: Optional[int] = 3,
-        alpha: Optional[float] = 0.01,
+        input_shape: Tuple[int, ...] = (784,),
+        noise_dim: int = 100,
+        n_samplings: int = 3,
+        alpha: float = 0.01,
     ) -> None:
         """Initialization method.
 

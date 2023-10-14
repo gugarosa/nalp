@@ -30,14 +30,14 @@ class SeqGAN(Adversarial):
     def __init__(
         self,
         encoder: Optional[IntegerEncoder] = None,
-        vocab_size: Optional[int] = 1,
-        max_length: Optional[int] = 1,
-        embedding_size: Optional[int] = 32,
-        hidden_size: Optional[int] = 64,
-        n_filters: Optional[Tuple[int, ...]] = (64),
-        filters_size: Optional[Tuple[int, ...]] = (1),
-        dropout_rate: Optional[float] = 0.25,
-        temperature: Optional[float] = 1.0,
+        vocab_size: int = 1,
+        max_length: int = 1,
+        embedding_size: int = 32,
+        hidden_size: int = 64,
+        n_filters: Tuple[int, ...] = (64),
+        filters_size: Tuple[int, ...] = (1),
+        dropout_rate: float = 0.25,
+        temperature: float = 1.0,
     ) -> None:
         """Initialization method.
 
@@ -122,7 +122,7 @@ class SeqGAN(Adversarial):
         self.history["G_loss"] = []
 
     def generate_batch(
-        self, batch_size: Optional[int] = 1, length: Optional[int] = 1
+        self, batch_size: int = 1, length: int = 1
     ) -> tf.Tensor:
         """Generates a batch of tokens by feeding to the network the
         current token (t) and predicting the next token (t+1).
@@ -262,8 +262,8 @@ class SeqGAN(Adversarial):
     def pre_fit(
         self,
         batches: Dataset,
-        g_epochs: Optional[int] = 50,
-        d_epochs: Optional[int] = 10,
+        g_epochs: int = 50,
+        d_epochs: int = 10,
     ) -> None:
         """Pre-trains the model.
 
@@ -336,10 +336,10 @@ class SeqGAN(Adversarial):
     def fit(
         self,
         batches: Dataset,
-        epochs: Optional[int] = 10,
-        g_epochs: Optional[int] = 1,
-        d_epochs: Optional[int] = 5,
-        n_rollouts: Optional[int] = 16,
+        epochs: int = 10,
+        g_epochs: int = 1,
+        d_epochs: int = 5,
+        n_rollouts: int = 16,
     ) -> None:
         """Trains the model.
 

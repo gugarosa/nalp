@@ -1,7 +1,7 @@
 """Model-related classes.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import tensorflow as tf
 from tensorflow.keras import Model
@@ -20,7 +20,7 @@ class Discriminator(Model):
 
     """
 
-    def __init__(self, name: Optional[str] = "") -> None:
+    def __init__(self, name: str = "") -> None:
         """Initialization method.
 
         Note that basic variables shared by all childs should be declared here, e.g., layers.
@@ -32,7 +32,7 @@ class Discriminator(Model):
 
         super(Discriminator, self).__init__(name=name)
 
-    def call(self, x: tf.Tensor, training: Optional[bool] = True) -> None:
+    def call(self, x: tf.Tensor, training: bool = True) -> None:
         """Method that holds vital information whenever this class is called.
 
         Note that you will need to implement this method directly on its child. Essentially,
@@ -56,7 +56,7 @@ class Generator(Model):
 
     """
 
-    def __init__(self, name: Optional[str] = "") -> None:
+    def __init__(self, name: str = "") -> None:
         """Initialization method.
 
         Note that basic variables shared by all childs should be declared here, e.g., layers.
@@ -68,7 +68,7 @@ class Generator(Model):
 
         super(Generator, self).__init__(name=name)
 
-    def call(self, x: tf.Tensor, training: Optional[bool] = True) -> None:
+    def call(self, x: tf.Tensor, training: bool = True) -> None:
         """Method that holds vital information whenever this class is called.
 
         Note that you will need to implement this method directly on its child. Essentially,
@@ -86,7 +86,7 @@ class Generator(Model):
         raise NotImplementedError
 
     def generate_greedy_search(
-        self, start: str, max_length: Optional[int] = 100
+        self, start: str, max_length: int = 100
     ) -> List[str]:
         """Generates text by using greedy search, where the sampled
         token is always sampled according to the maximum probability.
@@ -125,8 +125,8 @@ class Generator(Model):
     def generate_temperature_sampling(
         self,
         start: str,
-        max_length: Optional[int] = 100,
-        temperature: Optional[float] = 1.0,
+        max_length: int = 100,
+        temperature: float = 1.0,
     ) -> List[str]:
         """Generates text by using temperature sampling, where the sampled
         token is sampled according to a multinomial/categorical distribution.
@@ -168,9 +168,9 @@ class Generator(Model):
     def generate_top_sampling(
         self,
         start: str,
-        max_length: Optional[int] = 100,
-        k: Optional[int] = 0,
-        p: Optional[float] = 0.0,
+        max_length: int = 100,
+        k: int = 0,
+        p: float = 0.0,
     ) -> List[str]:
         """Generates text by using top-k and top-p sampling, where the sampled
         token is sampled according to the `k` most likely words distribution, as well
@@ -240,7 +240,7 @@ class Adversarial(Model):
         self,
         discriminator: Discriminator,
         generator: Generator,
-        name: Optional[str] = "",
+        name: str = "",
     ) -> None:
         """Initialization method.
 
@@ -371,7 +371,7 @@ class Adversarial(Model):
         self.G_loss.update_state(G_loss)
         self.D_loss.update_state(D_loss)
 
-    def fit(self, batches: Dataset, epochs: Optional[int] = 100) -> None:
+    def fit(self, batches: Dataset, epochs: int = 100) -> None:
         """Trains the model.
 
         Args:

@@ -1,7 +1,7 @@
 """Deep Convolutional Generative Adversarial Network.
 """
 
-from typing import Optional, Tuple
+from typing import Tuple
 
 from nalp.core import Adversarial
 from nalp.models.discriminators import ConvDiscriminator
@@ -23,11 +23,11 @@ class DCGAN(Adversarial):
 
     def __init__(
         self,
-        input_shape: Optional[Tuple[int, int, int]] = (28, 28, 1),
-        noise_dim: Optional[int] = 100,
-        n_samplings: Optional[int] = 3,
-        alpha: Optional[float] = 0.3,
-        dropout_rate: Optional[float] = 0.3,
+        input_shape: Tuple[int, int, int] = (28, 28, 1),
+        noise_dim: int = 100,
+        n_samplings: int = 3,
+        alpha: float = 0.3,
+        dropout_rate: float = 0.3,
     ) -> None:
         """Initialization method.
 

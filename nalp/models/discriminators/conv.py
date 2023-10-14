@@ -1,8 +1,6 @@
 """Convolutional discriminator.
 """
 
-from typing import Optional
-
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, Dense, Dropout
 
@@ -20,9 +18,9 @@ class ConvDiscriminator(Discriminator):
 
     def __init__(
         self,
-        n_samplings: Optional[int] = 3,
-        alpha: Optional[float] = 0.3,
-        dropout_rate: Optional[float] = 0.3,
+        n_samplings: int = 3,
+        alpha: float = 0.3,
+        dropout_rate: float = 0.3,
     ) -> None:
         """Initialization method.
 
@@ -64,7 +62,7 @@ class ConvDiscriminator(Discriminator):
     def alpha(self, alpha: float) -> None:
         self._alpha = alpha
 
-    def call(self, x: tf.Tensor, training: Optional[bool] = True) -> tf.Tensor:
+    def call(self, x: tf.Tensor, training: bool = True) -> tf.Tensor:
         """Method that holds vital information whenever this class is called.
 
         Args:

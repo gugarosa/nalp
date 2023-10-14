@@ -1,7 +1,7 @@
 """Linear generator.
 """
 
-from typing import Optional, Tuple
+from typing import Tuple
 
 import tensorflow as tf
 from tensorflow.keras.layers import Dense
@@ -20,10 +20,10 @@ class LinearGenerator(Generator):
 
     def __init__(
         self,
-        input_shape: Optional[Tuple[int, ...]] = (784,),
-        noise_dim: Optional[int] = 100,
-        n_samplings: Optional[int] = 3,
-        alpha: Optional[float] = 0.01,
+        input_shape: Tuple[int, ...] = (784,),
+        noise_dim: int = 100,
+        n_samplings: int = 3,
+        alpha: float = 0.01,
     ) -> None:
         """Initialization method.
 
@@ -70,7 +70,7 @@ class LinearGenerator(Generator):
     def noise_dim(self, noise_dim: int) -> None:
         self._noise_dim = noise_dim
 
-    def call(self, x: tf.Tensor, training: Optional[bool] = True) -> tf.Tensor:
+    def call(self, x: tf.Tensor, training: bool = True) -> tf.Tensor:
         """Method that holds vital information whenever this class is called.
 
         Args:

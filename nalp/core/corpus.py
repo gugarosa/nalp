@@ -2,7 +2,7 @@
 """
 
 from collections import Counter
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import nalp.utils.constants as c
 import nalp.utils.preprocess as p
@@ -21,7 +21,7 @@ class Corpus:
 
     """
 
-    def __init__(self, min_frequency: Optional[int] = 1) -> None:
+    def __init__(self, min_frequency: int = 1) -> None:
         """Initialization method."""
 
         self.min_frequency = min_frequency

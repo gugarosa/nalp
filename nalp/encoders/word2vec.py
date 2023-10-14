@@ -2,7 +2,7 @@
 """
 
 import multiprocessing
-from typing import List, Optional
+from typing import List
 
 import numpy as np
 from gensim.models.word2vec import Word2Vec as W2V
@@ -31,12 +31,12 @@ class Word2vecEncoder(Encoder):
     def learn(
         self,
         tokens: List[str],
-        max_features: Optional[int] = 128,
-        window_size: Optional[int] = 5,
-        min_count: Optional[int] = 1,
-        algorithm: Optional[bool] = 0,
-        learning_rate: Optional[float] = 0.01,
-        iterations: Optional[int] = 1000,
+        max_features: int = 128,
+        window_size: int = 5,
+        min_count: int = 1,
+        algorithm: int = 0,
+        learning_rate: float = 0.01,
+        iterations: int = 1000,
     ):
         """Learns a Word2Vec representation based on the its methodology.
 

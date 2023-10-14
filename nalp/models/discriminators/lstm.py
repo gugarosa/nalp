@@ -1,8 +1,6 @@
 """Long Short-Term Memory discriminator.
 """
 
-from typing import Optional
-
 import tensorflow as tf
 from tensorflow.keras.layers import RNN, Dense, LSTMCell
 
@@ -22,7 +20,7 @@ class LSTMDiscriminator(Discriminator):
     """
 
     def __init__(
-        self, embedding_size: Optional[int] = 32, hidden_size: Optional[int] = 64
+        self, embedding_size: int = 32, hidden_size: int = 64
     ) -> None:
         """Initialization method.
 

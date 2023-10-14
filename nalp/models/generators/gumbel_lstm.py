@@ -23,10 +23,10 @@ class GumbelLSTMGenerator(LSTMGenerator):
     def __init__(
         self,
         encoder: Optional[IntegerEncoder] = None,
-        vocab_size: Optional[int] = 1,
-        embedding_size: Optional[int] = 32,
-        hidden_size: Optional[int] = 64,
-        tau: Optional[float] = 5.0,
+        vocab_size: int = 1,
+        embedding_size: int = 32,
+        hidden_size: int = 64,
+        tau: float = 5.0,
     ) -> None:
         """Initialization method.
 
@@ -81,7 +81,7 @@ class GumbelLSTMGenerator(LSTMGenerator):
         return x, x_g, y_g
 
     def generate_greedy_search(
-        self, start: str, max_length: Optional[int] = 100
+        self, start: str, max_length: int = 100
     ) -> List[str]:
         """Generates text by using greedy search, where the sampled
         token is always sampled according to the maximum probability.
@@ -120,8 +120,8 @@ class GumbelLSTMGenerator(LSTMGenerator):
     def generate_temperature_sampling(
         self,
         start: str,
-        max_length: Optional[int] = 100,
-        temperature: Optional[float] = 1.0,
+        max_length: int = 100,
+        temperature: float = 1.0,
     ):
         """Generates text by using temperature sampling, where the sampled
         token is sampled according to a multinomial/categorical distribution.
@@ -165,9 +165,9 @@ class GumbelLSTMGenerator(LSTMGenerator):
     def generate_top_sampling(
         self,
         start: str,
-        max_length: Optional[int] = 100,
-        k: Optional[int] = 0,
-        p: Optional[float] = 0.0,
+        max_length: int = 100,
+        k: int = 0,
+        p: float = 0.0,
     ):
         """Generates text by using top-k and top-p sampling, where the sampled
         token is sampled according to the `k` most likely words distribution, as well

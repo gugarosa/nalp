@@ -1,7 +1,7 @@
 """Gumbel-Softmax layer.
 """
 
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Tuple
 
 import tensorflow as tf
 from tensorflow.keras.layers import Layer
@@ -37,7 +37,7 @@ class GumbelSoftmax(Layer):
 
     """
 
-    def __init__(self, axis: Optional[int] = -1, **kwargs) -> None:
+    def __init__(self, axis: int = -1, **kwargs) -> None:
         """Initialization method.
 
         Args:
