@@ -1,10 +1,10 @@
-"""Text-related corpus.
-"""
+"""Text-related corpus."""
 
 from pathlib import Path
 
 import nalp.utils.preprocess as p
 from nalp.core import Corpus
+from nalp.utils import loader
 
 
 class TextCorpus(Corpus):
@@ -35,7 +35,7 @@ class TextCorpus(Corpus):
         super().__init__(min_frequency=min_frequency)
 
         if not tokens:
-            text = Path(from_file).read_text(encoding="utf-8")
+            text = loader.load_txt(from_file)
             self.tokens = p.tokenize(text, corpus_type)
         else:
             self.tokens = tokens

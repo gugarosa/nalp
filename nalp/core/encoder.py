@@ -1,5 +1,4 @@
-"""Encoder-related class.
-"""
+"""Encoder-related class."""
 
 from typing import Any
 

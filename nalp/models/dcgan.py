@@ -1,5 +1,4 @@
-"""Deep Convolutional Generative Adversarial Network.
-"""
+"""Deep Convolutional Generative Adversarial Network."""
 
 from nalp.core import Adversarial
 from nalp.models.discriminators import ConvDiscriminator

@@ -1,5 +1,4 @@
-"""Bi-directional Long Short-Term Memory generator.
-"""
+"""Bi-directional Long Short-Term Memory generator."""
 
 import tensorflow as tf
 from tensorflow.keras.layers import RNN, Dense, Embedding, LSTMCell

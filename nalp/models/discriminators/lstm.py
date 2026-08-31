@@ -1,5 +1,4 @@
-"""Long Short-Term Memory discriminator.
-"""
+"""Long Short-Term Memory discriminator."""
 
 import tensorflow as tf
 from tensorflow.keras.layers import RNN, Dense, LSTMCell

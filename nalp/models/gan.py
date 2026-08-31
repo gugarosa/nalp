@@ -1,5 +1,4 @@
-"""Generative Adversarial Network.
-"""
+"""Generative Adversarial Network."""
 
 from nalp.core import Adversarial
 from nalp.models.discriminators import LinearDiscriminator

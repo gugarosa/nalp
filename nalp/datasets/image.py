@@ -1,5 +1,4 @@
-"""Imaging dataset class.
-"""
+"""Imaging dataset class."""
 
 import numpy as np
 import tensorflow as tf

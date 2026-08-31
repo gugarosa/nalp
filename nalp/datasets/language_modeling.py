@@ -1,5 +1,4 @@
-"""Language modeling dataset class.
-"""
+"""Language modeling dataset class."""
 
 import numpy as np
 import tensorflow as tf

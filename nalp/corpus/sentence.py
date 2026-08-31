@@ -1,5 +1,4 @@
-"""Sentence-related corpus.
-"""
+"""Sentence-related corpus."""
 
 from collections import Counter
 from itertools import chain
@@ -8,6 +7,7 @@ from pathlib import Path
 import nalp.utils.constants as c
 import nalp.utils.preprocess as p
 from nalp.core import Corpus
+from nalp.utils import loader
 
 
 class SentenceCorpus(Corpus):
@@ -42,7 +42,7 @@ class SentenceCorpus(Corpus):
         super().__init__(min_frequency=min_frequency)
 
         if not tokens:
-            sentences = Path(from_file).read_text(encoding="utf-8").splitlines()
+            sentences = loader.load_txt(from_file).splitlines()
             self.tokens = [p.tokenize(sentence, corpus_type) for sentence in sentences]
         else:
             self.tokens = tokens

@@ -1,5 +1,4 @@
-"""Relational Memory Core generator.
-"""
+"""Relational Memory Core generator."""
 
 import tensorflow as tf
 from tensorflow.keras.layers import RNN, Dense, Embedding

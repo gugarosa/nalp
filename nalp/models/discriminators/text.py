@@ -1,5 +1,4 @@
-"""Text-based discriminator.
-"""
+"""Text-based discriminator."""
 
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, Dense, Dropout, MaxPool1D

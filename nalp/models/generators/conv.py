@@ -1,5 +1,4 @@
-"""Convolutional generator.
-"""
+"""Convolutional generator."""
 
 import tensorflow as tf
 from tensorflow.keras.layers import BatchNormalization, Conv2DTranspose, Dense

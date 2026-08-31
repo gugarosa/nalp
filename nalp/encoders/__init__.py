@@ -1,5 +1,5 @@
 """An encoding package, containing encoders, decoders and all text-to-vector
-    necessities.
+necessities.
 """
 
 from nalp.encoders.integer import IntegerEncoder

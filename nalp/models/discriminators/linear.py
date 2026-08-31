@@ -1,5 +1,4 @@
-"""Linear discriminator.
-"""
+"""Linear discriminator."""
 
 import tensorflow as tf
 from tensorflow.keras.layers import Dense

@@ -31,6 +31,13 @@ dependencies = [
     "tensorflow>=2.20.0",
 ]
 
+[project.optional-dependencies]
+tests = [
+    "coverage>=7.10.0",
+    "flake8>=7.3.0",
+    "pytest>=9.0.0",
+]
+
 [project.urls]
 Homepage = "https://github.com/gugarosa/nalp"
 Documentation = "https://nalp.readthedocs.io"

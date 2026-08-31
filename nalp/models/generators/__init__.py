@@ -1,5 +1,4 @@
-"""A package for already-implemented generator models.
-"""
+"""A package for already-implemented generator models."""
 
 from nalp.models.generators.bi_lstm import BiLSTMGenerator
 from nalp.models.generators.conv import ConvGenerator

@@ -1,5 +1,4 @@
-"""Gated Recurrent Unit generator.
-"""
+"""Gated Recurrent Unit generator."""
 
 import tensorflow as tf
 from tensorflow.keras.layers import RNN, Dense, Embedding, GRUCell

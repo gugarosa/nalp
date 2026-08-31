@@ -1,5 +1,4 @@
-"""Word2vec encoding.
-"""
+"""Word2vec encoding."""
 
 import multiprocessing
 

@@ -1,5 +1,4 @@
-"""Sequence Generative Adversarial Network.
-"""
+"""Sequence Generative Adversarial Network."""
 
 import numpy as np
 import tensorflow as tf

@@ -1,59 +1,19 @@
-import importlib.util
-import sys
-from pathlib import Path
-from types import ModuleType
-
 import numpy as np
 import pytest
 
-from nalp.utils.preprocess import tokenize
-
-ROOT = Path(__file__).parents[1]
-
-
-def _load_module(name: str, *relative_path: str) -> ModuleType:
-    spec = importlib.util.spec_from_file_location(name, ROOT.joinpath(*relative_path))
-    assert spec and spec.loader
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[name] = module
-    spec.loader.exec_module(module)
-    return module
-
-
-def _load_core_classes():
-    saved_modules = {
-        name: sys.modules.get(name) for name in ("nalp.core", "nalp.core.encoder")
-    }
-
-    try:
-        corpus_module = _load_module("_test_core_corpus", "nalp", "core", "corpus.py")
-        core_package = ModuleType("nalp.core")
-        core_package.__path__ = []
-        core_package.Corpus = corpus_module.Corpus
-        sys.modules["nalp.core"] = core_package
-
-        _load_module("nalp.core.encoder", "nalp", "core", "encoder.py")
-        text_module = _load_module(
-            "_test_text_corpus", "nalp", "corpus", "text.py"
-        )
-        integer_module = _load_module(
-            "_test_integer_encoder", "nalp", "encoders", "integer.py"
-        )
-
-        return (
-            corpus_module.Corpus,
-            text_module.TextCorpus,
-            integer_module.IntegerEncoder,
-        )
-    finally:
-        for name, module in saved_modules.items():
-            if module is None:
-                sys.modules.pop(name, None)
-            else:
-                sys.modules[name] = module
-
-
-Corpus, TextCorpus, IntegerEncoder = _load_core_classes()
+from nalp.core import Corpus
+from nalp.corpus import TextCorpus
+from nalp.encoders import IntegerEncoder
+from nalp.utils import loader
+from nalp.utils import logging as nalp_logging
+from nalp.utils.preprocess import (
+    lower_case,
+    pipeline,
+    tokenize,
+    tokenize_to_char,
+    tokenize_to_word,
+    valid_char,
+)
 
 
 def test_tokenize_filters_lowercases_and_selects_token_type():
@@ -65,6 +25,10 @@ def test_tokenize_filters_lowercases_and_selects_token_type():
 
     with pytest.raises(RuntimeError, match="`char` or `word`"):
         tokenize(text, "sentence")
+
+    preprocess = pipeline(lower_case, valid_char, tokenize_to_word)
+    assert preprocess(text) == ["hello", "world", "42", "next"]
+    assert tokenize_to_char("ab") == ["a", "b"]
 
 
 def test_corpus_frequency_builds_direct_public_attributes():
@@ -85,11 +49,34 @@ def test_corpus_frequency_builds_direct_public_attributes():
 
 def test_text_corpus_reads_utf8_with_pathlib(tmp_path):
     source = tmp_path / "sample.txt"
-    source.write_text("Olá, WORLD!\n", encoding="utf-8")
+    source.write_bytes("Olá, WORLD!\r\n".encode())
 
     corpus = TextCorpus(from_file=source, corpus_type="word")
 
     assert corpus.tokens == ["ol", "world"]
+    assert loader.load_txt(source) == "Olá, WORLD!\r\n"
+
+
+def test_logging_helpers_preserve_public_api(tmp_path, monkeypatch):
+    monkeypatch.setattr(nalp_logging, "LOG_FILE", str(tmp_path / "nalp.log"))
+    logger = nalp_logging.get_logger("nalp.tests.public-api")
+    logger.to_file("request %s", "complete", extra={"request_id": "abc"})
+
+    assert isinstance(logger, nalp_logging.Logger)
+    assert isinstance(nalp_logging.get_console_handler(), nalp_logging.StreamHandler)
+    assert isinstance(
+        nalp_logging.get_timed_file_handler(),
+        nalp_logging.TimedRotatingFileHandler,
+    )
+    assert (
+        (tmp_path / "nalp.log")
+        .read_text(encoding="utf-8")
+        .endswith("request complete\n")
+    )
+
+    logger.addFilter(lambda record: False)
+    logger.to_file("filtered")
+    assert "filtered" not in (tmp_path / "nalp.log").read_text(encoding="utf-8")
 
 
 def test_integer_encoder_handles_unknown_and_nested_tokens():

@@ -1,5 +1,4 @@
-"""Integer-based encoding.
-"""
+"""Integer-based encoding."""
 
 import numpy as np
 

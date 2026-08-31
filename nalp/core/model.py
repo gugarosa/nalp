@@ -1,5 +1,4 @@
-"""Model-related classes.
-"""
+"""Model-related classes."""
 
 from typing import Any
 
@@ -86,8 +85,17 @@ class Generator(Model):
         """Resets stateful recurrent layers."""
 
         for layer in self.layers:
-            if hasattr(layer, "reset_state"):
-                layer.reset_state()
+            states = getattr(layer, "states", None)
+            if states is None:
+                continue
+
+            for state in tf.nest.flatten(states):
+                state.assign(tf.zeros_like(state))
+
+    def reset_states(self) -> None:
+        """Reset stateful recurrent layers."""
+
+        self.reset_state()
 
     def generate_greedy_search(self, start: str, max_length: int = 100) -> list[str]:
         """Generates text by using greedy search, where the sampled

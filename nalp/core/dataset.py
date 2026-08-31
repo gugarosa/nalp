@@ -1,5 +1,4 @@
-"""Dataset-related class.
-"""
+"""Dataset-related class."""
 
 import tensorflow as tf
 

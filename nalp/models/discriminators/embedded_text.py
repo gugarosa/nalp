@@ -1,5 +1,4 @@
-"""Embedded-text discriminator.
-"""
+"""Embedded-text discriminator."""
 
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, Dense, Dropout, Embedding, MaxPool1D

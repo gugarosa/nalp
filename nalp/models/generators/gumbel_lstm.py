@@ -1,5 +1,4 @@
-"""Gumbel Long Short-Term Memory generator.
-"""
+"""Gumbel Long Short-Term Memory generator."""
 
 import tensorflow as tf
 

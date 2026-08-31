@@ -1,5 +1,4 @@
-"""Relational-Memory Cell layer.
-"""
+"""Relational-Memory Cell layer."""
 
 from typing import Any
 
@@ -36,7 +35,7 @@ class RelationalMemoryCell(Layer):
         kernel_constraint: str | None = None,
         recurrent_constraint: str | None = None,
         bias_constraint: str | None = None,
-        **kwargs
+        **kwargs,
     ):
         """Initialization method.
 

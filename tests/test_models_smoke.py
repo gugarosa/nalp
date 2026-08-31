@@ -12,8 +12,18 @@ if tensorflow_available:
 
     from nalp.models import DCGAN, GAN, WGAN
     from nalp.models.discriminators import EmbeddedTextDiscriminator, TextDiscriminator
-    from nalp.models.generators import GumbelLSTMGenerator, LSTMGenerator, RMCGenerator
-    from nalp.models.layers import GumbelSoftmax, RelationalMemoryCell
+    from nalp.models.generators import (
+        GumbelLSTMGenerator,
+        LSTMGenerator,
+        RMCGenerator,
+        StackedRNNGenerator,
+    )
+    from nalp.models.layers import (
+        GumbelSoftmax,
+        MultiHeadAttention,
+        RelationalMemoryCell,
+    )
+    from nalp.models.layers.multi_head_attention import scaled_dot_product_attention
 
 
 def setup_function():
@@ -81,6 +91,12 @@ def test_text_models_forward():
     assert embedded(tokens, training=False).shape == (2, 1, 2)
     assert text(tf.one_hot(tokens, 7), training=False).shape == (2, 1, 2)
 
+    stacked = StackedRNNGenerator(vocab_size=7, embedding_size=4, hidden_size=(5, 6))
+    stacked.reset_state()
+    assert stacked(tokens).shape == (2, 3, 7)
+    stacked.reset_state()
+    stacked.reset_states()
+
 
 def test_rmc_and_gumbel_config_round_trips():
     cell = RelationalMemoryCell(2, 2, 2, n_layers=1)
@@ -103,3 +119,22 @@ def test_rmc_and_gumbel_config_round_trips():
 
     gumbel = GumbelSoftmax.from_config(GumbelSoftmax(axis=1).get_config())
     assert gumbel.axis == 1
+
+
+def test_multi_head_attention_public_api():
+    inputs = tf.ones((2, 3, 4))
+    layer = MultiHeadAttention(n_features=4, n_heads=2)
+    outputs, weights = layer(inputs, inputs, inputs)
+    clone = MultiHeadAttention.from_config(layer.get_config())
+    direct_outputs, direct_weights = scaled_dot_product_attention(
+        tf.ones((2, 2, 3, 2)),
+        tf.ones((2, 2, 3, 2)),
+        tf.ones((2, 2, 3, 2)),
+    )
+
+    assert outputs.shape == (2, 3, 4)
+    assert weights.shape == (2, 2, 3, 3)
+    assert clone.n_features == 4
+    assert clone.n_heads == 2
+    assert direct_outputs.shape == (2, 2, 3, 2)
+    assert direct_weights.shape == (2, 2, 3, 3)

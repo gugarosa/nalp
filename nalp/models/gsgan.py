@@ -1,5 +1,4 @@
-"""Gumbel-Softmax Generative Adversarial Network.
-"""
+"""Gumbel-Softmax Generative Adversarial Network."""
 
 import tensorflow as tf
 from tensorflow.keras.utils import Progbar

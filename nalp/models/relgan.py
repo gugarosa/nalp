@@ -1,5 +1,4 @@
-"""Relational Generative Adversarial Network.
-"""
+"""Relational Generative Adversarial Network."""
 
 import tensorflow as tf
 from tensorflow.keras.utils import Progbar

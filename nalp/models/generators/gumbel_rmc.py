@@ -1,5 +1,4 @@
-"""Gumbel Relational Memory Core generator.
-"""
+"""Gumbel Relational Memory Core generator."""
 
 import tensorflow as tf
 

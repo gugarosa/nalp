@@ -1,5 +1,4 @@
-"""Long Short-Term Memory generator.
-"""
+"""Long Short-Term Memory generator."""
 
 import tensorflow as tf
 from tensorflow.keras.layers import RNN, Dense, Embedding, LSTMCell

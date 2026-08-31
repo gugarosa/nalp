@@ -1,5 +1,4 @@
-"""Maximum-Likelihood Augmented Discrete Generative Adversarial Network.
-"""
+"""Maximum-Likelihood Augmented Discrete Generative Adversarial Network."""
 
 import numpy as np
 import tensorflow as tf

@@ -1,5 +1,4 @@
-"""Corpus-related class.
-"""
+"""Corpus-related class."""
 
 from collections import Counter
 

@@ -1,5 +1,4 @@
-"""Gumbel-Softmax layer.
-"""
+"""Gumbel-Softmax layer."""
 
 from typing import Any
 

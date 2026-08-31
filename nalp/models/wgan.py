@@ -1,5 +1,4 @@
-"""Wasserstein Generative Adversarial Network.
-"""
+"""Wasserstein Generative Adversarial Network."""
 
 import tensorflow as tf
 from tensorflow.keras.utils import Progbar

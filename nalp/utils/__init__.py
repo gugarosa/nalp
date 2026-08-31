@@ -1,2 +1,1 @@
-"""Utilities package for all common NALP modules.
-"""
+"""Utilities package for all common NALP modules."""

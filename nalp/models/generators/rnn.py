@@ -1,5 +1,4 @@
-"""Recurrent Neural Network generator.
-"""
+"""Recurrent Neural Network generator."""
 
 import tensorflow as tf
 from tensorflow.keras.layers import RNN, Dense, Embedding, SimpleRNNCell

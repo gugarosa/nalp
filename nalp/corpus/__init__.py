@@ -1,5 +1,5 @@
 """A corpus package, containing all the basic class and functions to load
-    text, audio and sentences.
+text, audio and sentences.
 """
 
 from nalp.corpus.audio import AudioCorpus

@@ -1,5 +1,4 @@
-"""Audio-related corpus.
-"""
+"""Audio-related corpus."""
 
 from nalp.core import Corpus
 from nalp.utils import loader
