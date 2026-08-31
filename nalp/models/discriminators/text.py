@@ -1,15 +1,10 @@
 """Text-based discriminator.
 """
 
-from typing import Tuple
-
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, Dense, Dropout, MaxPool1D
 
 from nalp.core import Discriminator
-from nalp.utils import logging
-
-logger = logging.get_logger(__name__)
 
 
 class TextDiscriminator(Discriminator):
@@ -22,8 +17,8 @@ class TextDiscriminator(Discriminator):
         self,
         max_length: int = 1,
         embedding_size: int = 32,
-        n_filters: Tuple[int, ...] = (64),
-        filters_size: Tuple[int, ...] = (1),
+        n_filters: tuple[int, ...] = (64,),
+        filters_size: tuple[int, ...] = (1,),
         dropout_rate: float = 0.25,
     ) -> None:
         """Initialization method.
@@ -37,9 +32,7 @@ class TextDiscriminator(Discriminator):
 
         """
 
-        logger.info("Overriding class: Discriminator -> TextDiscriminator.")
-
-        super(TextDiscriminator, self).__init__(name="D_text")
+        super().__init__(name="D_text")
 
         self.embedding = Dense(embedding_size, name="embedding")
 
@@ -61,8 +54,6 @@ class TextDiscriminator(Discriminator):
         self.highway = Dense(sum(n_filters), name="highway")
 
         self.drop = Dropout(dropout_rate, name="drop")
-
-        logger.info("Class overrided.")
 
     def call(self, x: tf.Tensor, training: bool = True) -> tf.Tensor:
         """Method that holds vital information whenever this class is called.

@@ -5,9 +5,6 @@ import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, Dense, Dropout
 
 from nalp.core import Discriminator
-from nalp.utils import logging
-
-logger = logging.get_logger(__name__)
 
 
 class ConvDiscriminator(Discriminator):
@@ -31,9 +28,7 @@ class ConvDiscriminator(Discriminator):
 
         """
 
-        logger.info("Overriding class: Discriminator -> ConvDiscriminator.")
-
-        super(ConvDiscriminator, self).__init__(name="D_conv")
+        super().__init__(name="D_conv")
 
         self.alpha = alpha
 
@@ -49,18 +44,6 @@ class ConvDiscriminator(Discriminator):
         ]
 
         self.out = Dense(1, name="out")
-
-        logger.info("Class overrided.")
-
-    @property
-    def alpha(self) -> float:
-        """LeakyReLU activation threshold."""
-
-        return self._alpha
-
-    @alpha.setter
-    def alpha(self, alpha: float) -> None:
-        self._alpha = alpha
 
     def call(self, x: tf.Tensor, training: bool = True) -> tf.Tensor:
         """Method that holds vital information whenever this class is called.

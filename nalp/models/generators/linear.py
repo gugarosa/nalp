@@ -1,15 +1,10 @@
 """Linear generator.
 """
 
-from typing import Tuple
-
 import tensorflow as tf
 from tensorflow.keras.layers import Dense
 
 from nalp.core import Generator
-from nalp.utils import logging
-
-logger = logging.get_logger(__name__)
 
 
 class LinearGenerator(Generator):
@@ -20,7 +15,7 @@ class LinearGenerator(Generator):
 
     def __init__(
         self,
-        input_shape: Tuple[int, ...] = (784,),
+        input_shape: tuple[int, ...] = (784,),
         noise_dim: int = 100,
         n_samplings: int = 3,
         alpha: float = 0.01,
@@ -35,9 +30,7 @@ class LinearGenerator(Generator):
 
         """
 
-        logger.info("Overriding class: Generator -> LinearGenerator.")
-
-        super(LinearGenerator, self).__init__(name="G_linear")
+        super().__init__(name="G_linear")
 
         self.alpha = alpha
         self.noise_dim = noise_dim
@@ -47,28 +40,6 @@ class LinearGenerator(Generator):
         ]
 
         self.out = Dense(input_shape[0], activation="tanh", name="out")
-
-        logger.info("Class overrided.")
-
-    @property
-    def alpha(self) -> float:
-        """LeakyReLU activation threshold."""
-
-        return self._alpha
-
-    @alpha.setter
-    def alpha(self, alpha: float) -> None:
-        self._alpha = alpha
-
-    @property
-    def noise_dim(self) -> int:
-        """Amount of noise dimensions."""
-
-        return self._noise_dim
-
-    @noise_dim.setter
-    def noise_dim(self, noise_dim: int) -> None:
-        self._noise_dim = noise_dim
 
     def call(self, x: tf.Tensor, training: bool = True) -> tf.Tensor:
         """Method that holds vital information whenever this class is called.

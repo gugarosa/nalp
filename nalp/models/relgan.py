@@ -1,8 +1,6 @@
 """Relational Generative Adversarial Network.
 """
 
-from typing import Optional, Tuple
-
 import tensorflow as tf
 from tensorflow.keras.utils import Progbar
 
@@ -11,9 +9,6 @@ from nalp.core.dataset import Dataset
 from nalp.encoders.integer import IntegerEncoder
 from nalp.models.discriminators import TextDiscriminator
 from nalp.models.generators import GumbelRMCGenerator
-from nalp.utils import logging
-
-logger = logging.get_logger(__name__)
 
 
 class RelGAN(Adversarial):
@@ -27,7 +22,7 @@ class RelGAN(Adversarial):
 
     def __init__(
         self,
-        encoder: Optional[IntegerEncoder] = None,
+        encoder: IntegerEncoder | None = None,
         vocab_size: int = 1,
         max_length: int = 1,
         embedding_size: int = 32,
@@ -36,8 +31,8 @@ class RelGAN(Adversarial):
         head_size: int = 10,
         n_blocks: int = 1,
         n_layers: int = 3,
-        n_filters: Tuple[int, ...] = (64),
-        filters_size: Tuple[int, ...] = (1),
+        n_filters: tuple[int, ...] = (64,),
+        filters_size: tuple[int, ...] = (1,),
         dropout_rate: float = 0.25,
         tau: float = 5.0,
     ):
@@ -60,8 +55,6 @@ class RelGAN(Adversarial):
 
         """
 
-        logger.info("Overriding class: Adversarial -> RelGAN.")
-
         D = TextDiscriminator(
             max_length, embedding_size, n_filters, filters_size, dropout_rate
         )
@@ -77,32 +70,10 @@ class RelGAN(Adversarial):
             tau,
         )
 
-        super(RelGAN, self).__init__(D, G, name="RelGAN")
+        super().__init__(D, G, name="RelGAN")
 
         self.vocab_size = vocab_size
         self.init_tau = tau
-
-        logger.info("Class overrided.")
-
-    @property
-    def vocab_size(self) -> int:
-        """The size of the vocabulary."""
-
-        return self._vocab_size
-
-    @vocab_size.setter
-    def vocab_size(self, vocab_size: int) -> None:
-        self._vocab_size = vocab_size
-
-    @property
-    def init_tau(self) -> float:
-        """Gumbel-Softmax initial temperature."""
-
-        return self._init_tau
-
-    @init_tau.setter
-    def init_tau(self, init_tau: float) -> None:
-        self._init_tau = init_tau
 
     def compile(
         self,
@@ -131,7 +102,7 @@ class RelGAN(Adversarial):
         self.history["D_loss"] = []
         self.history["G_loss"] = []
 
-    def generate_batch(self, x: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
+    def generate_batch(self, x: tf.Tensor) -> tuple[tf.Tensor, tf.Tensor]:
         """Generates a batch of tokens by feeding to the network the
         current token (t) and predicting the next token (t+1).
 
@@ -151,7 +122,7 @@ class RelGAN(Adversarial):
         sampled_preds = tf.zeros([batch_size, 0, self.vocab_size])
         sampled_batch = start_batch
 
-        self.G.reset_states()
+        self.G.reset_state()
 
         for _ in range(max_length):
             _, preds, start_batch = self.G(start_batch)
@@ -261,14 +232,10 @@ class RelGAN(Adversarial):
 
         """
 
-        logger.info("Pre-fitting generator ...")
-
         n_batches = tf.data.experimental.cardinality(batches).numpy()
 
-        for e in range(epochs):
-            logger.info("Epoch %d/%d", e + 1, epochs)
-
-            self.G_loss.reset_states()
+        for _ in range(epochs):
+            self.G_loss.reset_state()
 
             b = Progbar(n_batches, stateful_metrics=["loss(G)"])
 
@@ -279,8 +246,6 @@ class RelGAN(Adversarial):
 
             self.history["pre_G_loss"].append(self.G_loss.result().numpy())
 
-            logger.to_file("Loss(G): %s", self.G_loss.result().numpy())
-
     def fit(self, batches: Dataset, epochs: int = 100) -> None:
         """Trains the model.
 
@@ -290,15 +255,11 @@ class RelGAN(Adversarial):
 
         """
 
-        logger.info("Fitting model ...")
-
         n_batches = tf.data.experimental.cardinality(batches).numpy()
 
         for e in range(epochs):
-            logger.info("Epoch %d/%d", e + 1, epochs)
-
-            self.G_loss.reset_states()
-            self.D_loss.reset_states()
+            self.G_loss.reset_state()
+            self.D_loss.reset_state()
 
             b = Progbar(n_batches, stateful_metrics=["loss(G)", "loss(D)"])
 
@@ -318,9 +279,3 @@ class RelGAN(Adversarial):
 
             self.history["G_loss"].append(self.G_loss.result().numpy())
             self.history["D_loss"].append(self.D_loss.result().numpy())
-
-            logger.to_file(
-                "Loss(G): %s | Loss(D): %s",
-                self.G_loss.result().numpy(),
-                self.D_loss.result().numpy(),
-            )

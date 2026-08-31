@@ -1,15 +1,10 @@
 """Convolutional generator.
 """
 
-from typing import Tuple
-
 import tensorflow as tf
 from tensorflow.keras.layers import BatchNormalization, Conv2DTranspose, Dense
 
 from nalp.core import Generator
-from nalp.utils import logging
-
-logger = logging.get_logger(__name__)
 
 
 class ConvGenerator(Generator):
@@ -20,7 +15,7 @@ class ConvGenerator(Generator):
 
     def __init__(
         self,
-        input_shape: Tuple[int, int, int] = (28, 28, 1),
+        input_shape: tuple[int, int, int] = (28, 28, 1),
         noise_dim: int = 100,
         n_samplings: int = 3,
         alpha: float = 0.3,
@@ -35,9 +30,7 @@ class ConvGenerator(Generator):
 
         """
 
-        logger.info("Overriding class: Generator -> ConvGenerator.")
-
-        super(ConvGenerator, self).__init__(name="G_conv")
+        super().__init__(name="G_conv")
 
         self.alpha = alpha
         self.noise_dim = noise_dim
@@ -91,48 +84,6 @@ class ConvGenerator(Generator):
             activation="tanh",
             name="out",
         )
-
-        logger.info("Class overrided.")
-
-    @property
-    def alpha(self) -> float:
-        """LeakyReLU activation threshold."""
-
-        return self._alpha
-
-    @alpha.setter
-    def alpha(self, alpha: float) -> None:
-        self._alpha = alpha
-
-    @property
-    def noise_dim(self) -> int:
-        """Amount of noise dimensions."""
-
-        return self._noise_dim
-
-    @noise_dim.setter
-    def noise_dim(self, noise_dim: int) -> None:
-        self._noise_dim = noise_dim
-
-    @property
-    def sampling_factor(self) -> int:
-        """Sampling factor used to calculate the upsampling."""
-
-        return self._sampling_factor
-
-    @sampling_factor.setter
-    def sampling_factor(self, sampling_factor: int) -> None:
-        self._sampling_factor = sampling_factor
-
-    @property
-    def filter_size(self) -> int:
-        """Initial size of the filter."""
-
-        return self._filter_size
-
-    @filter_size.setter
-    def filter_size(self, filter_size: int) -> None:
-        self._filter_size = filter_size
 
     def call(self, x: tf.Tensor, training: bool = True) -> tf.Tensor:
         """Method that holds vital information whenever this class is called.

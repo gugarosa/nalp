@@ -1,17 +1,12 @@
 """Relational Memory Core generator.
 """
 
-from typing import Optional
-
 import tensorflow as tf
 from tensorflow.keras.layers import RNN, Dense, Embedding
 
 from nalp.core import Generator
 from nalp.encoders.integer import IntegerEncoder
 from nalp.models.layers.relational_memory_cell import RelationalMemoryCell
-from nalp.utils import logging
-
-logger = logging.get_logger(__name__)
 
 
 class RMCGenerator(Generator):
@@ -26,7 +21,7 @@ class RMCGenerator(Generator):
 
     def __init__(
         self,
-        encoder: Optional[IntegerEncoder] = None,
+        encoder: IntegerEncoder | None = None,
         vocab_size: int = 1,
         embedding_size: int = 32,
         n_slots: int = 3,
@@ -49,9 +44,7 @@ class RMCGenerator(Generator):
 
         """
 
-        logger.info("Overriding class: Generator -> RMCGenerator.")
-
-        super(RMCGenerator, self).__init__(name="G_rmc")
+        super().__init__(name="G_rmc")
 
         self.encoder = encoder
 
@@ -66,18 +59,6 @@ class RMCGenerator(Generator):
         )
 
         self.linear = Dense(vocab_size, name="out")
-
-        logger.info("Class overrided.")
-
-    @property
-    def encoder(self) -> IntegerEncoder:
-        """An encoder generic object."""
-
-        return self._encoder
-
-    @encoder.setter
-    def encoder(self, encoder: IntegerEncoder) -> None:
-        self._encoder = encoder
 
     def call(self, x: tf.Tensor) -> tf.Tensor:
         """Method that holds vital information whenever this class is called.

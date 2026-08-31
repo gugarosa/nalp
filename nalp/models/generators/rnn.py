@@ -1,16 +1,11 @@
 """Recurrent Neural Network generator.
 """
 
-from typing import Optional
-
 import tensorflow as tf
 from tensorflow.keras.layers import RNN, Dense, Embedding, SimpleRNNCell
 
 from nalp.core import Generator
 from nalp.encoders.integer import IntegerEncoder
-from nalp.utils import logging
-
-logger = logging.get_logger(__name__)
 
 
 class RNNGenerator(Generator):
@@ -24,7 +19,7 @@ class RNNGenerator(Generator):
 
     def __init__(
         self,
-        encoder: Optional[IntegerEncoder] = None,
+        encoder: IntegerEncoder | None = None,
         vocab_size: int = 1,
         embedding_size: int = 32,
         hidden_size: int = 64,
@@ -39,9 +34,7 @@ class RNNGenerator(Generator):
 
         """
 
-        logger.info("Overriding class: Generator -> RNNGenerator.")
-
-        super(RNNGenerator, self).__init__(name="G_rnn")
+        super().__init__(name="G_rnn")
 
         self.encoder = encoder
 
@@ -54,18 +47,6 @@ class RNNGenerator(Generator):
         )
 
         self.linear = Dense(vocab_size, name="out")
-
-        logger.info("Class overrided.")
-
-    @property
-    def encoder(self) -> IntegerEncoder:
-        """An encoder generic object."""
-
-        return self._encoder
-
-    @encoder.setter
-    def encoder(self, encoder: IntegerEncoder) -> None:
-        self._encoder = encoder
 
     def call(self, x: tf.Tensor) -> tf.Tensor:
         """Method that holds vital information whenever this class is called.

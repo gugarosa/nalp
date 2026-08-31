@@ -5,9 +5,6 @@ import tensorflow as tf
 from tensorflow.keras.layers import Dense
 
 from nalp.core import Discriminator
-from nalp.utils import logging
-
-logger = logging.get_logger(__name__)
 
 
 class LinearDiscriminator(Discriminator):
@@ -16,9 +13,7 @@ class LinearDiscriminator(Discriminator):
 
     """
 
-    def __init__(
-        self, n_samplings: int = 3, alpha: float = 0.01
-    ) -> None:
+    def __init__(self, n_samplings: int = 3, alpha: float = 0.01) -> None:
         """Initialization method.
 
         Args:
@@ -27,9 +22,7 @@ class LinearDiscriminator(Discriminator):
 
         """
 
-        logger.info("Overriding class: Discriminator -> LinearDiscriminator.")
-
-        super(LinearDiscriminator, self).__init__(name="D_linear")
+        super().__init__(name="D_linear")
 
         self.alpha = alpha
 
@@ -38,18 +31,6 @@ class LinearDiscriminator(Discriminator):
         ]
 
         self.out = Dense(1, name="out")
-
-        logger.info("Class overrided.")
-
-    @property
-    def alpha(self) -> float:
-        """LeakyReLU activation threshold."""
-
-        return self._alpha
-
-    @alpha.setter
-    def alpha(self, alpha: float) -> None:
-        self._alpha = alpha
 
     def call(self, x: tf.Tensor, training: bool = True) -> tf.Tensor:
         """Method that holds vital information whenever this class is called.

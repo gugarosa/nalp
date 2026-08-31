@@ -1,8 +1,6 @@
 """Wasserstein Generative Adversarial Network.
 """
 
-from typing import Tuple
-
 import tensorflow as tf
 from tensorflow.keras.utils import Progbar
 
@@ -10,9 +8,6 @@ from nalp.core import Adversarial
 from nalp.core.dataset import Dataset
 from nalp.models.discriminators import ConvDiscriminator
 from nalp.models.generators import ConvGenerator
-from nalp.utils import logging
-
-logger = logging.get_logger(__name__)
 
 
 class WGAN(Adversarial):
@@ -32,7 +27,7 @@ class WGAN(Adversarial):
 
     def __init__(
         self,
-        input_shape: Tuple[int, int, int] = (28, 28, 1),
+        input_shape: tuple[int, int, int] = (28, 28, 1),
         noise_dim: int = 100,
         n_samplings: int = 3,
         alpha: float = 0.3,
@@ -55,59 +50,14 @@ class WGAN(Adversarial):
 
         """
 
-        logger.info("Overriding class: Adversarial -> WGAN.")
-
         D = ConvDiscriminator(n_samplings, alpha, dropout_rate)
         G = ConvGenerator(input_shape, noise_dim, n_samplings, alpha)
 
-        super(WGAN, self).__init__(D, G, name="wgan")
+        super().__init__(D, G, name="wgan")
 
         self.model_type = model_type
         self.clip = clip
         self.penalty_lambda = penalty
-
-        logger.debug(
-            "Input: %s | Noise: %d | Number of samplings: %d | "
-            "Activation rate: %s | Dropout rate: %s | Type: %s.",
-            input_shape,
-            noise_dim,
-            n_samplings,
-            alpha,
-            dropout_rate,
-            model_type,
-        )
-
-        logger.info("Class overrided.")
-
-    @property
-    def model_type(self) -> str:
-        """Whether should use weight clipping (wc) or gradient penalty (gp)."""
-
-        return self._model_type
-
-    @model_type.setter
-    def model_type(self, model_type: str) -> None:
-        self._model_type = model_type
-
-    @property
-    def clip(self) -> float:
-        """Clipping value for the Lipschitz constrain."""
-
-        return self._clip
-
-    @clip.setter
-    def clip(self, clip: float) -> None:
-        self._clip = clip
-
-    @property
-    def penalty_lambda(self) -> int:
-        """Coefficient for the gradient penalty."""
-
-        return self._penalty_lambda
-
-    @penalty_lambda.setter
-    def penalty_lambda(self, penalty_lambda: int) -> None:
-        self._penalty_lambda = penalty_lambda
 
     def _gradient_penalty(self, x: tf.Tensor, x_fake: tf.Tensor) -> tf.Tensor:
         """Performs the gradient penalty procedure.
@@ -214,15 +164,11 @@ class WGAN(Adversarial):
 
         """
 
-        logger.info("Fitting model ...")
-
         n_batches = tf.data.experimental.cardinality(batches).numpy()
 
-        for e in range(epochs):
-            logger.info("Epoch %d/%d", e + 1, epochs)
-
-            self.G_loss.reset_states()
-            self.D_loss.reset_states()
+        for _ in range(epochs):
+            self.G_loss.reset_state()
+            self.D_loss.reset_state()
 
             b = Progbar(n_batches, stateful_metrics=["loss(G)", "loss(D)"])
 
@@ -242,9 +188,3 @@ class WGAN(Adversarial):
 
             self.history["G_loss"].append(self.G_loss.result().numpy())
             self.history["D_loss"].append(self.D_loss.result().numpy())
-
-            logger.to_file(
-                "Loss(G): %s | Loss(D): %s",
-                self.G_loss.result().numpy(),
-                self.D_loss.result().numpy(),
-            )

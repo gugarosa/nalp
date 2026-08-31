@@ -1,8 +1,6 @@
 """Sequence Generative Adversarial Network.
 """
 
-from typing import Optional, Tuple
-
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.utils import Progbar
@@ -13,9 +11,6 @@ from nalp.core.dataset import Dataset
 from nalp.encoders.integer import IntegerEncoder
 from nalp.models.discriminators import EmbeddedTextDiscriminator
 from nalp.models.generators import LSTMGenerator
-from nalp.utils import logging
-
-logger = logging.get_logger(__name__)
 
 
 class SeqGAN(Adversarial):
@@ -29,13 +24,13 @@ class SeqGAN(Adversarial):
 
     def __init__(
         self,
-        encoder: Optional[IntegerEncoder] = None,
+        encoder: IntegerEncoder | None = None,
         vocab_size: int = 1,
         max_length: int = 1,
         embedding_size: int = 32,
         hidden_size: int = 64,
-        n_filters: Tuple[int, ...] = (64),
-        filters_size: Tuple[int, ...] = (1),
+        n_filters: tuple[int, ...] = (64,),
+        filters_size: tuple[int, ...] = (1,),
         dropout_rate: float = 0.25,
         temperature: float = 1.0,
     ) -> None:
@@ -54,8 +49,6 @@ class SeqGAN(Adversarial):
 
         """
 
-        logger.info("Overriding class: Adversarial -> SeqGAN.")
-
         D = EmbeddedTextDiscriminator(
             vocab_size,
             max_length,
@@ -66,32 +59,10 @@ class SeqGAN(Adversarial):
         )
         G = LSTMGenerator(encoder, vocab_size, embedding_size, hidden_size)
 
-        super(SeqGAN, self).__init__(D, G, name="seqgan")
+        super().__init__(D, G, name="seqgan")
 
         self.vocab_size = vocab_size
         self.T = temperature
-
-        logger.info("Class overrided.")
-
-    @property
-    def vocab_size(self) -> int:
-        """The size of the vocabulary."""
-
-        return self._vocab_size
-
-    @vocab_size.setter
-    def vocab_size(self, vocab_size: int) -> None:
-        self._vocab_size = vocab_size
-
-    @property
-    def T(self) -> float:
-        """Temperature value to sample the token."""
-
-        return self._T
-
-    @T.setter
-    def T(self, T: float) -> None:
-        self._T = T
 
     def compile(
         self,
@@ -121,9 +92,7 @@ class SeqGAN(Adversarial):
         self.history["D_loss"] = []
         self.history["G_loss"] = []
 
-    def generate_batch(
-        self, batch_size: int = 1, length: int = 1
-    ) -> tf.Tensor:
+    def generate_batch(self, batch_size: int = 1, length: int = 1) -> tf.Tensor:
         """Generates a batch of tokens by feeding to the network the
         current token (t) and predicting the next token (t+1).
 
@@ -141,7 +110,7 @@ class SeqGAN(Adversarial):
         )
         sampled_batch = start_batch
 
-        self.G.reset_states()
+        self.G.reset_state()
 
         for _ in range(length):
             preds = self.G(start_batch)
@@ -175,7 +144,7 @@ class SeqGAN(Adversarial):
 
         for _ in range(n_rollouts):
             for step in range(1, max_length + 1):
-                self.G.reset_states()
+                self.G.reset_state()
 
                 output = self.G(x)[:, -1, :]
 
@@ -274,14 +243,10 @@ class SeqGAN(Adversarial):
 
         """
 
-        logger.info("Pre-fitting generator ...")
-
         n_batches = tf.data.experimental.cardinality(batches).numpy()
 
-        for e in range(g_epochs):
-            logger.info("Epoch %d/%d", e + 1, g_epochs)
-
-            self.G_loss.reset_states()
+        for _ in range(g_epochs):
+            self.G_loss.reset_state()
 
             b = Progbar(n_batches, stateful_metrics=["loss(G)"])
 
@@ -292,14 +257,8 @@ class SeqGAN(Adversarial):
 
             self.history["pre_G_loss"].append(self.D_loss.result().numpy())
 
-            logger.to_file("Loss(G): %s", self.G_loss.result().numpy())
-
-        logger.info("Pre-fitting discriminator ...")
-
-        for e in range(d_epochs):
-            logger.info("Epoch %d/%d", e + 1, d_epochs)
-
-            self.D_loss.reset_states()
+        for _ in range(d_epochs):
+            self.D_loss.reset_state()
 
             b = Progbar(n_batches, stateful_metrics=["loss(D)"])
 
@@ -331,8 +290,6 @@ class SeqGAN(Adversarial):
 
             self.history["pre_D_loss"].append(self.D_loss.result().numpy())
 
-            logger.to_file("Loss(D): %s", self.D_loss.result().numpy())
-
     def fit(
         self,
         batches: Dataset,
@@ -352,15 +309,11 @@ class SeqGAN(Adversarial):
 
         """
 
-        logger.info("Fitting model ...")
-
         n_batches = tf.data.experimental.cardinality(batches).numpy()
 
-        for e in range(epochs):
-            logger.info("Epoch %d/%d", e + 1, epochs)
-
-            self.G_loss.reset_states()
-            self.D_loss.reset_states()
+        for _ in range(epochs):
+            self.G_loss.reset_state()
+            self.D_loss.reset_state()
 
             b = Progbar(n_batches, stateful_metrics=["loss(G)", "loss(D)"])
 
@@ -408,9 +361,3 @@ class SeqGAN(Adversarial):
 
             self.history["G_loss"].append(self.G_loss.result().numpy())
             self.history["D_loss"].append(self.D_loss.result().numpy())
-
-            logger.to_file(
-                "Loss(G): %s| Loss(D): %s",
-                self.G_loss.result().numpy(),
-                self.D_loss.result().numpy(),
-            )

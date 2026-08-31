@@ -1,7 +1,7 @@
 """Model-related classes.
 """
 
-from typing import Any, Dict, List
+from typing import Any
 
 import tensorflow as tf
 from tensorflow.keras import Model
@@ -9,9 +9,6 @@ from tensorflow.keras.utils import Progbar
 
 import nalp.utils.constants as c
 from nalp.core.dataset import Dataset
-from nalp.utils import logging
-
-logger = logging.get_logger(__name__)
 
 
 class Discriminator(Model):
@@ -30,7 +27,7 @@ class Discriminator(Model):
 
         """
 
-        super(Discriminator, self).__init__(name=name)
+        super().__init__(name=name)
 
     def call(self, x: tf.Tensor, training: bool = True) -> None:
         """Method that holds vital information whenever this class is called.
@@ -66,7 +63,7 @@ class Generator(Model):
 
         """
 
-        super(Generator, self).__init__(name=name)
+        super().__init__(name=name)
 
     def call(self, x: tf.Tensor, training: bool = True) -> None:
         """Method that holds vital information whenever this class is called.
@@ -85,9 +82,14 @@ class Generator(Model):
 
         raise NotImplementedError
 
-    def generate_greedy_search(
-        self, start: str, max_length: int = 100
-    ) -> List[str]:
+    def reset_state(self) -> None:
+        """Resets stateful recurrent layers."""
+
+        for layer in self.layers:
+            if hasattr(layer, "reset_state"):
+                layer.reset_state()
+
+    def generate_greedy_search(self, start: str, max_length: int = 100) -> list[str]:
         """Generates text by using greedy search, where the sampled
         token is always sampled according to the maximum probability.
 
@@ -103,7 +105,7 @@ class Generator(Model):
         start_tokens = self.encoder.encode(start)
         start_tokens = tf.expand_dims(start_tokens, 0)
 
-        self.reset_states()
+        self.reset_state()
 
         sampled_tokens = []
         for _ in range(max_length):
@@ -127,7 +129,7 @@ class Generator(Model):
         start: str,
         max_length: int = 100,
         temperature: float = 1.0,
-    ) -> List[str]:
+    ) -> list[str]:
         """Generates text by using temperature sampling, where the sampled
         token is sampled according to a multinomial/categorical distribution.
 
@@ -144,7 +146,7 @@ class Generator(Model):
         start_tokens = self.encoder.encode(start)
         start_tokens = tf.expand_dims(start_tokens, 0)
 
-        self.reset_states()
+        self.reset_state()
 
         sampled_tokens = []
         for _ in range(max_length):
@@ -171,7 +173,7 @@ class Generator(Model):
         max_length: int = 100,
         k: int = 0,
         p: float = 0.0,
-    ) -> List[str]:
+    ) -> list[str]:
         """Generates text by using top-k and top-p sampling, where the sampled
         token is sampled according to the `k` most likely words distribution, as well
         as to the maximum cumulative probability `p`.
@@ -190,7 +192,7 @@ class Generator(Model):
         start_tokens = self.encoder.encode(start)
         start_tokens = tf.expand_dims(start_tokens, 0)
 
-        self.reset_states()
+        self.reset_state()
 
         sampled_tokens = []
         for _ in range(max_length):
@@ -251,41 +253,11 @@ class Adversarial(Model):
 
         """
 
-        super(Adversarial, self).__init__(name=name)
+        super().__init__(name=name)
 
         self.D = discriminator
         self.G = generator
-        self.history = {}
-
-    @property
-    def D(self) -> Discriminator:
-        """Discriminator architecture."""
-
-        return self._D
-
-    @D.setter
-    def D(self, D: Discriminator) -> None:
-        self._D = D
-
-    @property
-    def G(self) -> Generator:
-        """Generator architecture."""
-
-        return self._G
-
-    @G.setter
-    def G(self, G: Generator) -> None:
-        self._G = G
-
-    @property
-    def history(self) -> Dict[str, Any]:
-        """History dictionary."""
-
-        return self._history
-
-    @history.setter
-    def history(self, history: Dict[str, Any]) -> None:
-        self._history = history
+        self.history: dict[str, Any] = {}
 
     def compile(
         self, d_optimizer: tf.keras.optimizers, g_optimizer: tf.keras.optimizers
@@ -380,15 +352,11 @@ class Adversarial(Model):
 
         """
 
-        logger.info("Fitting model ...")
-
         n_batches = tf.data.experimental.cardinality(batches).numpy()
 
-        for e in range(epochs):
-            logger.info("Epoch %d/%d", e + 1, epochs)
-
-            self.G_loss.reset_states()
-            self.D_loss.reset_states()
+        for _ in range(epochs):
+            self.G_loss.reset_state()
+            self.D_loss.reset_state()
 
             b = Progbar(n_batches, stateful_metrics=["loss(G)", "loss(D)"])
 
@@ -405,9 +373,3 @@ class Adversarial(Model):
 
             self.history["G_loss"].append(self.G_loss.result().numpy())
             self.history["D_loss"].append(self.D_loss.result().numpy())
-
-            logger.to_file(
-                "Loss(G): %s | Loss(D): %s",
-                self.G_loss.result().numpy(),
-                self.D_loss.result().numpy(),
-            )

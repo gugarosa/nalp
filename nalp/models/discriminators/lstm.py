@@ -5,9 +5,6 @@ import tensorflow as tf
 from tensorflow.keras.layers import RNN, Dense, LSTMCell
 
 from nalp.core import Discriminator
-from nalp.utils import logging
-
-logger = logging.get_logger(__name__)
 
 
 class LSTMDiscriminator(Discriminator):
@@ -19,9 +16,7 @@ class LSTMDiscriminator(Discriminator):
 
     """
 
-    def __init__(
-        self, embedding_size: int = 32, hidden_size: int = 64
-    ) -> None:
+    def __init__(self, embedding_size: int = 32, hidden_size: int = 64) -> None:
         """Initialization method.
 
         Args:
@@ -30,9 +25,7 @@ class LSTMDiscriminator(Discriminator):
 
         """
 
-        logger.info("Overriding class: Discriminator -> LSTMDiscriminator.")
-
-        super(LSTMDiscriminator, self).__init__(name="D_lstm")
+        super().__init__(name="D_lstm")
 
         self.embedding = Dense(embedding_size, name="embedding")
 
@@ -43,8 +36,6 @@ class LSTMDiscriminator(Discriminator):
         )
 
         self.out = Dense(1, name="out")
-
-        logger.info("Class overrided.")
 
     def call(self, x: tf.Tensor) -> tf.Tensor:
         """Method that holds vital information whenever this class is called.

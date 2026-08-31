@@ -1,19 +1,14 @@
 """Relational-Memory Cell layer.
 """
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import tensorflow as tf
-from tensorflow.keras.layers import (
-    AbstractRNNCell,
-    Dense,
-    LayerNormalization,
-    MultiHeadAttention,
-)
-from tensorflow.python.keras import activations, constraints, initializers, regularizers
+from tensorflow.keras import activations, constraints, initializers, regularizers
+from tensorflow.keras.layers import Dense, Layer, LayerNormalization, MultiHeadAttention
 
 
-class RelationalMemoryCell(AbstractRNNCell):
+class RelationalMemoryCell(Layer):
     """A RelationalMemoryCell class is the one in charge of a Relational Memory cell implementation.
 
     References:
@@ -35,12 +30,12 @@ class RelationalMemoryCell(AbstractRNNCell):
         kernel_initializer: str = "glorot_uniform",
         recurrent_initializer: str = "orthogonal",
         bias_initializer: str = "zeros",
-        kernel_regularizer: Optional[str] = None,
-        recurrent_regularizer: Optional[str] = None,
-        bias_regularizer: Optional[str] = None,
-        kernel_constraint: Optional[str] = None,
-        recurrent_constraint: Optional[str] = None,
-        bias_constraint: Optional[str] = None,
+        kernel_regularizer: str | None = None,
+        recurrent_regularizer: str | None = None,
+        bias_regularizer: str | None = None,
+        kernel_constraint: str | None = None,
+        recurrent_constraint: str | None = None,
+        bias_constraint: str | None = None,
         **kwargs
     ):
         """Initialization method.
@@ -66,7 +61,7 @@ class RelationalMemoryCell(AbstractRNNCell):
 
         """
 
-        super(RelationalMemoryCell, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
         self.n_slots = n_slots
         self.slot_size = n_heads * head_size
@@ -96,6 +91,8 @@ class RelationalMemoryCell(AbstractRNNCell):
 
         self.units = self.slot_size * n_slots
         self.n_gates = 2 * self.slot_size
+        self.state_size = [self.units, self.units]
+        self.output_size = self.units
 
         self.projector = Dense(self.slot_size)
 
@@ -105,15 +102,11 @@ class RelationalMemoryCell(AbstractRNNCell):
         ]
         self.after_norm = LayerNormalization()
 
-        self.attn = MultiHeadAttention(self.slot_size, self.n_heads)
-
-    @property
-    def state_size(self) -> List[int, int]:
-        return [self.units, self.units]
-
-    @property
-    def output_size(self) -> int:
-        return self.units
+        self.attn = MultiHeadAttention(
+            num_heads=self.n_heads,
+            key_dim=self.head_size,
+            output_shape=self.slot_size,
+        )
 
     def build(self, input_shape: tf.Tensor) -> None:
         """Builds up the cell according to its input shape.
@@ -147,7 +140,7 @@ class RelationalMemoryCell(AbstractRNNCell):
             constraint=self.bias_constraint,
         )
 
-        self.built = True
+        super().build(input_shape)
 
     def _attend_over_memory(self, inputs: tf.Tensor, memory: tf.Tensor) -> tf.Tensor:
         """Performs an Attention mechanism over the current memory.
@@ -178,8 +171,8 @@ class RelationalMemoryCell(AbstractRNNCell):
         return memory
 
     def call(
-        self, inputs: tf.Tensor, states: List[tf.Tensor]
-    ) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+        self, inputs: tf.Tensor, states: list[tf.Tensor]
+    ) -> tuple[tf.Tensor, list[tf.Tensor]]:
         """Method that holds vital information whenever this class is called.
 
         Args:
@@ -198,10 +191,11 @@ class RelationalMemoryCell(AbstractRNNCell):
         inputs = tf.expand_dims(self.projector(inputs), 1)
 
         # Reshaping the previous hidden state tensor
-        h_prev = tf.reshape(h_prev, [h_prev.shape[0], self.n_slots, self.slot_size])
+        batch_size = tf.shape(h_prev)[0]
+        h_prev = tf.reshape(h_prev, [batch_size, self.n_slots, self.slot_size])
 
         # Reshaping the previous memory tensor
-        m_prev = tf.reshape(m_prev, [m_prev.shape[0], self.n_slots, self.slot_size])
+        m_prev = tf.reshape(m_prev, [batch_size, self.n_slots, self.slot_size])
 
         # Copying the inputs for the forget and input gates
         inputs_f = inputs
@@ -240,17 +234,17 @@ class RelationalMemoryCell(AbstractRNNCell):
         h = self.activation(m)
 
         # Reshaping both the current hidden and memory states to their correct output size
-        h = tf.reshape(h, [h.shape[0], self.units])
-        m = tf.reshape(m, [m.shape[0], self.units])
+        h = tf.reshape(h, [batch_size, self.units])
+        m = tf.reshape(m, [batch_size, self.units])
 
         return h, [h, m]
 
     def get_initial_state(
         self,
-        inputs: Optional[tf.Tensor] = None,
-        batch_size: Optional[int] = None,
-        dtype: Optional[tf.DType] = None,
-    ) -> Tuple[tf.Tensor, tf.Tensor]:
+        inputs: tf.Tensor | None = None,
+        batch_size: int | tf.Tensor | None = None,
+        dtype: tf.DType | None = None,
+    ) -> tuple[tf.Tensor, tf.Tensor]:
         """Gets the cell initial state by creating an identity matrix.
 
         Args:
@@ -263,21 +257,26 @@ class RelationalMemoryCell(AbstractRNNCell):
 
         """
 
-        states = tf.eye(self.n_slots, batch_shape=[batch_size])
+        if batch_size is None:
+            batch_size = tf.shape(inputs)[0]
+        if dtype is None:
+            dtype = inputs.dtype if inputs is not None else self.compute_dtype
+
+        states = tf.eye(self.n_slots, batch_shape=[batch_size], dtype=dtype)
 
         if self.slot_size > self.n_slots:
             diff = self.slot_size - self.n_slots
 
-            padding = tf.zeros((batch_size, self.n_slots, diff))
+            padding = tf.zeros((batch_size, self.n_slots, diff), dtype=dtype)
             states = tf.concat([states, padding], -1)
         elif self.slot_size < self.n_slots:
             states = states[:, :, : self.slot_size]
 
-        states = tf.reshape(states, (states.shape[0], -1))
+        states = tf.reshape(states, (batch_size, self.units))
 
         return states, states
 
-    def get_config(self) -> Dict[str, Any]:
+    def get_config(self) -> dict[str, Any]:
         """Gets the configuration of the layer for further serialization.
 
         Returns:
@@ -287,7 +286,6 @@ class RelationalMemoryCell(AbstractRNNCell):
 
         config = {
             "n_slots": self.n_slots,
-            "slot_size": self.slot_size,
             "n_heads": self.n_heads,
             "head_size": self.head_size,
             "n_blocks": self.n_blocks,
@@ -304,9 +302,6 @@ class RelationalMemoryCell(AbstractRNNCell):
             "kernel_constraint": constraints.serialize(self.kernel_constraint),
             "recurrent_constraint": constraints.serialize(self.recurrent_constraint),
             "bias_constraint": constraints.serialize(self.bias_constraint),
-            "units": self.units,
-            "n_gates": self.n_gates,
         }
-        base_config = super(RelationalMemoryCell, self).get_config()
 
-        return dict(list(base_config.items()) + list(config.items()))
+        return {**super().get_config(), **config}

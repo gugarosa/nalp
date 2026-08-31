@@ -1,17 +1,12 @@
 """Gumbel Relational Memory Core generator.
 """
 
-from typing import List, Optional, Tuple
-
 import tensorflow as tf
 
 import nalp.utils.constants as c
 from nalp.encoders.integer import IntegerEncoder
 from nalp.models.generators import RMCGenerator
 from nalp.models.layers import GumbelSoftmax
-from nalp.utils import logging
-
-logger = logging.get_logger(__name__)
 
 
 class GumbelRMCGenerator(RMCGenerator):
@@ -22,7 +17,7 @@ class GumbelRMCGenerator(RMCGenerator):
 
     def __init__(
         self,
-        encoder: Optional[IntegerEncoder] = None,
+        encoder: IntegerEncoder | None = None,
         vocab_size: int = 1,
         embedding_size: int = 32,
         n_slots: int = 3,
@@ -47,9 +42,7 @@ class GumbelRMCGenerator(RMCGenerator):
 
         """
 
-        logger.info("Overriding class: RMCGenerator -> GumbelRMCGenerator.")
-
-        super(GumbelRMCGenerator, self).__init__(
+        super().__init__(
             encoder,
             vocab_size,
             embedding_size,
@@ -64,19 +57,7 @@ class GumbelRMCGenerator(RMCGenerator):
 
         self.gumbel = GumbelSoftmax(name="gumbel")
 
-        logger.info("Class overrided.")
-
-    @property
-    def tau(self) -> float:
-        """Gumbel-Softmax temperature parameter."""
-
-        return self._tau
-
-    @tau.setter
-    def tau(self, tau: float) -> None:
-        self._tau = tau
-
-    def call(self, x: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+    def call(self, x: tf.Tensor) -> tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
         """Method that holds vital information whenever this class is called.
 
         Args:
@@ -91,13 +72,11 @@ class GumbelRMCGenerator(RMCGenerator):
         x = self.rnn(x)
         x = self.linear(x)
 
-        x_g, y_g = self.gumbel(x, self.tau)
+        x_g, y_g = self.gumbel(x, tau=self.tau)
 
         return x, x_g, y_g
 
-    def generate_greedy_search(
-        self, start: str, max_length: int = 100
-    ) -> List[str]:
+    def generate_greedy_search(self, start: str, max_length: int = 100) -> list[str]:
         """Generates text by using greedy search, where the sampled
         token is always sampled according to the maximum probability.
 
@@ -113,7 +92,7 @@ class GumbelRMCGenerator(RMCGenerator):
         start_tokens = self.encoder.encode(start)
         start_tokens = tf.expand_dims(start_tokens, 0)
 
-        self.reset_states()
+        self.reset_state()
 
         sampled_tokens = []
         for _ in range(max_length):
@@ -156,7 +135,7 @@ class GumbelRMCGenerator(RMCGenerator):
         start_tokens = self.encoder.encode(start)
         start_tokens = tf.expand_dims(start_tokens, 0)
 
-        self.reset_states()
+        self.reset_state()
 
         sampled_tokens = []
         for _ in range(max_length):
@@ -202,7 +181,7 @@ class GumbelRMCGenerator(RMCGenerator):
         start_tokens = self.encoder.encode(start)
         start_tokens = tf.expand_dims(start_tokens, 0)
 
-        self.reset_states()
+        self.reset_state()
 
         sampled_tokens = []
         for _ in range(max_length):

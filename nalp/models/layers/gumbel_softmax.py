@@ -1,7 +1,7 @@
 """Gumbel-Softmax layer.
 """
 
-from typing import Any, Dict, Tuple
+from typing import Any
 
 import tensorflow as tf
 from tensorflow.keras.layers import Layer
@@ -9,7 +9,7 @@ from tensorflow.keras.layers import Layer
 import nalp.utils.constants as c
 
 
-def gumbel_distribution(input_shape: Tuple[int, ...]) -> tf.Tensor:
+def gumbel_distribution(input_shape: tuple[int, ...]) -> tf.Tensor:
     """Samples a tensor from a Gumbel distribution.
 
     Args:
@@ -45,11 +45,11 @@ class GumbelSoftmax(Layer):
 
         """
 
-        super(GumbelSoftmax, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
         self.axis = axis
 
-    def call(self, inputs: tf.Tensor, tau: float) -> Tuple[tf.Tensor, tf.Tensor]:
+    def call(self, inputs: tf.Tensor, tau: float) -> tuple[tf.Tensor, tf.Tensor]:
         """Method that holds vital information whenever this class is called.
 
         Args:
@@ -68,7 +68,7 @@ class GumbelSoftmax(Layer):
 
         return x, y
 
-    def get_config(self) -> Dict[str, Any]:
+    def get_config(self) -> dict[str, Any]:
         """Gets the configuration of the layer for further serialization.
 
         Returns:
@@ -77,6 +77,4 @@ class GumbelSoftmax(Layer):
         """
 
         config = {"axis": self.axis}
-        base_config = super(GumbelSoftmax, self).get_config()
-
-        return dict(list(base_config.items()) + list(config.items()))
+        return {**super().get_config(), **config}

@@ -1,16 +1,11 @@
 """Gated Recurrent Unit generator.
 """
 
-from typing import Optional
-
 import tensorflow as tf
 from tensorflow.keras.layers import RNN, Dense, Embedding, GRUCell
 
 from nalp.core import Generator
 from nalp.encoders.integer import IntegerEncoder
-from nalp.utils import logging
-
-logger = logging.get_logger(__name__)
 
 
 class GRUGenerator(Generator):
@@ -26,7 +21,7 @@ class GRUGenerator(Generator):
 
     def __init__(
         self,
-        encoder: Optional[IntegerEncoder] = None,
+        encoder: IntegerEncoder | None = None,
         vocab_size: int = 1,
         embedding_size: int = 32,
         hidden_size: int = 64,
@@ -41,9 +36,7 @@ class GRUGenerator(Generator):
 
         """
 
-        logger.info("Overriding class: Generator -> GRUGenerator.")
-
-        super(GRUGenerator, self).__init__(name="G_gru")
+        super().__init__(name="G_gru")
 
         self.encoder = encoder
 
@@ -56,18 +49,6 @@ class GRUGenerator(Generator):
         )
 
         self.linear = Dense(vocab_size, name="out")
-
-        logger.info("Class overrided.")
-
-    @property
-    def encoder(self) -> IntegerEncoder:
-        """An encoder generic object."""
-
-        return self._encoder
-
-    @encoder.setter
-    def encoder(self, encoder: IntegerEncoder) -> None:
-        self._encoder = encoder
 
     def call(self, x: tf.Tensor) -> tf.Tensor:
         """Method that holds vital information whenever this class is called.

@@ -1,14 +1,9 @@
 """Deep Convolutional Generative Adversarial Network.
 """
 
-from typing import Tuple
-
 from nalp.core import Adversarial
 from nalp.models.discriminators import ConvDiscriminator
 from nalp.models.generators import ConvGenerator
-from nalp.utils import logging
-
-logger = logging.get_logger(__name__)
 
 
 class DCGAN(Adversarial):
@@ -23,7 +18,7 @@ class DCGAN(Adversarial):
 
     def __init__(
         self,
-        input_shape: Tuple[int, int, int] = (28, 28, 1),
+        input_shape: tuple[int, int, int] = (28, 28, 1),
         noise_dim: int = 100,
         n_samplings: int = 3,
         alpha: float = 0.3,
@@ -40,20 +35,7 @@ class DCGAN(Adversarial):
 
         """
 
-        logger.info("Overriding class: Adversarial -> DCGAN.")
-
         D = ConvDiscriminator(n_samplings, alpha, dropout_rate)
         G = ConvGenerator(input_shape, noise_dim, n_samplings, alpha)
 
-        super(DCGAN, self).__init__(D, G, name="dcgan")
-
-        logger.debug(
-            "Input: %s | Noise: %d | Number of samplings: %d | "
-            "Activation rate: %s | Dropout rate: %s.",
-            input_shape,
-            noise_dim,
-            n_samplings,
-            alpha,
-            dropout_rate,
-        )
-        logger.info("Class overrided.")
+        super().__init__(D, G, name="dcgan")
