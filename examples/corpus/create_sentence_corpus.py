@@ -13,7 +13,7 @@ corpus = SentenceCorpus(
     sos_eos_tokens=True,
 )
 
-# Accessing SentenceCorpus properties
+# Accessing SentenceCorpus attributes
 print(corpus.tokens)
 print(corpus.vocab, corpus.vocab_size)
 print(corpus.vocab_index, corpus.index_vocab)

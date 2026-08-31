@@ -2,15 +2,11 @@
 """
 
 import multiprocessing
-from typing import List
 
 import numpy as np
 from gensim.models.word2vec import Word2Vec as W2V
 
 from nalp.core.encoder import Encoder
-from nalp.utils import logging
-
-logger = logging.get_logger(__name__)
 
 
 class Word2vecEncoder(Encoder):
@@ -19,25 +15,16 @@ class Word2vecEncoder(Encoder):
 
     """
 
-    def __init__(self) -> None:
-        """Initizaliation method."""
-
-        logger.info("Overriding class: Encoder -> Word2vecEncoder.")
-
-        super(Word2vecEncoder, self)
-
-        logger.info("Class overrided.")
-
     def learn(
         self,
-        tokens: List[str],
+        tokens: list[str],
         max_features: int = 128,
         window_size: int = 5,
         min_count: int = 1,
         algorithm: int = 0,
         learning_rate: float = 0.01,
         iterations: int = 1000,
-    ):
+    ) -> None:
         """Learns a Word2Vec representation based on the its methodology.
 
         One can use CBOW or Skip-gram algorithm for the learning procedure.
@@ -64,7 +51,7 @@ class Word2vecEncoder(Encoder):
             workers=multiprocessing.cpu_count(),
         )
 
-    def encode(self, tokens: List[str]) -> None:
+    def encode(self, tokens: list[str]) -> np.ndarray:
         """Encodes the data into a Word2Vec representation.
 
         Args:
@@ -72,12 +59,8 @@ class Word2vecEncoder(Encoder):
 
         """
 
-        if not self.encoder:
-            e = "You need to call learn() prior to encode() method."
-
-            logger.error(e)
-
-            raise RuntimeError(e)
+        if self.encoder is None:
+            raise RuntimeError("You need to call learn() prior to encode() method.")
 
         wv = self.encoder.wv
 
@@ -87,7 +70,7 @@ class Word2vecEncoder(Encoder):
 
         return encoded_tokens
 
-    def decode(self, encoded_tokens: np.array) -> List[str]:
+    def decode(self, encoded_tokens: np.ndarray) -> list[str]:
         """Decodes the encoding back to tokens.
 
         Args:
@@ -98,12 +81,8 @@ class Word2vecEncoder(Encoder):
 
         """
 
-        if not self.encoder:
-            e = "You need to call learn() prior to decode() method."
-
-            logger.error(e)
-
-            raise RuntimeError(e)
+        if self.encoder is None:
+            raise RuntimeError("You need to call learn() prior to decode() method.")
 
         decoded_tokens = [
             self.encoder.wv.most_similar(positive=[t])[0][0] for t in encoded_tokens

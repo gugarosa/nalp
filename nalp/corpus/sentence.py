@@ -3,13 +3,11 @@
 
 from collections import Counter
 from itertools import chain
-from typing import List, Optional
+from pathlib import Path
 
 import nalp.utils.constants as c
+import nalp.utils.preprocess as p
 from nalp.core import Corpus
-from nalp.utils import loader, logging
-
-logger = logging.get_logger(__name__)
 
 
 class SentenceCorpus(Corpus):
@@ -22,11 +20,11 @@ class SentenceCorpus(Corpus):
 
     def __init__(
         self,
-        tokens: Optional[List[str]] = None,
-        from_file: Optional[str] = None,
+        tokens: list[list[str]] | None = None,
+        from_file: str | Path | None = None,
         corpus_type: str = "char",
         min_frequency: int = 1,
-        max_pad_length: int = None,
+        max_pad_length: int | None = None,
         sos_eos_tokens: bool = True,
     ) -> None:
         """Initialization method.
@@ -41,15 +39,11 @@ class SentenceCorpus(Corpus):
 
         """
 
-        logger.info("Overriding class: Corpus -> SentenceCorpus.")
-
-        super(SentenceCorpus, self).__init__(min_frequency=min_frequency)
+        super().__init__(min_frequency=min_frequency)
 
         if not tokens:
-            sentences = loader.load_txt(from_file).splitlines()
-
-            pipe = self._create_tokenizer(corpus_type)
-            self.tokens = [pipe(sentence) for sentence in sentences]
+            sentences = Path(from_file).read_text(encoding="utf-8").splitlines()
+            self.tokens = [p.tokenize(sentence, corpus_type) for sentence in sentences]
         else:
             self.tokens = tokens
 
@@ -57,28 +51,18 @@ class SentenceCorpus(Corpus):
         self._pad_token(max_pad_length, sos_eos_tokens)
         self._build()
 
-        logger.debug(
-            "Sentences: %d | Minimum frequency: %d | Maximum pad length: %s | "
-            "Use <SOS> and <EOS>: %s | Vocabulary size: %d.",
-            len(self.tokens),
-            self.min_frequency,
-            max_pad_length,
-            sos_eos_tokens,
-            len(self.vocab),
-        )
-        logger.info("SentenceCorpus created.")
-
     def _check_token_frequency(self) -> None:
         """Cuts tokens that do not meet a minimum frequency value."""
 
         tokens_frequency = Counter(chain.from_iterable(self.tokens))
 
-        for i, _ in enumerate(self.tokens):
-            for j, _ in enumerate(self.tokens[i]):
-                if tokens_frequency[self.tokens[i][j]] < self.min_frequency:
-                    self.tokens[i][j] = c.UNK
+        for sentence in self.tokens:
+            sentence[:] = [
+                token if tokens_frequency[token] >= self.min_frequency else c.UNK
+                for token in sentence
+            ]
 
-    def _pad_token(self, max_pad_length: int, sos_eos_tokens: bool) -> None:
+    def _pad_token(self, max_pad_length: int | None, sos_eos_tokens: bool) -> None:
         """Pads the tokens into a fixed length.
 
         Args:

@@ -1,16 +1,13 @@
+from pathlib import Path
+
 import nalp.utils.preprocess as p
-from nalp.utils import loader
 
 # Loads an input .txt file
-text = loader.load_txt("data/text/chapter1_harry.txt")
+text = Path("data/text/chapter1_harry.txt").read_text(encoding="utf-8")
 
-# Creates character and word pre-processing pipelines
-char_pipe = p.pipeline(p.lower_case, p.valid_char, p.tokenize_to_char)
-word_pipe = p.pipeline(p.lower_case, p.valid_char, p.tokenize_to_word)
-
-# Applying character and word pre-processing pipelines to text
-chars_tokens = char_pipe(text)
-words_tokens = word_pipe(text)
+# Pre-processing text into character and word tokens
+chars_tokens = p.tokenize(text, "char")
+words_tokens = p.tokenize(text, "word")
 
 # Printing tokenized characters and words
 print(chars_tokens)

@@ -1,15 +1,10 @@
 """Language modeling dataset class.
 """
 
-from typing import Tuple
-
 import numpy as np
 import tensorflow as tf
 
 from nalp.core import Dataset
-from nalp.utils import logging
-
-logger = logging.get_logger(__name__)
 
 
 class LanguageModelingDataset(Dataset):
@@ -20,7 +15,7 @@ class LanguageModelingDataset(Dataset):
 
     def __init__(
         self,
-        encoded_tokens: np.array,
+        encoded_tokens: np.ndarray,
         max_contiguous_pad_length: int = 1,
         batch_size: int = 64,
         shuffle: bool = True,
@@ -35,28 +30,20 @@ class LanguageModelingDataset(Dataset):
 
         """
 
-        logger.info("Overriding class: Dataset -> LanguageModelingDataset.")
+        super().__init__(shuffle)
 
-        super(LanguageModelingDataset, self).__init__(shuffle)
-
-        sequences = self._create_sequences(
-            encoded_tokens, encoded_tokens.ndim, max_contiguous_pad_length
-        )
+        sequences = self._create_sequences(encoded_tokens, max_contiguous_pad_length)
         mapped_sequences = sequences.map(self._create_input_target)
 
         self._build(mapped_sequences, batch_size)
 
-        logger.debug("Batch size: %d | Shuffle: %s.", batch_size, self.shuffle)
-        logger.info("Class overrided.")
-
     def _create_sequences(
-        self, encoded_tokens: np.array, rank: int, max_contiguous_pad_length: int
+        self, encoded_tokens: np.ndarray, max_contiguous_pad_length: int
     ) -> tf.data.Dataset:
         """Creates sequences of the desired length.
 
         Args:
             encoded_tokens: An array of encoded tokens.
-            rank: Number of array dimensions (rank).
             max_contiguous_pad_length: Maximum sequences' length.
 
         Returns:
@@ -68,14 +55,14 @@ class LanguageModelingDataset(Dataset):
 
         # This means that is a contiguous sequence of tokens and needs to
         # be parsed into individual sequences
-        if rank == 1:
+        if encoded_tokens.ndim == 1:
             sequences = sequences.batch(
                 max_contiguous_pad_length + 1, drop_remainder=True
             )
 
         return sequences
 
-    def _create_input_target(self, sequence: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
+    def _create_input_target(self, sequence: tf.Tensor) -> tuple[tf.Tensor, tf.Tensor]:
         """Creates input (t) and targets (t+1) using the next timestep approach.
 
         Args:
@@ -86,7 +73,4 @@ class LanguageModelingDataset(Dataset):
 
         """
 
-        _input = sequence[:-1]
-        target = sequence[1:]
-
-        return _input, target
+        return sequence[:-1], sequence[1:]

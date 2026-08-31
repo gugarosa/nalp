@@ -21,26 +21,7 @@ class Dataset:
         """
 
         self.shuffle = shuffle
-
-    @property
-    def shuffle(self) -> bool:
-        """Whether data should be shuffled or not."""
-
-        return self._shuffle
-
-    @shuffle.setter
-    def shuffle(self, shuffle: bool) -> None:
-        self._shuffle = shuffle
-
-    @property
-    def batches(self) -> tf.data.Dataset:
-        """An instance of tensorflow's dataset batches."""
-
-        return self._batches
-
-    @batches.setter
-    def batches(self, batches: tf.data.Dataset) -> None:
-        self._batches = batches
+        self.batches: tf.data.Dataset | None = None
 
     def _build(self, sliced_data: tf.Tensor, batch_size: int) -> None:
         """Builds the batches based on the pre-processed images.

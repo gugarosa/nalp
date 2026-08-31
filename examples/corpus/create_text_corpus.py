@@ -8,7 +8,7 @@ corpus = TextCorpus(
 # Creating a word TextCorpus from file
 # corpus = TextCorpus(from_file='data/text/chapter1_harry.txt', corpus_type='word', min_frequency=1)
 
-# Accessing TextCorpus properties
+# Accessing TextCorpus attributes
 print(corpus.tokens)
 print(corpus.vocab, corpus.vocab_size)
 print(corpus.vocab_index, corpus.index_vocab)

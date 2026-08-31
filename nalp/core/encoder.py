@@ -10,15 +10,10 @@ class Encoder:
 
     """
 
-    @property
-    def encoder(self) -> Any:
-        """An encoder generic object."""
+    def __init__(self) -> None:
+        """Initialization method."""
 
-        return self._encoder
-
-    @encoder.setter
-    def encoder(self, encoder: Any) -> None:
-        self._encoder = encoder
+        self.encoder: Any = None
 
     def learn(self) -> None:
         """This method learns an encoding representation. Note that for each child,

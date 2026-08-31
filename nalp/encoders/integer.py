@@ -1,43 +1,23 @@
 """Integer-based encoding.
 """
 
-from typing import Any, Dict, List
-
 import numpy as np
 
 import nalp.utils.constants as c
 from nalp.core.encoder import Encoder
-from nalp.utils import logging
-
-logger = logging.get_logger(__name__)
 
 
 class IntegerEncoder(Encoder):
     """An IntegerEncoder class is responsible for encoding text into integers."""
 
     def __init__(self) -> None:
-        """Initizaliation method."""
+        """Initialization method."""
 
-        logger.info("Overriding class: Encoder -> IntegerEncoder.")
-
-        super(IntegerEncoder, self)
-
-        self.decoder = None
-
-        logger.info("Class overrided.")
-
-    @property
-    def decoder(self) -> Dict[str, Any]:
-        """Decoder dictionary."""
-
-        return self._decoder
-
-    @decoder.setter
-    def decoder(self, decoder: Dict[str, Any]) -> None:
-        self._decoder = decoder
+        super().__init__()
+        self.decoder: dict[int, str] | None = None
 
     def learn(
-        self, dictionary: Dict[str, Any], reverse_dictionary: Dict[str, Any]
+        self, dictionary: dict[str, int], reverse_dictionary: dict[int, str]
     ) -> None:
         """Learns an integer vectorization encoding.
 
@@ -50,7 +30,7 @@ class IntegerEncoder(Encoder):
         self.encoder = dictionary
         self.decoder = reverse_dictionary
 
-    def encode(self, tokens: List[str]) -> np.array:
+    def encode(self, tokens: list[str] | list[list[str]]) -> np.ndarray:
         """Encodes new tokens based on previous learning.
 
         Args:
@@ -61,12 +41,8 @@ class IntegerEncoder(Encoder):
 
         """
 
-        if not self.encoder:
-            e = "You need to call learn() prior to encode() method."
-
-            logger.error(e)
-
-            raise RuntimeError(e)
+        if self.encoder is None:
+            raise RuntimeError("You need to call learn() prior to encode() method.")
 
         encoded_tokens = []
 
@@ -81,16 +57,16 @@ class IntegerEncoder(Encoder):
 
             else:
                 if token in self.encoder:
-                    encoded_tokens += [self.encoder[token]]
+                    encoded_tokens.append(self.encoder[token])
 
                 else:
-                    encoded_tokens += [self.encoder[c.UNK]]
+                    encoded_tokens.append(self.encoder[c.UNK])
 
         encoded_tokens = np.array(encoded_tokens, dtype=np.int32)
 
         return encoded_tokens
 
-    def decode(self, encoded_tokens: np.array) -> List[str]:
+    def decode(self, encoded_tokens: np.ndarray) -> list[str] | list[list[str]]:
         """Decodes the encoding back to tokens.
 
         Args:
@@ -101,12 +77,8 @@ class IntegerEncoder(Encoder):
 
         """
 
-        if not self.decoder:
-            e = "You need to call learn() prior to decode() method."
-
-            logger.error(e)
-
-            raise RuntimeError(e)
+        if self.decoder is None:
+            raise RuntimeError("You need to call learn() prior to decode() method.")
 
         decoded_tokens = []
 
@@ -115,6 +87,6 @@ class IntegerEncoder(Encoder):
                 decoded_tokens.append([self.decoder[t] for t in token])
 
             else:
-                decoded_tokens += [self.decoder[token]]
+                decoded_tokens.append(self.decoder[token])
 
         return decoded_tokens

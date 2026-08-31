@@ -1,15 +1,10 @@
 """Imaging dataset class.
 """
 
-from typing import Optional, Tuple
-
 import numpy as np
 import tensorflow as tf
 
 from nalp.core import Dataset
-from nalp.utils import logging
-
-logger = logging.get_logger(__name__)
 
 
 class ImageDataset(Dataset):
@@ -20,9 +15,9 @@ class ImageDataset(Dataset):
 
     def __init__(
         self,
-        images: np.array,
+        images: np.ndarray,
         batch_size: int = 256,
-        shape: Optional[Tuple[int, int]] = None,
+        shape: tuple[int, int] | None = None,
         normalize: bool = True,
         shuffle: bool = True,
     ) -> None:
@@ -37,25 +32,14 @@ class ImageDataset(Dataset):
 
         """
 
-        logger.info("Overriding class: Dataset -> ImageDataset.")
-
-        super(ImageDataset, self).__init__(shuffle)
+        super().__init__(shuffle)
 
         processed_images = self._preprocess(images, shape, normalize)
 
         self._build(processed_images, batch_size)
 
-        logger.debug(
-            "Size: %s | Batch size: %d | Normalization: %s | Shuffle: %s.",
-            shape,
-            batch_size,
-            normalize,
-            self.shuffle,
-        )
-        logger.info("Class overrided.")
-
     def _preprocess(
-        self, images: np.array, shape: Tuple[int, int], normalize: bool
+        self, images: np.ndarray, shape: tuple[int, int] | None, normalize: bool
     ) -> tf.data.Dataset:
         """Pre-process an array of images by reshaping and normalizing, if necessary.
 
@@ -77,6 +61,4 @@ class ImageDataset(Dataset):
         if normalize:
             images = (images - 127.5) / 127.5
 
-        images = tf.data.Dataset.from_tensor_slices(images)
-
-        return images
+        return tf.data.Dataset.from_tensor_slices(images)

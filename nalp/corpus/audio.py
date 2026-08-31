@@ -2,9 +2,7 @@
 """
 
 from nalp.core import Corpus
-from nalp.utils import loader, logging
-
-logger = logging.get_logger(__name__)
+from nalp.utils import loader
 
 
 class AudioCorpus(Corpus):
@@ -24,26 +22,15 @@ class AudioCorpus(Corpus):
 
         """
 
-        logger.info("Overriding class: Corpus -> AudioCorpus.")
-
-        super(AudioCorpus, self).__init__(min_frequency=min_frequency)
+        super().__init__(min_frequency=min_frequency)
 
         audio = loader.load_audio(from_file)
 
-        self.tokens = []
-        for step in audio:
-            if not step.is_meta and step.channel == 0 and step.type == "note_on":
-                note = step.bytes()
-
-                self.tokens.append(str(note[1]))
+        self.tokens = [
+            str(step.bytes()[1])
+            for step in audio
+            if not step.is_meta and step.channel == 0 and step.type == "note_on"
+        ]
 
         self._check_token_frequency()
         self._build()
-
-        logger.debug(
-            "Tokens: %d | Type: audio | Minimum frequency: %d | Vocabulary size: %d.",
-            len(self.tokens),
-            self.min_frequency,
-            len(self.vocab),
-        )
-        logger.info("AudioCorpus created.")
