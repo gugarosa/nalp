@@ -1,5 +1,5 @@
-"""This is nalp main library. Note that this library consists
-    of several modules and sub-modules.
-"""
+"""Natural Adversarial Language Processing."""
 
-__version__ = "2.0.5"
+from importlib.metadata import version as package_version
+
+__version__ = package_version("nalp")

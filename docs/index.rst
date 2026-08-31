@@ -10,18 +10,13 @@ Use NALP if you need a library or wish to:
 * Mix-and-match different strategies to solve your problem;
 * Because it is cool to play with text.
 
-NALP is compatible with: **Python 3.6+**.
+NALP requires **Python 3.11+** and is tested on Python 3.11 through 3.13.
 
 .. toctree::
     :maxdepth: 2
     :caption: Package Reference
 
-    api/nalp.core
-    api/nalp.corpus
-    api/nalp.datasets
-    api/nalp.encoders
-    api/nalp.models
-    api/nalp.utils
+    api
 
 
 Indices and tables

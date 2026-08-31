@@ -2,7 +2,7 @@
 
 [![Latest release](https://img.shields.io/github/release/gugarosa/nalp.svg)](https://github.com/gugarosa/nalp/releases)
 [![Open issues](https://img.shields.io/github/issues/gugarosa/nalp.svg)](https://github.com/gugarosa/nalp/issues)
-[![License](https://img.shields.io/github/license/gugarosa/nalp.svg)](https://github.com/gugarosa/nalp/blob/master/LICENSE)
+[![License](https://img.shields.io/github/license/gugarosa/nalp.svg)](https://github.com/gugarosa/nalp/blob/main/LICENSE)
 
 ## Welcome to NALP.
 
@@ -17,7 +17,7 @@ Use NALP if you need a library or wish to:
 
 Read the docs at [nalp.readthedocs.io](https://nalp.readthedocs.io).
 
-NALP is compatible with: **Python 3.6+**.
+NALP 3.0.0 requires **Python 3.11+** and is tested on Python 3.11 through 3.13.
 
 ---
 
@@ -119,17 +119,34 @@ This is a utility package. Common things shared across the application should be
 
 ## Installation
 
-We believe that everything has to be easy. Not tricky or daunting, NALP will be the one-to-go package that you will need, from the very first installation to the daily-tasks implementing needs. If you may just run the following under your most preferred Python environment (raw, conda, virtualenv, whatever)!:
+NALP is published on PyPI. Add it to a project managed by uv with:
+
+```bash
+uv add nalp
+```
+
+For a consumer installation in an existing Python environment, pip is also supported:
 
 ```bash
 pip install nalp
 ```
 
-Alternatively, if you prefer to install the bleeding-edge version, please clone this repository and use:
+---
+
+## Development
+
+Clone the repository, then use the locked uv environment for all project tasks:
 
 ```bash
-pip install -e .
+git clone https://github.com/gugarosa/nalp.git
+cd nalp
+uv sync --locked
+uv run pytest
+uv run pre-commit run --all-files
+uv build
 ```
+
+Releases are built and published to PyPI by the release workflow.
 
 ---
 

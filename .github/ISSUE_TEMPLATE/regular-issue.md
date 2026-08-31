@@ -15,10 +15,9 @@ Thank you!
 
 ### Pre-checkings
 
-- [ ] Check that you are up-to-date with the master branch of NALP. You can update with:
-pip install git+git://github.com/gugarosa/nalp.git --upgrade --no-deps
+- [ ] Check that you are using the latest NALP release or the current `main` branch.
 
-- [ ] Check that you have read all of our [README](https://github.com/gugarosa/nalp/blob/master/README.md).
+- [ ] Check that you have read all of our [README](https://github.com/gugarosa/nalp/blob/main/README.md).
 
 ### Description
 
