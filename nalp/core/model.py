@@ -1,5 +1,6 @@
 """Model-related classes."""
 
+import math
 from typing import Any
 
 import tensorflow as tf
@@ -97,6 +98,11 @@ class Generator(Model):
 
         self.reset_state()
 
+    def _generation_logits(self, x: tf.Tensor) -> tf.Tensor:
+        """Return logits for the shared token-sampling methods."""
+
+        return self(x)
+
     def generate_greedy_search(self, start: str, max_length: int = 100) -> list[str]:
         """Generates text by using greedy search, where the sampled
         token is always sampled according to the maximum probability.
@@ -117,7 +123,7 @@ class Generator(Model):
 
         sampled_tokens = []
         for _ in range(max_length):
-            preds = self(start_tokens)
+            preds = self._generation_logits(start_tokens)
             preds = preds[:, -1, :]
 
             sampled_token = tf.argmax(preds, 1).numpy()
@@ -144,12 +150,15 @@ class Generator(Model):
         Args:
             start: The start string to generate the text.
             max_length: Length of generated text.
-            temperature: A temperature value to sample the token.
+            temperature: A finite, positive temperature to sample the token.
 
         Returns:
             (List[str]): Generated text.
 
         """
+
+        if not math.isfinite(temperature) or temperature <= 0:
+            raise ValueError("temperature must be finite and positive.")
 
         start_tokens = self.encoder.encode(start)
         start_tokens = tf.expand_dims(start_tokens, 0)
@@ -158,7 +167,7 @@ class Generator(Model):
 
         sampled_tokens = []
         for _ in range(max_length):
-            preds = self(start_tokens)
+            preds = self._generation_logits(start_tokens)
             preds = preds[:, -1, :]
 
             preds /= temperature
@@ -190,12 +199,18 @@ class Generator(Model):
             start: The start string to generate the text.
             max_length: Length of generated text.
             k: Indicates the amount of likely words.
-            p: Maximum cumulative probability to be thresholded.
+            p: Retain the smallest prefix with cumulative probability at least
+                this value. Zero disables nucleus filtering.
 
         Returns:
             (List[str]): Generated text.
 
         """
+
+        if k < 0:
+            raise ValueError("k must be nonnegative.")
+        if not 0 <= p <= 1:
+            raise ValueError("p must be between 0 and 1.")
 
         start_tokens = self.encoder.encode(start)
         start_tokens = tf.expand_dims(start_tokens, 0)
@@ -204,7 +219,7 @@ class Generator(Model):
 
         sampled_tokens = []
         for _ in range(max_length):
-            preds = self(start_tokens)
+            preds = self._generation_logits(start_tokens)
             preds = preds[:, -1, :]
 
             if k > 0:
@@ -213,19 +228,15 @@ class Generator(Model):
                 preds, preds_indexes = tf.math.top_k(preds, preds.shape[-1])
 
             if p > 0.0:
-                cum_probs = tf.math.cumsum(tf.nn.softmax(preds), axis=-1)
-
-                # Also ensures that first index will always be true to prevent zero
-                # tokens from being sampled
-                ignored_indexes = cum_probs <= p
-                ignored_indexes = tf.tensor_scatter_nd_update(
-                    ignored_indexes, [[0, 0]], [True]
+                cumulative_before = tf.math.cumsum(
+                    tf.nn.softmax(preds), axis=-1, exclusive=True
                 )
+                keep = cumulative_before < p
 
-                preds = tf.expand_dims(preds[ignored_indexes], 0)
-                preds_indexes = tf.expand_dims(preds_indexes[ignored_indexes], 0)
+                preds = tf.expand_dims(preds[keep], 0)
+                preds_indexes = tf.expand_dims(preds_indexes[keep], 0)
 
-            # Samples the maximum top-k logit and gathers the real token index
+            # Sample among retained logits, then recover the vocabulary index.
             index = tf.random.categorical(preds, 1)[0, 0]
             sampled_token = [preds_indexes[-1][index].numpy()]
 

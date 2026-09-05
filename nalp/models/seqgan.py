@@ -91,7 +91,9 @@ class SeqGAN(Adversarial):
         self.history["D_loss"] = []
         self.history["G_loss"] = []
 
-    def generate_batch(self, batch_size: int = 1, length: int = 1) -> tf.Tensor:
+    def generate_batch(
+        self, batch_size: int = 1, length: int = 1
+    ) -> tuple[tf.Tensor, tf.Tensor]:
         """Generates a batch of tokens by feeding to the network the
         current token (t) and predicting the next token (t+1).
 
@@ -100,7 +102,8 @@ class SeqGAN(Adversarial):
             length: Length of generated tokens.
 
         Returns:
-            (tf.Tensor): A (batch_size, length) tensor of generated tokens.
+            (Tuple[tf.Tensor, tf.Tensor]): Input context and generated targets,
+            each with shape (batch_size, length).
 
         """
 
@@ -125,43 +128,52 @@ class SeqGAN(Adversarial):
 
         return x_sampled_batch, y_sampled_batch
 
-    def _get_reward(self, x: tf.Tensor, n_rollouts: int) -> tf.Tensor:
+    def _get_reward(
+        self,
+        x: tf.Tensor,
+        n_rollouts: int,
+        start_tokens: tf.Tensor | None = None,
+    ) -> tf.Tensor:
         """Calculates rewards over an input using a Monte Carlo search strategy.
 
         Args:
-            x: A tensor containing the inputs.
+            x: A tensor containing the generated targets.
             n_rollouts: Number of rollouts for conducting the Monte Carlo search.
+            start_tokens: Initial context used to generate the targets.
 
         Returns:
             (tf.Tensor): Reward over input.
 
         """
 
-        batch_size, max_length = x.shape[0], x.shape[1]
+        if n_rollouts < 1:
+            raise ValueError("n_rollouts must be positive.")
 
-        rewards = tf.zeros([1, batch_size])
-
+        max_length = x.shape[1]
+        rewards = []
         for _ in range(n_rollouts):
+            rollout_rewards = []
             for step in range(1, max_length + 1):
                 self.G.reset_state()
-
-                output = self.G(x)[:, -1, :]
-
                 samples = x[:, :step]
 
-                for _ in range(step, max_length):
-                    output = tf.random.categorical(output, 1, dtype="int32")
-                    samples = tf.concat([samples, output], 1)
-                    output = tf.squeeze(self.G(output), 1)
+                if step < max_length:
+                    context = samples
+                    if start_tokens is not None:
+                        context = tf.concat([start_tokens, context], axis=1)
+                    output = self.G(context)[:, -1, :]
 
-                output = tf.squeeze(tf.math.softmax(self.D(samples)), 1)
-                rewards = tf.concat([rewards, tf.expand_dims(output[:, 1], 0)], 0)
+                    for _ in range(step, max_length):
+                        token = tf.random.categorical(output / self.T, 1, dtype="int32")
+                        samples = tf.concat([samples, token], axis=1)
+                        output = tf.squeeze(self.G(token), 1)
 
-        rewards = tf.reduce_mean(
-            tf.reshape(rewards[1:, :], [batch_size, max_length, n_rollouts]), -1
-        )
+                output = tf.squeeze(tf.nn.softmax(self.D(samples)), 1)
+                rollout_rewards.append(output[:, 0])
 
-        return rewards
+            rewards.append(tf.stack(rollout_rewards, axis=1))
+
+        return tf.reduce_mean(tf.stack(rewards, axis=0), axis=0)
 
     @tf.function
     def G_pre_step(self, x: tf.Tensor, y: tf.Tensor) -> None:
@@ -194,6 +206,8 @@ class SeqGAN(Adversarial):
             rewards: A tensor containing the rewards for the input.
 
         """
+
+        self.G.reset_state()
 
         with tf.GradientTape() as tape:
             preds = self.G(x)
@@ -254,19 +268,19 @@ class SeqGAN(Adversarial):
 
                 b.add(1, values=[("loss(G)", self.G_loss.result())])
 
-            self.history["pre_G_loss"].append(self.D_loss.result().numpy())
+            self.history["pre_G_loss"].append(self.G_loss.result().numpy())
 
         for _ in range(d_epochs):
             self.D_loss.reset_state()
 
             b = Progbar(n_batches, stateful_metrics=["loss(D)"])
 
-            for x_batch, _ in batches:
-                batch_size, max_length = x_batch.shape[0], x_batch.shape[1]
+            for _, y_batch in batches:
+                batch_size, max_length = y_batch.shape[0], y_batch.shape[1]
 
-                x_fake_batch, _ = self.generate_batch(batch_size, max_length)
+                _, y_fake_batch = self.generate_batch(batch_size, max_length)
 
-                x_concat_batch = tf.concat([x_batch, x_fake_batch], 0)
+                x_concat_batch = tf.concat([y_batch, y_fake_batch], 0)
                 y_concat_batch = tf.concat(
                     [
                         tf.zeros(batch_size, dtype="int32"),
@@ -316,22 +330,24 @@ class SeqGAN(Adversarial):
 
             b = Progbar(n_batches, stateful_metrics=["loss(G)", "loss(D)"])
 
-            for x_batch, _ in batches:
-                batch_size, max_length = x_batch.shape[0], x_batch.shape[1]
+            for _, y_batch in batches:
+                batch_size, max_length = y_batch.shape[0], y_batch.shape[1]
 
                 for _ in range(g_epochs):
                     x_fake_batch, y_fake_batch = self.generate_batch(
                         batch_size, max_length
                     )
 
-                    rewards = self._get_reward(x_fake_batch, n_rollouts)
+                    rewards = self._get_reward(
+                        y_fake_batch, n_rollouts, start_tokens=x_fake_batch[:, :1]
+                    )
 
                     self.G_step(x_fake_batch, y_fake_batch, rewards)
 
                 for _ in range(d_epochs):
-                    x_fake_batch, _ = self.generate_batch(batch_size, max_length)
+                    _, y_fake_batch = self.generate_batch(batch_size, max_length)
 
-                    x_concat_batch = tf.concat([x_batch, x_fake_batch], 0)
+                    x_concat_batch = tf.concat([y_batch, y_fake_batch], 0)
                     y_concat_batch = tf.concat(
                         [
                             tf.zeros(batch_size, dtype="int32"),

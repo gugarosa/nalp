@@ -2,13 +2,13 @@
 
 import tensorflow as tf
 
-import nalp.utils.constants as c
 from nalp.encoders.integer import IntegerEncoder
-from nalp.models.generators import RMCGenerator
+from nalp.models.generators._gumbel import GumbelGeneratorMixin
+from nalp.models.generators.rmc import RMCGenerator
 from nalp.models.layers import GumbelSoftmax
 
 
-class GumbelRMCGenerator(RMCGenerator):
+class GumbelRMCGenerator(GumbelGeneratorMixin, RMCGenerator):
     """A GumbelRMCGenerator class is the one in charge of a
     generative Gumbel-based Relational Memory Core implementation.
 
@@ -67,154 +67,8 @@ class GumbelRMCGenerator(RMCGenerator):
 
         """
 
-        x = self.embedding(x)
-        x = self.rnn(x)
-        x = self.linear(x)
+        x = super().call(x)
 
-        x_g, y_g = self.gumbel(x, tau=self.tau)
+        x_g, y_g = self.gumbel(x, tau=self._tau_tensor)
 
         return x, x_g, y_g
-
-    def generate_greedy_search(self, start: str, max_length: int = 100) -> list[str]:
-        """Generates text by using greedy search, where the sampled
-        token is always sampled according to the maximum probability.
-
-        Args:
-            start: The start string to generate the text.
-            max_length: Maximum length of generated text.
-
-        Returns:
-            (List[str]): Generated text.
-
-        """
-
-        start_tokens = self.encoder.encode(start)
-        start_tokens = tf.expand_dims(start_tokens, 0)
-
-        self.reset_state()
-
-        sampled_tokens = []
-        for _ in range(max_length):
-            _, preds, _ = self(start_tokens)
-            preds = preds[:, -1, :]
-
-            sampled_token = tf.argmax(preds, -1).numpy()
-
-            start_tokens = tf.expand_dims(sampled_token, 0)
-
-            sampled_token = self.encoder.decode(sampled_token)[0]
-            sampled_tokens.append(sampled_token)
-
-            if sampled_token == c.EOS:
-                break
-
-        return sampled_tokens
-
-    def generate_temperature_sampling(
-        self,
-        start: str,
-        max_length: int = 100,
-        temperature: float = 1.0,
-    ):
-        """Generates text by using temperature sampling, where the sampled
-        token is sampled according to a multinomial/categorical distribution.
-
-        Args:
-            start: The start string to generate the text.
-            max_length: Length of generated text.
-            temperature: A temperature value to sample the token.
-
-        Returns:
-            (List[str]): Generated text.
-
-        """
-
-        self.tau = temperature
-
-        start_tokens = self.encoder.encode(start)
-        start_tokens = tf.expand_dims(start_tokens, 0)
-
-        self.reset_state()
-
-        sampled_tokens = []
-        for _ in range(max_length):
-            _, preds, _ = self(start_tokens)
-            preds = preds[:, -1, :]
-
-            preds /= temperature
-
-            sampled_token = tf.argmax(preds, -1).numpy()
-
-            start_tokens = tf.expand_dims(sampled_token, 0)
-
-            sampled_token = self.encoder.decode(sampled_token)[0]
-            sampled_tokens.append(sampled_token)
-
-            if sampled_token == c.EOS:
-                break
-
-        return sampled_tokens
-
-    def generate_top_sampling(
-        self,
-        start: str,
-        max_length: int = 100,
-        k: int = 0,
-        p: float = 0.0,
-    ):
-        """Generates text by using top-k and top-p sampling, where the sampled
-        token is sampled according to the `k` most likely words distribution, as well
-        as to the maximim cumulative probability `p`.
-
-        Args:
-            start: The start string to generate the text.
-            max_length: Length of generated text.
-            k: Indicates the amount of likely words.
-            p: Maximum cumulative probability to be thresholded.
-
-        Returns:
-            (List[str]): Generated text.
-
-        """
-
-        start_tokens = self.encoder.encode(start)
-        start_tokens = tf.expand_dims(start_tokens, 0)
-
-        self.reset_state()
-
-        sampled_tokens = []
-        for _ in range(max_length):
-            _, preds, _ = self(start_tokens)
-            preds = preds[:, -1, :]
-
-            if k > 0:
-                preds, preds_indexes = tf.math.top_k(preds, k)
-            else:
-                preds, preds_indexes = tf.math.top_k(preds, preds.shape[-1])
-
-            if p > 0.0:
-                cum_probs = tf.math.cumsum(tf.nn.softmax(preds), axis=-1)
-
-                # Also ensures that first index will always be true to prevent zero
-                # tokens from being sampled
-                ignored_indexes = cum_probs <= p
-                ignored_indexes = tf.tensor_scatter_nd_update(
-                    ignored_indexes, [[0, 0]], [True]
-                )
-
-                preds = tf.expand_dims(preds[ignored_indexes], 0)
-                preds_indexes = tf.expand_dims(preds_indexes[ignored_indexes], 0)
-
-            # Samples the maximum top-k logit and gathers the real token index
-            index = tf.argmax(preds, -1)[0]
-            sampled_token = [preds_indexes[-1][index].numpy()]
-
-            start_tokens = tf.expand_dims(sampled_token, 0)
-
-            sampled_token = self.encoder.decode(sampled_token)[0]
-            sampled_tokens.append(sampled_token)
-
-            if sampled_token == c.EOS:
-                break
-
-        return sampled_tokens

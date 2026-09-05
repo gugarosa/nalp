@@ -17,7 +17,7 @@ Use NALP if you need a library or wish to:
 
 Read the docs at [nalp.readthedocs.io](https://nalp.readthedocs.io).
 
-NALP 3.0.0 requires **Python 3.11+** and is tested on Python 3.11 through 3.13.
+NALP 3.0.1 requires **Python 3.11+** and is tested on Python 3.11 through 3.13.
 
 ---
 
@@ -146,7 +146,10 @@ uv run pre-commit run --all-files
 uv build
 ```
 
-Releases are built and published to PyPI by the release workflow.
+After a version bump is merged into `main` and CI succeeds, the release workflow
+builds and checks the distributions, publishes them to PyPI, and creates the
+matching GitHub release. Commits whose version tag already exists do not publish
+another release. Publishing a GitHub release manually remains supported.
 
 ---
 

@@ -1,8 +1,9 @@
 import numpy as np
 import pytest
+from mido import Message, MidiFile, MidiTrack
 
 from nalp.core import Corpus
-from nalp.corpus import TextCorpus
+from nalp.corpus import AudioCorpus, TextCorpus
 from nalp.encoders import IntegerEncoder
 from nalp.utils import loader
 from nalp.utils import logging as nalp_logging
@@ -55,6 +56,24 @@ def test_text_corpus_reads_utf8_with_pathlib(tmp_path):
 
     assert corpus.tokens == ["ol", "world"]
     assert loader.load_txt(source) == "Olá, WORLD!\r\n"
+
+
+def test_audio_corpus_ignores_system_exclusive_and_other_channel_messages(tmp_path):
+    audio = MidiFile()
+    audio.tracks.append(
+        MidiTrack(
+            [
+                Message("sysex", data=(0x7E, 0x7F, 0x09, 0x01)),
+                Message("note_on", channel=0, note=60, velocity=64),
+                Message("note_on", channel=1, note=62, velocity=64),
+                Message("note_off", channel=0, note=60),
+            ]
+        )
+    )
+    source = tmp_path / "sample.mid"
+    audio.save(source)
+
+    assert AudioCorpus(source).tokens == ["60"]
 
 
 def test_logging_helpers_preserve_public_api(tmp_path, monkeypatch):

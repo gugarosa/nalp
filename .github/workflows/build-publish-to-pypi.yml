@@ -1,34 +1,71 @@
-name: Publish to PyPI
+name: Release
 
 on:
   release:
     types: [published]
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
 
 permissions:
   contents: read
 
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 jobs:
   build-publish:
     name: Build and publish distributions
+    if: >-
+      github.event_name == 'release' ||
+      (github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v7.0.1
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ github.event.workflow_run.head_sha || github.event.release.tag_name }}
+          fetch-depth: 0
       - uses: astral-sh/setup-uv@v10.0.1
         with:
           enable-cache: true
           python-version: "3.11"
-      - name: Verify release tag
+      - name: Select release version
+        id: release
         shell: bash
-        run: test "$GITHUB_REF_NAME" = "v$(uv version --short)"
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          tag="v$(uv version --short)"
+          if [ "$EVENT_NAME" = "release" ]; then
+            test "$RELEASE_TAG" = "$tag"
+          else
+            existing_tag="$(git tag --list "$tag")"
+            if [ -n "$existing_tag" ]; then
+              echo "$tag already exists; no new release is needed."
+              echo "publish=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "publish=true" >> "$GITHUB_OUTPUT"
       - name: Install locked environment
+        if: steps.release.outputs.publish == 'true'
         run: uv sync --locked
       - name: Test release revision
+        if: steps.release.outputs.publish == 'true'
         run: uv run pytest
       - name: Build wheel and source distribution
+        if: steps.release.outputs.publish == 'true'
         run: uv build --sdist --wheel
       - name: Smoke-test built distributions
+        if: steps.release.outputs.publish == 'true'
         shell: bash
         run: |
           version="$(uv version --short)"
@@ -39,6 +76,17 @@ jobs:
           uv pip install --python .release-sdist/bin/python dist/*.tar.gz
           .release-sdist/bin/python -I -c "import nalp; from nalp.models.layers import MultiHeadAttention; from nalp.utils.loader import load_txt; assert nalp.__version__ == '$version'"
       - name: Publish distributions
-        run: uv publish
+        if: steps.release.outputs.publish == 'true'
+        run: uv publish --check-url https://pypi.org/simple/
         env:
           UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+      - name: Create GitHub release
+        if: steps.release.outputs.publish == 'true' && github.event_name == 'workflow_run'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: >-
+          gh release create "$RELEASE_TAG" --target "$RELEASE_SHA"
+          --title "$RELEASE_TAG" --generate-notes

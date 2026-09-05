@@ -26,9 +26,9 @@ class AudioCorpus(Corpus):
         audio = loader.load_audio(from_file)
 
         self.tokens = [
-            str(step.bytes()[1])
+            str(step.note)
             for step in audio
-            if not step.is_meta and step.channel == 0 and step.type == "note_on"
+            if step.type == "note_on" and step.channel == 0
         ]
 
         self._check_token_frequency()
