@@ -5,8 +5,6 @@ from typing import Any
 import tensorflow as tf
 from tensorflow.keras.layers import Dense, Layer
 
-import nalp.utils.constants as c
-
 
 def scaled_dot_product_attention(
     q: tf.Tensor,
@@ -14,15 +12,25 @@ def scaled_dot_product_attention(
     v: tf.Tensor,
     mask: tf.Tensor | None = None,
 ) -> tuple[tf.Tensor, tf.Tensor]:
-    """Return scaled dot-product attention and its weights."""
+    """Return scaled dot-product attention and its weights.
+
+    ``mask`` must broadcast to the attention logits; nonzero entries exclude
+    keys. Fully masked rows return zero weights and zero outputs.
+    """
 
     logits = tf.matmul(q, k, transpose_b=True)
-    logits /= tf.math.sqrt(tf.cast(tf.shape(k)[-1], tf.float32))
+    logits /= tf.math.sqrt(tf.cast(tf.shape(k)[-1], logits.dtype))
 
     if mask is not None:
-        logits += mask * c.EPSILON
+        mask = tf.cast(mask, tf.bool)
+        logits = tf.where(mask, tf.cast(float("-inf"), logits.dtype), logits)
+        # Softmax is undefined on an all-masked row; zero it before and after.
+        logits = tf.where(tf.reduce_all(mask, axis=-1, keepdims=True), 0.0, logits)
 
     weights = tf.nn.softmax(logits, -1)
+    if mask is not None:
+        weights = tf.where(mask, 0.0, weights)
+
     return tf.matmul(weights, v), weights
 
 
@@ -61,9 +69,7 @@ class MultiHeadAttention(Layer):
 
         attention, weights = scaled_dot_product_attention(q, k, v, mask)
         attention = tf.transpose(attention, perm=[0, 2, 1, 3])
-        attention = tf.reshape(
-            attention, (tf.shape(attention)[0], -1, self.n_features)
-        )
+        attention = tf.reshape(attention, (tf.shape(attention)[0], -1, self.n_features))
         return self.out(attention), weights
 
     def get_config(self) -> dict[str, Any]:
