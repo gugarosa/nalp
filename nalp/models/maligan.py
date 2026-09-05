@@ -93,7 +93,9 @@ class MaliGAN(Adversarial):
         self.history["D_loss"] = []
         self.history["G_loss"] = []
 
-    def generate_batch(self, batch_size: int = 1, length: int = 1) -> tf.Tensor:
+    def generate_batch(
+        self, batch_size: int = 1, length: int = 1
+    ) -> tuple[tf.Tensor, tf.Tensor]:
         """Generates a batch of tokens by feeding to the network the
         current token (t) and predicting the next token (t+1).
 
@@ -102,7 +104,8 @@ class MaliGAN(Adversarial):
             length: Length of generated tokens.
 
         Returns:
-            (tf.Tensor): A (batch_size, length) tensor of generated tokens.
+            (Tuple[tf.Tensor, tf.Tensor]): Input context and generated targets,
+            each with shape (batch_size, length).
 
         """
 
@@ -138,12 +141,11 @@ class MaliGAN(Adversarial):
 
         """
 
-        batch_size, max_length = x.shape[0], x.shape[1]
-
-        rewards = tf.squeeze(self.D(x), 1)[:, 1]
-        rewards = tf.math.divide(rewards, 1 - rewards)
-        rewards = tf.math.divide(rewards, tf.math.reduce_sum(rewards))
-        rewards = tf.broadcast_to(tf.expand_dims(rewards, 1), [batch_size, max_length])
+        logits = tf.squeeze(self.D(x), 1)
+        # Real samples have label 0. Normalized odds are a softmax over log-odds,
+        # avoiding division by zero when the discriminator is confident.
+        rewards = tf.nn.softmax(logits[:, 0] - logits[:, 1], axis=0)
+        rewards = tf.broadcast_to(rewards[:, None], tf.shape(x))
 
         return rewards
 
@@ -178,6 +180,8 @@ class MaliGAN(Adversarial):
             rewards: A tensor containing the rewards for the input.
 
         """
+
+        self.G.reset_state()
 
         with tf.GradientTape() as tape:
             preds = self.G(x)
@@ -245,12 +249,12 @@ class MaliGAN(Adversarial):
 
             b = Progbar(n_batches, stateful_metrics=["loss(D)"])
 
-            for x_batch, _ in batches:
-                batch_size, max_length = x_batch.shape[0], x_batch.shape[1]
+            for _, y_batch in batches:
+                batch_size, max_length = y_batch.shape[0], y_batch.shape[1]
 
-                x_fake_batch, _ = self.generate_batch(batch_size, max_length)
+                _, y_fake_batch = self.generate_batch(batch_size, max_length)
 
-                x_concat_batch = tf.concat([x_batch, x_fake_batch], 0)
+                x_concat_batch = tf.concat([y_batch, y_fake_batch], 0)
                 y_concat_batch = tf.concat(
                     [
                         tf.zeros(batch_size, dtype="int32"),
@@ -291,13 +295,13 @@ class MaliGAN(Adversarial):
 
             b = Progbar(n_batches, stateful_metrics=["loss(G)", "loss(D)"])
 
-            for x_batch, _ in batches:
-                batch_size, max_length = x_batch.shape[0], x_batch.shape[1]
+            for _, y_batch in batches:
+                batch_size, max_length = y_batch.shape[0], y_batch.shape[1]
 
                 for _ in range(d_epochs):
-                    x_fake_batch, _ = self.generate_batch(batch_size, max_length)
+                    _, y_fake_batch = self.generate_batch(batch_size, max_length)
 
-                    x_concat_batch = tf.concat([x_batch, x_fake_batch], 0)
+                    x_concat_batch = tf.concat([y_batch, y_fake_batch], 0)
                     y_concat_batch = tf.concat(
                         [
                             tf.zeros(batch_size, dtype="int32"),
@@ -317,7 +321,7 @@ class MaliGAN(Adversarial):
                         )
 
                 x_fake_batch, y_fake_batch = self.generate_batch(batch_size, max_length)
-                rewards = self._get_reward(x_fake_batch)
+                rewards = self._get_reward(y_fake_batch)
 
                 self.G_step(x_fake_batch, y_fake_batch, rewards)
 

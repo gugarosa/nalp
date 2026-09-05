@@ -74,9 +74,19 @@ class RMCGenerator(Generator):
             self.batch_size = x.shape[0]
 
         x = self.embedding(x)
-        x = self.rnn(
-            x, initial_state=self.cell.get_initial_state(batch_size=self.batch_size)
-        )
+        x = self.rnn(x)
         x = self.linear(x)
 
         return x
+
+    def reset_state(self) -> None:
+        """Restore the cell's initial memory before starting a new sequence."""
+
+        if self.rnn.states is None:
+            return
+
+        initial_states = self.cell.get_initial_state(
+            batch_size=tf.shape(self.rnn.states[0])[0]
+        )
+        for state, initial_state in zip(self.rnn.states, initial_states):
+            state.assign(initial_state)
