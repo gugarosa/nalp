@@ -1,3 +1,6 @@
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
+
 """Relational-Memory Cell layer."""
 
 from typing import Any
@@ -8,13 +11,7 @@ from tensorflow.keras.layers import Dense, Layer, LayerNormalization, MultiHeadA
 
 
 class RelationalMemoryCell(Layer):
-    """A RelationalMemoryCell class is the one in charge of a Relational Memory cell implementation.
-
-    References:
-        A. Santoro, et al. Relational recurrent neural networks.
-        Advances in neural information processing systems (2018).
-
-    """
+    """Update recurrent memory slots with multi-head attention and gated transitions."""
 
     def __init__(
         self,
@@ -36,15 +33,26 @@ class RelationalMemoryCell(Layer):
         recurrent_constraint: str | None = None,
         bias_constraint: str | None = None,
         **kwargs,
-    ):
-        """Initialization method.
+    ) -> None:
+        """Initialize relational memory, attention, and forget and input gates.
+
+        Each call consumes one (batch_size, input_features) step and flattened [hidden, memory] states.
+        Return (hidden, [hidden, memory]) with every state shaped (batch_size, n_slots * n_heads * head_size).
+        Attention combines projected inputs and memory before feed-forward refinement and gated memory updates.
+
+        Initial hidden and memory states are identical flattened identity matrices, padded or truncated to slot_size.
+        Initial-state batch size comes from the explicit argument or inputs, and dtype comes from the explicit
+        argument, inputs, or the layer compute dtype. Configuration preserves the declared cell settings.
+
+        Reference: A. Santoro, et al. Relational recurrent neural networks.
+        Advances in neural information processing systems (2018).
 
         Args:
             n_slots: Number of memory slots.
             n_heads: Number of attention heads.
             head_size: Size of each attention head.
-            n_blocks: Number of feed-forward networks.
-            n_layers: Amout of layers per feed-forward network.
+            n_blocks: Number of attention and feed-forward refinement blocks.
+            n_layers: Number of layers per feed-forward network.
             activation: Output activation function.
             recurrent_activation: Recurrent step activation function.
             forget_bias: Forget gate bias values.
@@ -57,6 +65,7 @@ class RelationalMemoryCell(Layer):
             kernel_constraint: Kernel constraint function.
             recurrent_constraint: Recurrent kernel constraint function.
             bias_constraint: Bias constraint function.
+            **kwargs: Keras layer keyword arguments.
 
         """
 
@@ -96,9 +105,7 @@ class RelationalMemoryCell(Layer):
         self.projector = Dense(self.slot_size)
 
         self.before_norm = LayerNormalization()
-        self.linear = [
-            Dense(self.slot_size, activation="relu") for _ in range(n_layers)
-        ]
+        self.linear = [Dense(self.slot_size, activation="relu") for _ in range(n_layers)]
         self.after_norm = LayerNormalization()
 
         self.attn = MultiHeadAttention(
@@ -108,13 +115,6 @@ class RelationalMemoryCell(Layer):
         )
 
     def build(self, input_shape: tf.Tensor) -> None:
-        """Builds up the cell according to its input shape.
-
-        Args:
-            input_shape: Tensor holding the input shape.
-
-        """
-
         self.kernel = self.add_weight(
             shape=(self.slot_size, self.n_gates),
             name="kernel",
@@ -142,23 +142,10 @@ class RelationalMemoryCell(Layer):
         super().build(input_shape)
 
     def _attend_over_memory(self, inputs: tf.Tensor, memory: tf.Tensor) -> tf.Tensor:
-        """Performs an Attention mechanism over the current memory.
-
-        Args:
-            inputs: An input tensor.
-            memory: Current memory tensor.
-
-        Returns:
-            (tf.Tensor): Updated current memory based on Multi-Head Attention mechanism.
-
-        """
-
         for _ in range(self.n_blocks):
             concat_memory = tf.concat([inputs, memory], 1)
 
-            att_memory, _ = self.attn(
-                memory, concat_memory, return_attention_scores=True
-            )
+            att_memory, _ = self.attn(memory, concat_memory, return_attention_scores=True)
             norm_memory = self.before_norm(att_memory + memory)
 
             linear_memory = norm_memory
@@ -169,70 +156,41 @@ class RelationalMemoryCell(Layer):
 
         return memory
 
-    def call(
-        self, inputs: tf.Tensor, states: list[tf.Tensor]
-    ) -> tuple[tf.Tensor, list[tf.Tensor]]:
-        """Method that holds vital information whenever this class is called.
-
-        Args:
-            inputs: An input tensor.
-            states: A list holding previous states and memories.
-
-        Returns:
-            (Tuple[tf.Tensor, List[tf.Tensor]]): Output states as well as current state and memory.
-
-        """
-
-        # Gathering previous hidden and memory states
+    def call(self, inputs: tf.Tensor, states: list[tf.Tensor]) -> tuple[tf.Tensor, list[tf.Tensor]]:
         h_prev, m_prev = states
 
-        # Projecting the inputs to the same size as the memory
         inputs = tf.expand_dims(self.projector(inputs), 1)
 
-        # Reshaping the previous hidden state tensor
         batch_size = tf.shape(h_prev)[0]
         h_prev = tf.reshape(h_prev, [batch_size, self.n_slots, self.slot_size])
-
-        # Reshaping the previous memory tensor
         m_prev = tf.reshape(m_prev, [batch_size, self.n_slots, self.slot_size])
 
-        # Copying the inputs for the forget and input gates
         inputs_f = inputs
         inputs_i = inputs
 
-        # Splitting up the kernel into forget and input gates kernels
         k_f, k_i = tf.split(self.kernel, 2, axis=1)
 
-        # Calculating the forget and input gates kernel outputs
         x_f = tf.tensordot(inputs_f, k_f, axes=[[-1], [0]])
         x_i = tf.tensordot(inputs_i, k_i, axes=[[-1], [0]])
 
-        # Splitting up the recurrent kernel into forget and input gates kernels
         rk_f, rk_i = tf.split(self.recurrent_kernel, 2, axis=1)
 
-        # Calculating the forget and input gates recurrent kernel outputs
         x_f += tf.tensordot(h_prev, rk_f, axes=[[-1], [0]])
         x_i += tf.tensordot(h_prev, rk_i, axes=[[-1], [0]])
 
-        # Splitting up the bias into forget and input gates biases
         b_f, b_i = tf.split(self.bias, 2, axis=0)
 
-        # Adding the forget and input gate bias
         x_f = tf.nn.bias_add(x_f, b_f)
         x_i = tf.nn.bias_add(x_i, b_i)
 
-        # Calculating the attention mechanism over the previous memory
         att_m = self._attend_over_memory(inputs, m_prev)
 
-        # Calculating current memory state
-        m = self.recurrent_activation(
-            x_f + self.forget_bias
-        ) * m_prev + self.recurrent_activation(x_i) * self.activation(att_m)
+        m = self.recurrent_activation(x_f + self.forget_bias) * m_prev + self.recurrent_activation(
+            x_i
+        ) * self.activation(att_m)
 
-        # Calculating current hidden state
         h = self.activation(m)
 
-        # Reshaping both the current hidden and memory states to their correct output size
         h = tf.reshape(h, [batch_size, self.units])
         m = tf.reshape(m, [batch_size, self.units])
 
@@ -244,18 +202,6 @@ class RelationalMemoryCell(Layer):
         batch_size: int | tf.Tensor | None = None,
         dtype: tf.DType | None = None,
     ) -> tuple[tf.Tensor, tf.Tensor]:
-        """Gets the cell initial state by creating an identity matrix.
-
-        Args:
-            inputs: An input tensor.
-            batch_size: Size of the batch.
-            dtype: Dtype from input tensor.
-
-        Returns:
-            (Tuple[tf.Tensor, tf.Tensor]): Initial states.
-
-        """
-
         if batch_size is None:
             batch_size = tf.shape(inputs)[0]
         if dtype is None:
@@ -276,13 +222,6 @@ class RelationalMemoryCell(Layer):
         return states, states
 
     def get_config(self) -> dict[str, Any]:
-        """Gets the configuration of the layer for further serialization.
-
-        Returns:
-            (Dict[str, Any]): Configuration dictionary.
-
-        """
-
         config = {
             "n_slots": self.n_slots,
             "n_heads": self.n_heads,

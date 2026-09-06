@@ -1,3 +1,6 @@
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
+
 """Model-related classes."""
 
 import math
@@ -8,82 +11,47 @@ from tensorflow.keras import Model
 from tensorflow.keras.utils import Progbar
 
 import nalp.utils.constants as c
-from nalp.core.dataset import Dataset
 
 
 class Discriminator(Model):
-    """A Discriminator class is responsible for easily-implementing the discriminative part of
-    a neural network, when custom training or additional sets are not needed.
-
-    """
+    """Define the discriminator component implemented by concrete model families."""
 
     def __init__(self, name: str = "") -> None:
-        """Initialization method.
-
-        Note that basic variables shared by all childs should be declared here, e.g., layers.
+        """Initialize a named discriminator.
 
         Args:
-            name: The model's identifier string.
+            name: Keras model identifier.
 
         """
 
         super().__init__(name=name)
 
     def call(self, x: tf.Tensor, training: bool = True) -> None:
-        """Method that holds vital information whenever this class is called.
-
-        Note that you will need to implement this method directly on its child. Essentially,
-        each neural network has its own forward pass implementation.
-
-        Args:
-            x: A tensorflow's tensor holding input data.
-            training: Whether architecture is under training or not.
-
-        Raises:
-            NotImplementedError.
-
-        """
-
-        raise NotImplementedError
+        raise NotImplementedError("`Discriminator.call` must be implemented by a subclass.")
 
 
 class Generator(Model):
-    """A Generator class is responsible for easily-implementing the generative part of
-    a neural network, when custom training or additional sets are not needed.
-
-    """
+    """Define a generator component and shared autoregressive token sampling."""
 
     def __init__(self, name: str = "") -> None:
-        """Initialization method.
-
-        Note that basic variables shared by all childs should be declared here, e.g., layers.
+        """Initialize a named generator.
 
         Args:
-            name: The model's identifier string.
+            name: Keras model identifier.
 
         """
 
         super().__init__(name=name)
 
     def call(self, x: tf.Tensor, training: bool = True) -> None:
-        """Method that holds vital information whenever this class is called.
-
-        Note that you will need to implement this method directly on its child. Essentially,
-        each neural network has its own forward pass implementation.
-
-        Args:
-            x: A tensorflow's tensor holding input data.
-            training: Whether architecture is under training or not.
-
-        Raises:
-            NotImplementedError.
-
-        """
-
-        raise NotImplementedError
+        raise NotImplementedError("`Generator.call` must be implemented by a subclass.")
 
     def reset_state(self) -> None:
-        """Resets stateful recurrent layers."""
+        """Reset built recurrent layers before starting an independent sequence.
+
+        Unbuilt layers are left unchanged.
+
+        """
 
         for layer in self.layers:
             states = getattr(layer, "states", None)
@@ -99,20 +67,22 @@ class Generator(Model):
         self.reset_state()
 
     def _generation_logits(self, x: tf.Tensor) -> tf.Tensor:
-        """Return logits for the shared token-sampling methods."""
-
         return self(x)
 
-    def generate_greedy_search(self, start: str, max_length: int = 100) -> list[str]:
-        """Generates text by using greedy search, where the sampled
-        token is always sampled according to the maximum probability.
+    def generate_greedy_search(self, start: str | list[str], max_length: int = 100) -> list[str]:
+        """Generate tokens by selecting the largest next-token logit.
+
+        Reset recurrent state before sampling and use the attached learned encoder to translate tokens and IDs.
 
         Args:
-            start: The start string to generate the text.
-            max_length: Maximum length of generated text.
+            start: Character string or pre-tokenized prompt matching the encoder.
+            max_length: Maximum number of generated tokens without counting the prompt.
 
         Returns:
-            (List[str]): Generated text.
+            Decoded sampled tokens, including an end-of-sentence marker when one is generated.
+
+        Raises:
+            RuntimeError: The attached encoder has not learned a mapping.
 
         """
 
@@ -140,25 +110,30 @@ class Generator(Model):
 
     def generate_temperature_sampling(
         self,
-        start: str,
+        start: str | list[str],
         max_length: int = 100,
         temperature: float = 1.0,
     ) -> list[str]:
-        """Generates text by using temperature sampling, where the sampled
-        token is sampled according to a multinomial/categorical distribution.
+        """Sample next-token logits from a temperature-scaled categorical distribution.
+
+        Reset recurrent state before sampling and stop on an end-of-sentence token or the length limit.
 
         Args:
-            start: The start string to generate the text.
-            max_length: Length of generated text.
-            temperature: A finite, positive temperature to sample the token.
+            start: Character string or pre-tokenized prompt matching the encoder.
+            max_length: Maximum number of generated tokens without counting the prompt.
+            temperature: Finite positive divisor applied to logits before categorical sampling.
 
         Returns:
-            (List[str]): Generated text.
+            Decoded sampled tokens, including an end-of-sentence marker when one is generated.
+
+        Raises:
+            ValueError: The temperature is non-finite or not positive.
+            RuntimeError: The attached encoder has not learned a mapping.
 
         """
 
         if not math.isfinite(temperature) or temperature <= 0:
-            raise ValueError("temperature must be finite and positive.")
+            raise ValueError(f"`temperature` must be finite and positive, but got {temperature}.")
 
         start_tokens = self.encoder.encode(start)
         start_tokens = tf.expand_dims(start_tokens, 0)
@@ -186,31 +161,34 @@ class Generator(Model):
 
     def generate_top_sampling(
         self,
-        start: str,
+        start: str | list[str],
         max_length: int = 100,
         k: int = 0,
         p: float = 0.0,
     ) -> list[str]:
-        """Generates text by using top-k and top-p sampling, where the sampled
-        token is sampled according to the `k` most likely words distribution, as well
-        as to the maximum cumulative probability `p`.
+        """Sample tokens from top-k logits and an optional nucleus probability prefix.
+
+        Reset recurrent state before sampling and apply nucleus filtering to the retained top-k distribution.
 
         Args:
-            start: The start string to generate the text.
-            max_length: Length of generated text.
-            k: Indicates the amount of likely words.
-            p: Retain the smallest prefix with cumulative probability at least
-                this value. Zero disables nucleus filtering.
+            start: Character string or pre-tokenized prompt matching the encoder.
+            max_length: Maximum number of generated tokens without counting the prompt.
+            k: Number of highest-scoring tokens retained, with 0 retaining the complete vocabulary.
+            p: Cumulative probability threshold after top-k selection, with 0 disabling nucleus filtering.
 
         Returns:
-            (List[str]): Generated text.
+            Decoded sampled tokens, including an end-of-sentence marker when one is generated.
+
+        Raises:
+            ValueError: The top-k count is negative or the probability threshold is outside the closed unit interval.
+            RuntimeError: The attached encoder has not learned a mapping.
 
         """
 
         if k < 0:
-            raise ValueError("k must be nonnegative.")
+            raise ValueError(f"`k` must be nonnegative, but got {k}.")
         if not 0 <= p <= 1:
-            raise ValueError("p must be between 0 and 1.")
+            raise ValueError(f"`p` must be between 0 and 1, but got {p}.")
 
         start_tokens = self.encoder.encode(start)
         start_tokens = tf.expand_dims(start_tokens, 0)
@@ -228,15 +206,12 @@ class Generator(Model):
                 preds, preds_indexes = tf.math.top_k(preds, preds.shape[-1])
 
             if p > 0.0:
-                cumulative_before = tf.math.cumsum(
-                    tf.nn.softmax(preds), axis=-1, exclusive=True
-                )
+                cumulative_before = tf.math.cumsum(tf.nn.softmax(preds), axis=-1, exclusive=True)
                 keep = cumulative_before < p
 
                 preds = tf.expand_dims(preds[keep], 0)
                 preds_indexes = tf.expand_dims(preds_indexes[keep], 0)
 
-            # Sample among retained logits, then recover the vocabulary index.
             index = tf.random.categorical(preds, 1)[0, 0]
             sampled_token = [preds_indexes[-1][index].numpy()]
 
@@ -252,10 +227,7 @@ class Generator(Model):
 
 
 class Adversarial(Model):
-    """An Adversarial class is responsible for customly
-    implementing Generative Adversarial Networks.
-
-    """
+    """Coordinate generator and discriminator updates with explicit training loops."""
 
     def __init__(
         self,
@@ -263,12 +235,14 @@ class Adversarial(Model):
         generator: Generator,
         name: str = "",
     ) -> None:
-        """Initialization method.
+        """Initialize a trainer around existing discriminator and generator models.
+
+        Retain both models by reference and create the history container populated by training.
 
         Args:
-            discriminator: Network's discriminator architecture.
-            generator: Network's generator architecture.
-            name: The model's identifier string.
+            discriminator: Discriminator component updated during training.
+            generator: Generator component updated during training.
+            name: Keras model identifier.
 
         """
 
@@ -278,14 +252,14 @@ class Adversarial(Model):
         self.G = generator
         self.history: dict[str, Any] = {}
 
-    def compile(
-        self, d_optimizer: tf.keras.optimizers, g_optimizer: tf.keras.optimizers
-    ) -> None:
-        """Main building method.
+    def compile(self, d_optimizer: tf.keras.optimizers.Optimizer, g_optimizer: tf.keras.optimizers.Optimizer) -> None:
+        """Configure optimizers and reset adversarial loss tracking.
+
+        Store the optimizer instances, create fresh loss metrics, and reset the D_loss and G_loss history series.
 
         Args:
-            d_optimizer: An optimizer instance for the discriminator.
-            g_optimizer: An optimizer instance for the generator.
+            d_optimizer: Optimizer instance for discriminator variables.
+            g_optimizer: Optimizer instance for generator variables.
 
         """
 
@@ -300,53 +274,32 @@ class Adversarial(Model):
         self.history["G_loss"] = []
 
     def _discriminator_loss(self, y_real: tf.Tensor, y_fake: tf.Tensor) -> tf.Tensor:
-        """Calculates the loss out of the discriminator architecture.
-
-        Args:
-            y_real: A tensor containing the real data targets.
-            y_fake: A tensor containing the fake data targets.
-
-        Returns:
-            (tf.Tensor): The loss based on the discriminator network.
-
-        """
-
         real_loss = self.loss(tf.ones_like(y_real), y_real)
         fake_loss = self.loss(tf.zeros_like(y_fake), y_fake)
 
         return tf.reduce_mean(real_loss) + tf.reduce_mean(fake_loss)
 
     def _generator_loss(self, y_fake: tf.Tensor) -> tf.Tensor:
-        """Calculates the loss out of the generator architecture.
-
-        Args:
-            y_fake: A tensor containing the fake data targets.
-
-        Returns:
-            (tf.Tensor): The loss based on the generator network.
-
-        """
-
         loss = self.loss(tf.ones_like(y_fake), y_fake)
 
         return tf.reduce_mean(loss)
 
     @tf.function
     def step(self, x: tf.Tensor) -> None:
-        """Performs a single batch optimization step.
+        """Apply one generator update and one discriminator update for an image batch.
+
+        Accumulate both losses in the current metrics.
 
         Args:
-            x: A tensor containing the inputs.
+            x: Real image samples with a fixed leading batch dimension.
 
         """
 
         z = tf.random.normal([x.shape[0], 1, 1, self.G.noise_dim])
 
         with tf.GradientTape() as G_tape, tf.GradientTape() as D_tape:
-            # Generates new data, e.g., G(z)
             x_fake = self.G(z)
 
-            # Samples fake targets D(G(z)) and real targets D(x) from the discriminator
             y_fake = self.D(x_fake)
             y_real = self.D(x)
 
@@ -362,12 +315,14 @@ class Adversarial(Model):
         self.G_loss.update_state(G_loss)
         self.D_loss.update_state(D_loss)
 
-    def fit(self, batches: Dataset, epochs: int = 100) -> None:
-        """Trains the model.
+    def fit(self, batches: tf.data.Dataset, epochs: int = 100) -> None:
+        """Train both components and append epoch-mean losses to history.
+
+        Use NALP's explicit training loop rather than the full Keras fit interface.
 
         Args:
-            batches: Training batches containing samples.
-            epochs: The maximum number of training epochs.
+            batches: TensorFlow dataset yielding real image batches rather than a NALP dataset wrapper.
+            epochs: Number of complete passes over the batches.
 
         """
 

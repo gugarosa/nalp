@@ -1,33 +1,39 @@
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
+
 """Imaging dataset class."""
 
 import numpy as np
 import tensorflow as tf
 
-from nalp.core import Dataset
+from nalp.core.dataset import Dataset
 
 
 class ImageDataset(Dataset):
-    """An ImageDataset class is responsible for creating a dataset that encodes images for
-    adversarial generation.
-
-    """
+    """Prepare float32 image batches for adversarial training."""
 
     def __init__(
         self,
         images: np.ndarray,
         batch_size: int = 256,
-        shape: tuple[int, int] | None = None,
+        shape: tuple[int, ...] | None = None,
         normalize: bool = True,
         shuffle: bool = True,
     ) -> None:
-        """Initialization method.
+        """Convert images and create a batched TensorFlow dataset.
+
+        Copy input values to float32 before optional reshaping and normalization.
+        Incomplete final batches are discarded, and the original array is not modified.
 
         Args:
-            images: An array of images.
-            batch_size: Size of batches.
-            shape: A tuple containing the shape if the array should be forced to reshape.
-            normalize: Whether images should be normalized between -1 and 1.
-            shuffle: Whether batches should be shuffled or not.
+            images: Image values in the range 0 through 255 when normalization is enabled.
+            batch_size: Number of images in each complete batch.
+            shape: Optional reshape target including the leading sample dimension.
+            normalize: Whether to map pixel values from the 0-to-255 range into the -1-to-1 range.
+            shuffle: Whether to shuffle individual images before batching.
+
+        Raises:
+            ValueError: The requested shape is incompatible with the input array.
 
         """
 
@@ -37,21 +43,7 @@ class ImageDataset(Dataset):
 
         self._build(processed_images, batch_size)
 
-    def _preprocess(
-        self, images: np.ndarray, shape: tuple[int, int] | None, normalize: bool
-    ) -> tf.data.Dataset:
-        """Pre-process an array of images by reshaping and normalizing, if necessary.
-
-        Args:
-            images: An array of images.
-            shape: A tuple containing the shape if the array should be forced to reshape.
-            normalize: Whether images should be normalized between -1 and 1.
-
-        Returns:
-            (tf.data.Dataset): Slices of pre-processed tensor-based images.
-
-        """
-
+    def _preprocess(self, images: np.ndarray, shape: tuple[int, ...] | None, normalize: bool) -> tf.data.Dataset:
         images = images.astype("float32")
 
         if shape:

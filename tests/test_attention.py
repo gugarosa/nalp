@@ -1,3 +1,6 @@
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
+
 import numpy as np
 import pytest
 import tensorflow as tf
@@ -9,11 +12,7 @@ from nalp.models.layers.multi_head_attention import scaled_dot_product_attention
 @pytest.mark.parametrize("dtype", [tf.float16, tf.float32, tf.float64])
 @pytest.mark.parametrize("boolean_mask", [False, True])
 def test_masked_keys_cannot_affect_attention(dtype, boolean_mask):
-    mask = (
-        tf.constant([[[False, True]]])
-        if boolean_mask
-        else tf.constant([[[0.0, 1.0]]], dtype)
-    )
+    mask = tf.constant([[[False, True]]]) if boolean_mask else tf.constant([[[0.0, 1.0]]], dtype)
     outputs, weights = scaled_dot_product_attention(
         tf.ones((1, 1, 1), dtype),
         tf.ones((1, 2, 1), dtype),

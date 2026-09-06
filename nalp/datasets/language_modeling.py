@@ -1,16 +1,16 @@
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
+
 """Language modeling dataset class."""
 
 import numpy as np
 import tensorflow as tf
 
-from nalp.core import Dataset
+from nalp.core.dataset import Dataset
 
 
 class LanguageModelingDataset(Dataset):
-    """A LanguageModelingDataset class is responsible for creating a dataset
-    that predicts the next timestep (t+1) given a timestep (t).
-
-    """
+    """Create paired input and next-token target batches."""
 
     def __init__(
         self,
@@ -19,13 +19,17 @@ class LanguageModelingDataset(Dataset):
         batch_size: int = 64,
         shuffle: bool = True,
     ) -> None:
-        """Initialization method.
+        """Create shifted token sequences and batch them for language modeling.
+
+        Flat input is grouped into nonoverlapping windows of input length plus one.
+        Rectangular sentence input is already grouped and is shifted along its final dimension.
+        Incomplete windows and final batches are discarded without modifying the input array.
 
         Args:
-            encoded_tokens: An array of encoded tokens.
-            max_contiguous_pad_length: Maximum length to pad contiguous text.
-            batch_size: Size of batches.
-            shuffle: Whether batches should be shuffled or not.
+            encoded_tokens: Integer token IDs as a flat sequence or a rectangular array of sentences.
+            max_contiguous_pad_length: Input timesteps per window when tokens are one-dimensional.
+            batch_size: Number of input-target sequence pairs in each complete batch.
+            shuffle: Whether to shuffle sequence pairs before batching.
 
         """
 
@@ -36,40 +40,14 @@ class LanguageModelingDataset(Dataset):
 
         self._build(mapped_sequences, batch_size)
 
-    def _create_sequences(
-        self, encoded_tokens: np.ndarray, max_contiguous_pad_length: int
-    ) -> tf.data.Dataset:
-        """Creates sequences of the desired length.
-
-        Args:
-            encoded_tokens: An array of encoded tokens.
-            max_contiguous_pad_length: Maximum sequences' length.
-
-        Returns:
-            (tf.data.Dataset): Slices of tensor-based sequences.
-
-        """
-
+    def _create_sequences(self, encoded_tokens: np.ndarray, max_contiguous_pad_length: int) -> tf.data.Dataset:
         sequences = tf.data.Dataset.from_tensor_slices(encoded_tokens)
 
-        # This means that is a contiguous sequence of tokens and needs to
-        # be parsed into individual sequences
+        # Sentence arrays already carry sequence boundaries
         if encoded_tokens.ndim == 1:
-            sequences = sequences.batch(
-                max_contiguous_pad_length + 1, drop_remainder=True
-            )
+            sequences = sequences.batch(max_contiguous_pad_length + 1, drop_remainder=True)
 
         return sequences
 
     def _create_input_target(self, sequence: tf.Tensor) -> tuple[tf.Tensor, tf.Tensor]:
-        """Creates input (t) and targets (t+1) using the next timestep approach.
-
-        Args:
-            sequence: A tensor holding the sequence to be mapped.
-
-        Returns:
-            (Tuple[tf.Tensor, tf.Tensor]): Input and target tensors.
-
-        """
-
         return sequence[:-1], sequence[1:]

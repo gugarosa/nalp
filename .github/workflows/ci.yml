@@ -21,3 +21,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: uv sync --locked
       - run: uv run pytest
+      - name: Check source conventions
+        if: matrix.python-version == '3.12'
+        run: uv run pre-commit run --all-files
+      - name: Build API documentation
+        if: matrix.python-version == '3.12'
+        run: uv run --locked --group docs python -m sphinx -b html -W --keep-going docs docs/_build/html

@@ -1,3 +1,6 @@
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
+
 """Sentence-related corpus."""
 
 from collections import Counter
@@ -6,17 +9,12 @@ from pathlib import Path
 
 import nalp.utils.constants as c
 import nalp.utils.preprocess as p
-from nalp.core import Corpus
+from nalp.core.corpus import Corpus
 from nalp.utils import loader
 
 
 class SentenceCorpus(Corpus):
-    """A SentenceCorpus class is used to defined the first step of the workflow.
-
-    It serves to load the raw sentences, pre-process them and create their tokens and
-    vocabulary.
-
-    """
+    """Tokenize, filter, and pad separate sentences into a shared vocabulary."""
 
     def __init__(
         self,
@@ -27,15 +25,23 @@ class SentenceCorpus(Corpus):
         max_pad_length: int | None = None,
         sos_eos_tokens: bool = True,
     ) -> None:
-        """Initialization method.
+        """Build a padded sentence corpus from tokens or a UTF-8 text file.
+
+        Reuse a nonempty supplied outer list and change its contents during filtering, padding, and truncation.
+        File input is tokenized per line, and optional boundary markers are added after padding.
 
         Args:
-            tokens: A list of tokens.
-            from_file: An input file to load the sentences.
-            corpus_type: The desired type to tokenize the sentences. Should be `char` or `word`.
-            min_frequency: Minimum frequency of individual tokens.
-            max_pad_length: Maximum length to pad the tokens.
-            sos_eos_tokens: Whether start-of-sentence and end-of-sentence tokens should be used.
+            tokens: Pre-tokenized sentences reused when the outer list is nonempty.
+            from_file: Source path used when tokens is None or empty.
+            corpus_type: File tokenization mode, either char or word.
+            min_frequency: Minimum corpus-wide token count before replacement with the unknown-token marker.
+            max_pad_length: Sentence width before boundaries, with None or 0 selecting the longest sentence.
+            sos_eos_tokens: Whether to prepend a start marker and append an end marker after padding.
+
+        Raises:
+            OSError: The source file cannot be read.
+            UnicodeDecodeError: The source file is not valid UTF-8.
+            RuntimeError: The selected file tokenization mode is unsupported.
 
         """
 
@@ -52,25 +58,12 @@ class SentenceCorpus(Corpus):
         self._build()
 
     def _check_token_frequency(self) -> None:
-        """Cuts tokens that do not meet a minimum frequency value."""
-
         tokens_frequency = Counter(chain.from_iterable(self.tokens))
 
         for sentence in self.tokens:
-            sentence[:] = [
-                token if tokens_frequency[token] >= self.min_frequency else c.UNK
-                for token in sentence
-            ]
+            sentence[:] = [token if tokens_frequency[token] >= self.min_frequency else c.UNK for token in sentence]
 
     def _pad_token(self, max_pad_length: int | None, sos_eos_tokens: bool) -> None:
-        """Pads the tokens into a fixed length.
-
-        Args:
-            max_pad_length: Maximum length to pad the tokens.
-            sos_eos_tokens: Whether start-of-sentence and end-of-sentence tokens should be used.
-
-        """
-
         if not max_pad_length:
             max_pad_length = len(max(self.tokens, key=lambda t: len(t)))
 
@@ -87,8 +80,6 @@ class SentenceCorpus(Corpus):
                 self.tokens[i].append(c.EOS)
 
     def _build(self) -> None:
-        """Builds the vocabulary based on the tokens."""
-
         self.vocab = sorted(set(chain.from_iterable(self.tokens)).union({c.UNK}))
         self.vocab_size = len(self.vocab)
 

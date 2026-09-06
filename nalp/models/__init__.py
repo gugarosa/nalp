@@ -1,6 +1,7 @@
-"""A package for already-implemented machine learning architectures, divided into
-discriminators and generators models.
-"""
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
+
+"""Machine learning architectures with discriminator and generator components."""
 
 from nalp.models.dcgan import DCGAN
 from nalp.models.gan import GAN

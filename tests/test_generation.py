@@ -1,3 +1,6 @@
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
+
 import numpy as np
 import pytest
 import tensorflow as tf
@@ -24,10 +27,12 @@ def setup_function():
 def _generator(model_type):
     encoder = IntegerEncoder()
     encoder.learn({"a": 0, "b": 1, "c": 2}, {0: "a", 1: "b", 2: "c"})
+
     if issubclass(model_type, RMCGenerator):
         kwargs = {"n_slots": 2, "n_heads": 2, "head_size": 2, "n_layers": 1}
     else:
         kwargs = {"hidden_size": (4, 5) if model_type is StackedRNNGenerator else 4}
+
     return model_type(encoder=encoder, vocab_size=3, embedding_size=4, **kwargs)
 
 
@@ -48,9 +53,7 @@ def _logits(outputs):
         GumbelRMCGenerator,
     ],
 )
-def test_greedy_generation_uses_logits_in_every_recurrent_family(
-    model_type, monkeypatch
-):
+def test_greedy_generation_uses_logits_in_every_recurrent_family(model_type, monkeypatch):
     model = _generator(model_type)
     model(tf.constant([[0]]))
     model.linear.kernel.assign(tf.zeros_like(model.linear.kernel))
@@ -77,9 +80,7 @@ def test_gumbel_temperature_sampling_uses_scaled_logits(model_type, monkeypatch)
 
     monkeypatch.setattr(tf.random, "categorical", sample)
 
-    assert model.generate_temperature_sampling("a", max_length=1, temperature=0.5) == [
-        "a"
-    ]
+    assert model.generate_temperature_sampling("a", max_length=1, temperature=0.5) == ["a"]
     assert model.tau == 0.5
     np.testing.assert_allclose(captured, [[[0.0, 4.0, 2.0]]])
 
@@ -116,30 +117,36 @@ def test_top_sampling_keeps_the_threshold_crossing_token_and_original_indices(
 
     monkeypatch.setattr(tf.random, "categorical", sample_last)
 
-    assert FixedGenerator().generate_top_sampling("a", max_length=1, k=k, p=p) == [
-        expected
-    ]
+    assert FixedGenerator().generate_top_sampling("a", max_length=1, k=k, p=p) == [expected]
     np.testing.assert_allclose(captured[0], [probabilities], rtol=1e-6)
 
 
 @pytest.mark.parametrize("temperature", [0.0, -1.0, float("nan"), float("inf")])
 def test_temperature_sampling_rejects_invalid_temperature(temperature):
-    with pytest.raises(ValueError, match="temperature"):
+    with pytest.raises(ValueError) as error:
         FixedGenerator().generate_temperature_sampling("a", temperature=temperature)
+
+    assert str(error.value) == f"`temperature` must be finite and positive, but got {temperature}."
 
 
 @pytest.mark.parametrize(
-    "kwargs", [{"k": -1}, {"p": -0.1}, {"p": 1.1}, {"p": float("nan")}]
+    ("kwargs", "message"),
+    [
+        ({"k": -1}, "`k` must be nonnegative, but got -1."),
+        ({"p": -0.1}, "`p` must be between 0 and 1, but got -0.1."),
+        ({"p": 1.1}, "`p` must be between 0 and 1, but got 1.1."),
+        ({"p": float("nan")}, "`p` must be between 0 and 1, but got nan."),
+    ],
 )
-def test_top_sampling_rejects_invalid_limits(kwargs):
-    with pytest.raises(ValueError):
+def test_top_sampling_rejects_invalid_limits(kwargs, message):
+    with pytest.raises(ValueError) as error:
         FixedGenerator().generate_top_sampling("a", **kwargs)
+
+    assert str(error.value) == message
 
 
 @pytest.mark.parametrize("model_type", [GumbelLSTMGenerator, GumbelRMCGenerator])
-def test_temperature_assignment_updates_an_existing_graph_without_changing_weights(
-    model_type, monkeypatch
-):
+def test_temperature_assignment_updates_an_existing_graph_without_changing_weights(model_type, monkeypatch):
     model = _generator(model_type)
     model.tau = 1.0
     inputs = tf.constant([[0]])
@@ -147,9 +154,7 @@ def test_temperature_assignment_updates_an_existing_graph_without_changing_weigh
     model.linear.kernel.assign(tf.zeros_like(model.linear.kernel))
     model.linear.bias.assign([0.0, 2.0, 1.0])
     weights = model.get_weights()
-    monkeypatch.setattr(
-        "nalp.models.layers.gumbel_softmax.gumbel_distribution", tf.zeros
-    )
+    monkeypatch.setattr("nalp.models.layers.gumbel_softmax.gumbel_distribution", tf.zeros)
     traced_call = tf.function(model.call)
     before = traced_call(inputs)[1]
 
@@ -163,8 +168,10 @@ def test_temperature_assignment_updates_an_existing_graph_without_changing_weigh
     assert len(weights) == len(model.get_weights())
     for old, new in zip(weights, model.get_weights()):
         np.testing.assert_array_equal(old, new)
-    with pytest.raises(ValueError, match="tau"):
+
+    with pytest.raises(ValueError, match=r"^`tau` must be finite and positive, but got 0\.$"):
         model.tau = 0
+
     assert model.tau == 0.1
 
 
@@ -186,9 +193,7 @@ def test_rmc_preserves_chunked_state_and_restores_its_initializer(model_type):
     ("model_type", "parent_type"),
     [(GumbelLSTMGenerator, LSTMGenerator), (GumbelRMCGenerator, RMCGenerator)],
 )
-def test_gumbel_temperature_does_not_change_the_keras_weight_schema(
-    model_type, parent_type, tmp_path
-):
+def test_gumbel_temperature_does_not_change_the_keras_weight_schema(model_type, parent_type, tmp_path):
     reference = _generator(parent_type)
     model = _generator(model_type)
     inputs = tf.constant([[0, 1, 2]])
@@ -200,6 +205,7 @@ def test_gumbel_temperature_does_not_change_the_keras_weight_schema(
     model.load_weights(path)
     reference.reset_state()
     model.reset_state()
+
     np.testing.assert_allclose(_logits(model(inputs)), reference(inputs), rtol=1e-6)
 
     model.tau = 0.5
@@ -207,7 +213,10 @@ def test_gumbel_temperature_does_not_change_the_keras_weight_schema(
     restored = _generator(model_type)
     restored(inputs)
     restored.load_weights(path)
+
     assert restored.tau == 5.0
+
     restored.reset_state()
     reference.reset_state()
+
     np.testing.assert_allclose(_logits(restored(inputs)), reference(inputs), rtol=1e-6)

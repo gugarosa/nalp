@@ -146,6 +146,9 @@ uv run pre-commit run --all-files
 uv build
 ```
 
+Source changes follow the [NALP conventions](https://github.com/gugarosa/nalp/blob/main/CONVENTIONS.md),
+including Google-style public docstrings, explicit I/O contracts, and consistent 120-column tooling.
+
 After a version bump is merged into `main` and CI succeeds, the release workflow
 builds and checks the distributions, publishes them to PyPI, and creates the
 matching GitHub release. Commits whose version tag already exists do not publish

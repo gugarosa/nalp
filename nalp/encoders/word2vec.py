@@ -1,3 +1,6 @@
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
+
 """Word2vec encoding."""
 
 import multiprocessing
@@ -9,10 +12,7 @@ from nalp.core.encoder import Encoder
 
 
 class Word2vecEncoder(Encoder):
-    """A Word2vecEncoder class is responsible for learning a Word2Vec encode and
-    further encoding new data.
-
-    """
+    """Learn Word2Vec vectors and decode vectors through vocabulary similarity."""
 
     def learn(
         self,
@@ -24,18 +24,22 @@ class Word2vecEncoder(Encoder):
         learning_rate: float = 0.01,
         iterations: int = 1000,
     ) -> None:
-        """Learns a Word2Vec representation based on the its methodology.
+        """Train a Word2Vec representation for a token sequence.
 
-        One can use CBOW or Skip-gram algorithm for the learning procedure.
+        Replace the current Gensim model and treat the tokens as one training sentence.
+        Training uses the available CPU count for worker parallelism.
 
         Args:
-            tokens: A list of tokens.
-            max_features: Maximum number of features to be fitted.
-            window_size: Maximum distance between current and predicted word.
-            min_count: Minimum count of words for its use.
-            algorithm: 1 for skip-gram, while 0 for CBOW.
-            learning_rate: Value of the learning rate.
-            iterations: Number of iterations.
+            tokens: Token sequence used to learn the vocabulary and vectors.
+            max_features: Number of dimensions in each word vector.
+            window_size: Maximum distance between a word and its context.
+            min_count: Minimum token count required for inclusion in the vocabulary.
+            algorithm: Training algorithm, with 0 selecting CBOW and 1 selecting skip-gram.
+            learning_rate: Initial training learning rate.
+            iterations: Number of training epochs.
+
+        Raises:
+            RuntimeError: The corpus does not yield a trainable vocabulary.
 
         """
 
@@ -51,15 +55,22 @@ class Word2vecEncoder(Encoder):
         )
 
     def encode(self, tokens: list[str]) -> np.ndarray:
-        """Encodes the data into a Word2Vec representation.
+        """Look up learned word vectors for a token sequence.
 
         Args:
-            tokens: Tokens to be encoded.
+            tokens: Vocabulary tokens whose vectors should be returned.
+
+        Returns:
+            A float64 array shaped as the token count by the learned vector dimension.
+
+        Raises:
+            RuntimeError: The encoder is None because no model has been learned.
+            KeyError: A token is absent from the learned vocabulary.
 
         """
 
         if self.encoder is None:
-            raise RuntimeError("You need to call learn() prior to encode() method.")
+            raise RuntimeError("`encoder` is None, call learn() before encode().")
 
         wv = self.encoder.wv
 
@@ -70,21 +81,22 @@ class Word2vecEncoder(Encoder):
         return encoded_tokens
 
     def decode(self, encoded_tokens: np.ndarray) -> list[str]:
-        """Decodes the encoding back to tokens.
+        """Find the most similar learned token for each input vector.
 
         Args:
-            encoded_tokens: A numpy array containing the encoded tokens.
+            encoded_tokens: Vectors whose final dimension matches the learned vector dimension.
 
         Returns:
-            (List[str]): Decoded tokens.
+            The most similar vocabulary token for each vector.
+
+        Raises:
+            RuntimeError: The encoder is None because no model has been learned.
 
         """
 
         if self.encoder is None:
-            raise RuntimeError("You need to call learn() prior to decode() method.")
+            raise RuntimeError("`encoder` is None, call learn() before decode().")
 
-        decoded_tokens = [
-            self.encoder.wv.most_similar(positive=[t])[0][0] for t in encoded_tokens
-        ]
+        decoded_tokens = [self.encoder.wv.most_similar(positive=[t])[0][0] for t in encoded_tokens]
 
         return decoded_tokens

@@ -1,3 +1,6 @@
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
+
 """Integer-based encoding."""
 
 import numpy as np
@@ -7,52 +10,54 @@ from nalp.core.encoder import Encoder
 
 
 class IntegerEncoder(Encoder):
-    """An IntegerEncoder class is responsible for encoding text into integers."""
+    """Translate tokens and integer IDs through learned vocabulary mappings."""
 
     def __init__(self) -> None:
-        """Initialization method."""
+        """Initialize an integer encoder without vocabulary mappings."""
 
         super().__init__()
         self.decoder: dict[int, str] | None = None
 
-    def learn(
-        self, dictionary: dict[str, int], reverse_dictionary: dict[int, str]
-    ) -> None:
-        """Learns an integer vectorization encoding.
+    def learn(self, dictionary: dict[str, int], reverse_dictionary: dict[int, str]) -> None:
+        """Bind token-to-ID and ID-to-token mappings without copying them.
+
+        Caller mutations to either dictionary affect subsequent encoding and decoding.
 
         Args:
-            dictionary: The vocabulary to index mapping.
-            reverse_dictionary: The index to vocabulary mapping.
+            dictionary: Token-to-integer mapping used for encoding.
+            reverse_dictionary: Integer-to-token mapping used for decoding.
 
         """
 
         self.encoder = dictionary
         self.decoder = reverse_dictionary
 
-    def encode(self, tokens: list[str] | list[list[str]]) -> np.ndarray:
-        """Encodes new tokens based on previous learning.
+    def encode(self, tokens: str | list[str] | list[list[str]] | np.ndarray) -> np.ndarray:
+        """Encode tokens as int32 vocabulary IDs.
+
+        Unknown tokens use the learned unknown-token entry, and input tokens are not modified.
 
         Args:
-            tokens: A list of tokens to be encoded.
+            tokens: Character string, flat tokens, or a rectangular collection of token lists.
 
         Returns:
-            (np.array): Encoded tokens.
+            An int32 array preserving the flat or rectangular nested shape of the tokens.
+
+        Raises:
+            RuntimeError: The encoder is None because no mapping has been learned.
+            KeyError: An unknown token is encountered without an unknown-token mapping.
+            ValueError: Nested token lists do not form a rectangular array.
 
         """
 
         if self.encoder is None:
-            raise RuntimeError("You need to call learn() prior to encode() method.")
+            raise RuntimeError("`encoder` is None, call learn() before encode().")
 
         encoded_tokens = []
 
         for token in tokens:
             if isinstance(token, (np.ndarray, list)):
-                encoded_tokens.append(
-                    [
-                        self.encoder[t] if t in self.encoder else self.encoder[c.UNK]
-                        for t in token
-                    ]
-                )
+                encoded_tokens.append([self.encoder[t] if t in self.encoder else self.encoder[c.UNK] for t in token])
 
             else:
                 if token in self.encoder:
@@ -65,19 +70,23 @@ class IntegerEncoder(Encoder):
 
         return encoded_tokens
 
-    def decode(self, encoded_tokens: np.ndarray) -> list[str] | list[list[str]]:
-        """Decodes the encoding back to tokens.
+    def decode(self, encoded_tokens: np.ndarray | list[int] | list[list[int]]) -> list[str] | list[list[str]]:
+        """Decode vocabulary IDs into flat or nested token lists.
 
         Args:
-            encoded_tokens: A numpy array containing the encoded tokens.
+            encoded_tokens: Flat or rectangular nested integer IDs.
 
         Returns:
-            (List[str]): Decoded tokens.
+            Token strings with the corresponding flat or nested list structure.
+
+        Raises:
+            RuntimeError: The decoder is None because no mapping has been learned.
+            KeyError: An input ID is absent from the reverse mapping.
 
         """
 
         if self.decoder is None:
-            raise RuntimeError("You need to call learn() prior to decode() method.")
+            raise RuntimeError("`decoder` is None, call learn() before decode().")
 
         decoded_tokens = []
 

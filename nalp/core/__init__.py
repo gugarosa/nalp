@@ -1,6 +1,7 @@
-"""A core package, containing all the basic class and functions that serves as
-the foundation of NALP common modules.
-"""
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
+
+"""Core interfaces for corpora, datasets, encoders, and models."""
 
 from nalp.core.corpus import Corpus
 from nalp.core.dataset import Dataset

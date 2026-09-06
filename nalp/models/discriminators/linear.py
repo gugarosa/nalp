@@ -1,23 +1,26 @@
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
+
 """Linear discriminator."""
 
 import tensorflow as tf
 from tensorflow.keras.layers import Dense
 
-from nalp.core import Discriminator
+from nalp.core.model import Discriminator
 
 
 class LinearDiscriminator(Discriminator):
-    """A LinearDiscriminator class stands for the
-    linear discriminative part of a Generative Adversarial Network.
-
-    """
+    """Discriminate samples with dense layers and scalar logits."""
 
     def __init__(self, n_samplings: int = 3, alpha: float = 0.01) -> None:
-        """Initialization method.
+        """Initialize hidden dense layers and the scalar-logit projection.
+
+        Calls preserve leading input dimensions and replace the final feature dimension with one logit.
+        The training flag is accepted without changing the computation.
 
         Args:
             n_samplings: Number of downsamplings to perform.
-            alpha: LeakyReLU activation threshold.
+            alpha: Negative slope of the LeakyReLU activation.
 
         """
 
@@ -25,24 +28,11 @@ class LinearDiscriminator(Discriminator):
 
         self.alpha = alpha
 
-        self.linear = [
-            Dense(128 * i, name=f"linear_{i}") for i in range(n_samplings, 0, -1)
-        ]
+        self.linear = [Dense(128 * i, name=f"linear_{i}") for i in range(n_samplings, 0, -1)]
 
         self.out = Dense(1, name="out")
 
     def call(self, x: tf.Tensor, training: bool = True) -> tf.Tensor:
-        """Method that holds vital information whenever this class is called.
-
-        Args:
-            x: A tensorflow's tensor holding input data.
-            training: Whether architecture is under training or not.
-
-        Returns:
-            (tf.Tensor): The same tensor after passing through each defined layer.
-
-        """
-
         for layer in self.linear:
             x = tf.nn.leaky_relu(layer(x), self.alpha)
 

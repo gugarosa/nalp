@@ -1,16 +1,16 @@
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
+
 """Convolutional generator."""
 
 import tensorflow as tf
 from tensorflow.keras.layers import BatchNormalization, Conv2DTranspose, Dense
 
-from nalp.core import Generator
+from nalp.core.model import Generator
 
 
 class ConvGenerator(Generator):
-    """A ConvGenerator class stands for the
-    convolutional generative part of a Generative Adversarial Network.
-
-    """
+    """Generate channels-last images with transposed convolutions."""
 
     def __init__(
         self,
@@ -19,13 +19,16 @@ class ConvGenerator(Generator):
         n_samplings: int = 3,
         alpha: float = 0.3,
     ) -> None:
-        """Initialization method.
+        """Initialize noise projection, upsampling, and a tanh image output.
+
+        Calls accept noise with noise_dim final features and one noise vector per image.
+        Image width follows the height-derived sampling factor, and batch normalization uses the training flag.
 
         Args:
-            input_shape: An input shape for the tensor.
-            noise_dim: Amount of noise dimensions.
+            input_shape: Target image shape supplying the height and output channel count.
+            noise_dim: Number of noise dimensions.
             n_samplings: Number of upsamplings to perform.
-            alpha: LeakyReLU activation threshold.
+            alpha: Negative slope of the LeakyReLU activation.
 
         """
 
@@ -70,9 +73,7 @@ class ConvGenerator(Generator):
                     )
                 )
 
-        self.bn = [
-            BatchNormalization(name=f"bn_{i}") for i in range(n_samplings, 0, -1)
-        ]
+        self.bn = [BatchNormalization(name=f"bn_{i}") for i in range(n_samplings, 0, -1)]
 
         self.out = Conv2DTranspose(
             input_shape[2],
@@ -85,17 +86,6 @@ class ConvGenerator(Generator):
         )
 
     def call(self, x: tf.Tensor, training: bool = True) -> tf.Tensor:
-        """Method that holds vital information whenever this class is called.
-
-        Args:
-            x: A tensorflow's tensor holding input data.
-            training: Whether architecture is under training or not.
-
-        Returns:
-            (tf.Tensor): The same tensor after passing through each defined layer.
-
-        """
-
         for i, (s, bn) in enumerate(zip(self.sampling, self.bn)):
             x = tf.nn.leaky_relu(bn(s(x), training=training), self.alpha)
 

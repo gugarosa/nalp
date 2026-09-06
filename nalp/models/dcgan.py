@@ -1,19 +1,15 @@
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
+
 """Deep Convolutional Generative Adversarial Network."""
 
-from nalp.core import Adversarial
-from nalp.models.discriminators import ConvDiscriminator
-from nalp.models.generators import ConvGenerator
+from nalp.core.model import Adversarial
+from nalp.models.discriminators.conv import ConvDiscriminator
+from nalp.models.generators.conv import ConvGenerator
 
 
 class DCGAN(Adversarial):
-    """A DCGAN class is the one in charge of Deep Convolutional Generative Adversarial Networks implementation.
-
-    References:
-        A. Radford, L. Metz, S. Chintala.
-        Unsupervised representation learning with deep convolutional generative adversarial networks.
-        Preprint arXiv:1511.06434 (2015).
-
-    """
+    """Train a deep convolutional generative adversarial network."""
 
     def __init__(
         self,
@@ -23,13 +19,17 @@ class DCGAN(Adversarial):
         alpha: float = 0.3,
         dropout_rate: float = 0.3,
     ) -> None:
-        """Initialization method.
+        """Initialize the convolutional discriminator and generator.
+
+        Reference: A. Radford, L. Metz, S. Chintala.
+        Unsupervised representation learning with deep convolutional generative adversarial networks.
+        Preprint arXiv:1511.06434 (2015).
 
         Args:
-            input_shape: An input shape for the Generator.
-            noise_dim: Amount of noise dimensions for the Generator.
-            n_samplings: Number of down/up samplings to perform.
-            alpha: LeakyReLU activation threshold.
+            input_shape: Target image shape in height, width, and channels.
+            noise_dim: Number of noise dimensions for the generator.
+            n_samplings: Number of discriminator downsamplings and generator upsamplings.
+            alpha: Negative slope of the LeakyReLU activation.
             dropout_rate: Dropout activation rate.
 
         """

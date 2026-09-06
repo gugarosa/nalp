@@ -1,19 +1,17 @@
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
+
 """Text-related corpus."""
 
 from pathlib import Path
 
 import nalp.utils.preprocess as p
-from nalp.core import Corpus
+from nalp.core.corpus import Corpus
 from nalp.utils import loader
 
 
 class TextCorpus(Corpus):
-    """A TextCorpus class is used to defined the first step of the workflow.
-
-    It serves to load the raw text, pre-process it and create their tokens and
-    vocabulary.
-
-    """
+    """Build token and vocabulary mappings for contiguous text."""
 
     def __init__(
         self,
@@ -22,13 +20,22 @@ class TextCorpus(Corpus):
         corpus_type: str = "char",
         min_frequency: int = 1,
     ) -> None:
-        """Initialization method.
+        """Build a corpus from supplied tokens or a UTF-8 text file.
+
+        Reuse a nonempty supplied token list and replace infrequent tokens in place.
+        File input is lowercased and filtered to ASCII letters, digits, and whitespace.
+        Character tokenization preserves raw line endings.
 
         Args:
-            tokens: A list of tokens.
-            from_file: An input file to load the text.
-            corpus_type: The desired type to tokenize the text. Should be `char` or `word`.
-            min_frequency: Minimum frequency of individual tokens.
+            tokens: Pre-tokenized data reused when nonempty.
+            from_file: Source path used when tokens is None or empty.
+            corpus_type: File tokenization mode, either char or word.
+            min_frequency: Minimum token count before replacement with the unknown-token marker.
+
+        Raises:
+            OSError: The source file cannot be read.
+            UnicodeDecodeError: The source file is not valid UTF-8.
+            RuntimeError: The selected file tokenization mode is unsupported.
 
         """
 

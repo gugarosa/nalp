@@ -1,3 +1,6 @@
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
+
 """Logging helpers."""
 
 import logging
@@ -5,9 +8,7 @@ import sys
 from logging import StreamHandler
 from logging.handlers import TimedRotatingFileHandler
 
-FORMATTER = logging.Formatter(
-    "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+FORMATTER = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 LOG_FILE = "nalp.log"
 LOG_LEVEL = logging.DEBUG
 
@@ -24,15 +25,29 @@ class Logger(logging.Logger):
         stacklevel: int = 1,
         extra=None,
     ) -> None:
-        """Log ``msg`` only through configured file handlers."""
+        """Emit an INFO record through configured file handlers only.
+
+        Honor logger and handler filters without changing console-handler levels.
+        Handler owners remain responsible for closing their handlers.
+
+        Args:
+            msg: Message format string.
+            *args: Positional values used for logging interpolation.
+            exc_info: Exception instance, exception tuple, or flag requesting current exception details.
+            stack_info: Whether to attach current stack information.
+            stacklevel: Caller-frame offset used for record metadata.
+            extra: Additional attributes merged into the logging record.
+
+        Raises:
+            KeyError: Extra attributes overwrite a reserved logging record attribute.
+
+        """
 
         if not self.isEnabledFor(logging.INFO):
             return
 
         try:
-            file_name, line_number, function, stack = self.findCaller(
-                stack_info, stacklevel + 1
-            )
+            file_name, line_number, function, stack = self.findCaller(stack_info, stacklevel + 1)
         except ValueError:
             file_name, line_number, function, stack = (
                 "(unknown file)",
@@ -59,19 +74,24 @@ class Logger(logging.Logger):
             extra,
             stack,
         )
-        if not self.filter(record):
+        filtered_record = self.filter(record)
+        if not filtered_record:
             return
+        if isinstance(filtered_record, logging.LogRecord):
+            record = filtered_record
 
         for handler in self.handlers:
-            if (
-                isinstance(handler, logging.FileHandler)
-                and record.levelno >= handler.level
-            ):
+            if isinstance(handler, logging.FileHandler) and record.levelno >= handler.level:
                 handler.handle(record)
 
 
 def get_console_handler() -> StreamHandler:
-    """Return the configured console handler."""
+    """Create a stdout handler using the NALP formatter.
+
+    Returns:
+        A console handler owned by its caller or the logger to which it is attached.
+
+    """
 
     handler = StreamHandler(sys.stdout)
     handler.setFormatter(FORMATTER)
@@ -79,7 +99,14 @@ def get_console_handler() -> StreamHandler:
 
 
 def get_timed_file_handler() -> TimedRotatingFileHandler:
-    """Return the configured rotating file handler."""
+    """Create a delayed file handler that rotates NALP logs at midnight.
+
+    The file is opened when the first record is emitted.
+
+    Returns:
+        A rotating file handler that its caller or owning logger must close.
+
+    """
 
     handler = TimedRotatingFileHandler(LOG_FILE, delay=True, when="midnight")
     handler.setFormatter(FORMATTER)
@@ -87,7 +114,18 @@ def get_timed_file_handler() -> TimedRotatingFileHandler:
 
 
 def get_logger(logger_name: str) -> Logger:
-    """Return an idempotently configured NALP logger."""
+    """Return a named logger configured for NALP diagnostics.
+
+    Set the default logger class for subsequently created loggers and retain existing handlers.
+    Add NALP console and file handlers only when none exist, then disable propagation.
+
+    Args:
+        logger_name: Name identifying the logger.
+
+    Returns:
+        The named logger with the NALP level, handlers, and propagation setting.
+
+    """
 
     logging.setLoggerClass(Logger)
     logger = logging.getLogger(logger_name)
