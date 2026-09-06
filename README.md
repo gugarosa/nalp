@@ -17,7 +17,7 @@ Use NALP if you need a library or wish to:
 
 Read the docs at [nalp.readthedocs.io](https://nalp.readthedocs.io).
 
-NALP 3.0.1 requires **Python 3.11+** and is tested on Python 3.11 through 3.13.
+NALP 3.0.2 requires **Python 3.11+** and is tested on Python 3.11 through 3.13.
 
 ---
 
