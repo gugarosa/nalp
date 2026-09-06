@@ -1,3 +1,6 @@
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
+
 """Maximum-Likelihood Augmented Discrete Generative Adversarial Network."""
 
 import numpy as np
@@ -5,22 +8,14 @@ import tensorflow as tf
 from tensorflow.keras.utils import Progbar
 
 import nalp.utils.constants as c
-from nalp.core import Adversarial
-from nalp.core.dataset import Dataset
+from nalp.core.model import Adversarial
 from nalp.encoders.integer import IntegerEncoder
-from nalp.models.discriminators import EmbeddedTextDiscriminator
-from nalp.models.generators import LSTMGenerator
+from nalp.models.discriminators.embedded_text import EmbeddedTextDiscriminator
+from nalp.models.generators.lstm import LSTMGenerator
 
 
 class MaliGAN(Adversarial):
-    """A MaliGAN class is the one in charge of Maximum-Likelihood Augmented Discrete
-    Generative Adversarial Networks implementation.
-
-    References:
-        T. Che, et al. Maximum-likelihood augmented discrete generative adversarial networks.
-        Preprint arXiv:1702.07983 (2017).
-
-    """
+    """Train a maximum-likelihood augmented discrete generative adversarial network."""
 
     def __init__(
         self,
@@ -34,7 +29,13 @@ class MaliGAN(Adversarial):
         dropout_rate: float = 0.25,
         temperature: float = 1.0,
     ) -> None:
-        """Initialization method.
+        """Initialize the embedded-text discriminator and stateful LSTM generator.
+
+        Maximum-likelihood rewards normalize discriminator real-to-fake odds across the batch and broadcast
+        each sequence's reward over its token positions. Real samples use label 0 and generated samples use label 1.
+
+        Reference: T. Che, et al. Maximum-likelihood augmented discrete generative adversarial networks.
+        Preprint arXiv:1702.07983 (2017).
 
         Args:
             encoder: An index to vocabulary encoder for the generator.
@@ -66,11 +67,11 @@ class MaliGAN(Adversarial):
 
     def compile(
         self,
-        pre_optimizer: tf.keras.optimizers,
-        d_optimizer: tf.keras.optimizers,
-        g_optimizer: tf.keras.optimizers,
+        pre_optimizer: tf.keras.optimizers.Optimizer,
+        d_optimizer: tf.keras.optimizers.Optimizer,
+        g_optimizer: tf.keras.optimizers.Optimizer,
     ) -> None:
-        """Main building method.
+        """Configure optimizers and reset pre-training and adversarial loss tracking.
 
         Args:
             pre_optimizer: An optimizer instance for pre-training the generator.
@@ -93,25 +94,22 @@ class MaliGAN(Adversarial):
         self.history["D_loss"] = []
         self.history["G_loss"] = []
 
-    def generate_batch(
-        self, batch_size: int = 1, length: int = 1
-    ) -> tuple[tf.Tensor, tf.Tensor]:
-        """Generates a batch of tokens by feeding to the network the
-        current token (t) and predicting the next token (t+1).
+    def generate_batch(self, batch_size: int = 1, length: int = 1) -> tuple[tf.Tensor, tf.Tensor]:
+        """Generate autoregressive input contexts and next-token targets.
+
+        Reset generator state and start each sequence from a uniformly sampled vocabulary ID.
+        Sample subsequent IDs from logits divided by the configured temperature.
 
         Args:
             batch_size: Size of the batch to be generated.
-            length: Length of generated tokens.
+            length: Number of next-token targets to generate per sequence.
 
         Returns:
-            (Tuple[tf.Tensor, tf.Tensor]): Input context and generated targets,
-            each with shape (batch_size, length).
+            Input context and next-token targets, each an int32 tensor shaped (batch_size, length).
 
         """
 
-        start_batch = tf.random.uniform(
-            [batch_size, 1], 0, self.vocab_size, dtype="int32"
-        )
+        start_batch = tf.random.uniform([batch_size, 1], 0, self.vocab_size, dtype="int32")
         sampled_batch = start_batch
 
         self.G.reset_state()
@@ -131,19 +129,9 @@ class MaliGAN(Adversarial):
         return x_sampled_batch, y_sampled_batch
 
     def _get_reward(self, x: tf.Tensor) -> tf.Tensor:
-        """Calculates rewards over an input using a Maximum-Likelihood approach.
-
-        Args:
-            x: A tensor containing the inputs.
-
-        Returns:
-            (tf.Tensor): Reward over input.
-
-        """
-
         logits = tf.squeeze(self.D(x), 1)
-        # Real samples have label 0. Normalized odds are a softmax over log-odds,
-        # avoiding division by zero when the discriminator is confident.
+
+        # Softmax over real-to-fake log-odds avoids division by zero for confident discriminator predictions
         rewards = tf.nn.softmax(logits[:, 0] - logits[:, 1], axis=0)
         rewards = tf.broadcast_to(rewards[:, None], tf.shape(x))
 
@@ -151,11 +139,11 @@ class MaliGAN(Adversarial):
 
     @tf.function
     def G_pre_step(self, x: tf.Tensor, y: tf.Tensor) -> None:
-        """Performs a single batch optimization pre-fitting step over the generator.
+        """Pre-train the generator on next-token logits and accumulate its loss.
 
         Args:
-            x: A tensor containing the inputs.
-            y: A tensor containing the inputs' labels.
+            x: Integer input token IDs shaped (batch_size, length).
+            y: Integer next-token targets shaped (batch_size, length).
 
         """
 
@@ -172,12 +160,12 @@ class MaliGAN(Adversarial):
 
     @tf.function
     def G_step(self, x: tf.Tensor, y: tf.Tensor, rewards: tf.Tensor) -> None:
-        """Performs a single batch optimization step over the generator.
+        """Reset recurrent state and update the generator with reward-weighted loss.
 
         Args:
-            x : A tensor containing the inputs.
-            y: A tensor containing the inputs' labels.
-            rewards: A tensor containing the rewards for the input.
+            x: Integer input token IDs shaped (batch_size, length).
+            y: Integer next-token targets shaped (batch_size, length).
+            rewards: Per-token weights shaped (batch_size, length).
 
         """
 
@@ -196,11 +184,11 @@ class MaliGAN(Adversarial):
 
     @tf.function
     def D_step(self, x: tf.Tensor, y: tf.Tensor) -> None:
-        """Performs a single batch optimization step over the discriminator.
+        """Update the discriminator once and accumulate its classification loss.
 
         Args:
-            x: A tensor containing the inputs.
-            y: A tensor containing the inputs' labels.
+            x: Integer token sequences shaped (batch_size, length).
+            y: Integer labels shaped (batch_size,), with 0 for real sequences and 1 for generated sequences.
 
         """
 
@@ -217,14 +205,14 @@ class MaliGAN(Adversarial):
 
     def pre_fit(
         self,
-        batches: Dataset,
+        batches: tf.data.Dataset,
         g_epochs: int = 50,
         d_epochs: int = 10,
     ) -> None:
-        """Pre-trains the model.
+        """Pre-train the generator before the discriminator and append their losses to history.
 
         Args:
-            batches: Pre-training batches containing samples.
+            batches: Finite dataset of (input_ids, target_ids) batches with fixed batch and sequence dimensions.
             g_epochs: The maximum number of pre-training generator epochs.
             d_epochs: The maximum number of pre-training discriminator epochs.
 
@@ -264,9 +252,7 @@ class MaliGAN(Adversarial):
                 )
 
                 for _ in range(c.D_STEPS):
-                    indices = np.random.choice(
-                        x_concat_batch.shape[0], batch_size, replace=False
-                    )
+                    indices = np.random.choice(x_concat_batch.shape[0], batch_size, replace=False)
 
                     self.D_step(
                         tf.gather(x_concat_batch, indices),
@@ -277,11 +263,14 @@ class MaliGAN(Adversarial):
 
             self.history["pre_D_loss"].append(self.D_loss.result().numpy())
 
-    def fit(self, batches: Dataset, epochs: int = 10, d_epochs: int = 5) -> None:
-        """Trains the model.
+    def fit(self, batches: tf.data.Dataset, epochs: int = 10, d_epochs: int = 5) -> None:
+        """Train the discriminator before each reward-weighted generator update.
+
+        Reset loss metrics each epoch and append generator and discriminator losses to history.
+        Only target sequences from each dataset element are used during adversarial training.
 
         Args:
-            batches: Training batches containing samples.
+            batches: Finite dataset of (input_ids, target_ids) batches with fixed batch and sequence dimensions.
             epochs: The maximum number of total training epochs.
             d_epochs: The maximum number of discriminator epochs per total epoch.
 
@@ -311,9 +300,7 @@ class MaliGAN(Adversarial):
                     )
 
                     for _ in range(c.D_STEPS):
-                        indices = np.random.choice(
-                            x_concat_batch.shape[0], batch_size, replace=False
-                        )
+                        indices = np.random.choice(x_concat_batch.shape[0], batch_size, replace=False)
 
                         self.D_step(
                             tf.gather(x_concat_batch, indices),

@@ -1,3 +1,6 @@
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
+
 """Gumbel Relational Memory Core generator."""
 
 import tensorflow as tf
@@ -5,14 +8,11 @@ import tensorflow as tf
 from nalp.encoders.integer import IntegerEncoder
 from nalp.models.generators._gumbel import GumbelGeneratorMixin
 from nalp.models.generators.rmc import RMCGenerator
-from nalp.models.layers import GumbelSoftmax
+from nalp.models.layers.gumbel_softmax import GumbelSoftmax
 
 
 class GumbelRMCGenerator(GumbelGeneratorMixin, RMCGenerator):
-    """A GumbelRMCGenerator class is the one in charge of a
-    generative Gumbel-based Relational Memory Core implementation.
-
-    """
+    """Generate logits, relaxed probabilities, and token IDs with Gumbel relational memory."""
 
     def __init__(
         self,
@@ -25,8 +25,13 @@ class GumbelRMCGenerator(GumbelGeneratorMixin, RMCGenerator):
         n_blocks: int = 1,
         n_layers: int = 3,
         tau: float = 5,
-    ):
-        """Initialization method.
+    ) -> None:
+        """Initialize stateful relational memory with a Gumbel-Softmax output.
+
+        Calls accept integer IDs shaped (batch_size, length) and return (logits, probabilities, token_ids).
+        Logits and probabilities have shape (batch_size, length, vocab_size), while int32 token IDs omit the last axis.
+        Recurrent state persists until reset_state restores identity-based memory. The mutable temperature is a
+        nontrainable float32 resource outside Keras weight lists and remains visible to traced training.
 
         Args:
             encoder: An index to vocabulary encoder.
@@ -35,9 +40,12 @@ class GumbelRMCGenerator(GumbelGeneratorMixin, RMCGenerator):
             n_slots: Number of memory slots.
             n_heads: Number of attention heads.
             head_size: Size of each attention head.
-            n_blocks: Number of feed-forward networks.
-            n_layers: Amout of layers per feed-forward network.
+            n_blocks: Number of attention and feed-forward refinement blocks.
+            n_layers: Number of layers per feed-forward network.
             tau: Gumbel-Softmax temperature parameter.
+
+        Raises:
+            ValueError: The temperature is non-finite or not positive.
 
         """
 
@@ -57,16 +65,6 @@ class GumbelRMCGenerator(GumbelGeneratorMixin, RMCGenerator):
         self.gumbel = GumbelSoftmax(name="gumbel")
 
     def call(self, x: tf.Tensor) -> tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-        """Method that holds vital information whenever this class is called.
-
-        Args:
-            x: A tensorflow's tensor holding input data.
-
-        Returns:
-            (Tuple[tf.Tensor, tf.Tensor, tf.Tensor]): Logit-based predictions, Gumbel-Softmax outputs and predicted token.
-
-        """
-
         x = super().call(x)
 
         x_g, y_g = self.gumbel(x, tau=self._tau_tensor)

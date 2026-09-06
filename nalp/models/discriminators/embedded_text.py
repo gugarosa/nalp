@@ -1,16 +1,16 @@
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
+
 """Embedded-text discriminator."""
 
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, Dense, Dropout, Embedding, MaxPool1D
 
-from nalp.core import Discriminator
+from nalp.core.model import Discriminator
 
 
 class EmbeddedTextDiscriminator(Discriminator):
-    """A EmbeddedTextDiscriminator class stands for the
-    text-discriminative part of a Generative Adversarial Network.
-
-    """
+    """Discriminate token IDs using embeddings, convolutions, and highway features."""
 
     def __init__(
         self,
@@ -21,7 +21,10 @@ class EmbeddedTextDiscriminator(Discriminator):
         filters_size: tuple[int, ...] = (1,),
         dropout_rate: float = 0.25,
     ) -> None:
-        """Initialization method.
+        """Initialize token embeddings and a two-class sequence discriminator.
+
+        Calls accept integer IDs shaped (batch_size, max_length) and return logits shaped (batch_size, 1, 2).
+        Pooling spans each convolution's remaining sequence length, and dropout follows the training flag.
 
         Args:
             vocab_size: The size of the vocabulary.
@@ -48,9 +51,7 @@ class EmbeddedTextDiscriminator(Discriminator):
             for n, k in zip(n_filters, filters_size)
         ]
 
-        self.pool = [
-            MaxPool1D(max_length - k + 1, 1, name=f"pool_{k}") for k in filters_size
-        ]
+        self.pool = [MaxPool1D(max_length - k + 1, 1, name=f"pool_{k}") for k in filters_size]
 
         self.highway = Dense(sum(n_filters), name="highway")
 
@@ -59,17 +60,6 @@ class EmbeddedTextDiscriminator(Discriminator):
         self.out = Dense(2, name="out")
 
     def call(self, x: tf.Tensor, training: bool = True) -> tf.Tensor:
-        """Method that holds vital information whenever this class is called.
-
-        Args:
-            x: A tensorflow's tensor holding input data.
-            training: Whether architecture is under training or not.
-
-        Returns:
-            (tf.Tensor): The same tensor after passing through each defined layer.
-
-        """
-
         x = self.embedding(x)
         x = tf.expand_dims(x, -1)
 

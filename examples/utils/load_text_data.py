@@ -1,7 +1,8 @@
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
+
 from pathlib import Path
 
-# Loads an input .txt file
 text = Path("data/text/chapter1_harry.txt").read_text(encoding="utf-8")
 
-# Printing loaded text
 print(text)

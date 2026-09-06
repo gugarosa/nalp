@@ -1,19 +1,15 @@
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
+
 from nalp.corpus import TextCorpus
 from nalp.encoders import IntegerEncoder
 from nalp.models import SeqGAN
 
-# When generating artificial text, make sure
-# to use the same data, classes and parameters
-# as the pre-trained network
-
-# Creating a character TextCorpus from file
+# Match the training data, model class, and parameters when restoring weights
 corpus = TextCorpus(from_file="data/text/chapter1_harry.txt", corpus_type="word")
-
-# Creating an IntegerEncoder and learning encoding
 encoder = IntegerEncoder()
 encoder.learn(corpus.vocab_index, corpus.index_vocab)
 
-# Creating the SeqGAN
 seqgan = SeqGAN(
     encoder=encoder,
     vocab_size=corpus.vocab_size,
@@ -26,19 +22,11 @@ seqgan = SeqGAN(
     temperature=1,
 )
 
-# Loading pre-trained SeqGAN weights
 seqgan.load_weights("trained/seqgan").expect_partial()
 
-# Now, for the inference step, we build with a batch size equals to 1
+# Inference uses a single sequence per batch
 seqgan.G.build((1, None))
-
-# Defining an start string to generate the text
 start_string = "Mr. and Mrs. Dursley"
+text = seqgan.G.generate_temperature_sampling(start=start_string.split(" "), max_length=1000, temperature=1)
 
-# Generating artificial text
-text = seqgan.G.generate_temperature_sampling(
-    start=start_string.split(" "), max_length=1000, temperature=1
-)
-
-# Outputting the text
 print(start_string + " " + " ".join(text))

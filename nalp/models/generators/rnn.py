@@ -1,20 +1,17 @@
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
+
 """Recurrent Neural Network generator."""
 
 import tensorflow as tf
 from tensorflow.keras.layers import RNN, Dense, Embedding, SimpleRNNCell
 
-from nalp.core import Generator
+from nalp.core.model import Generator
 from nalp.encoders.integer import IntegerEncoder
 
 
 class RNNGenerator(Generator):
-    """An RNNGenerator class is the one in charge of
-    Recurrent Neural Networks vanilla implementation.
-
-    References:
-        J. Elman. Finding structure in time. Cognitive science 14.2 (1990).
-
-    """
+    """Generate vocabulary logits with a stateful vanilla recurrent network."""
 
     def __init__(
         self,
@@ -23,7 +20,12 @@ class RNNGenerator(Generator):
         embedding_size: int = 32,
         hidden_size: int = 64,
     ) -> None:
-        """Initialization method.
+        """Initialize the token embedding, recurrent cell, and vocabulary projection.
+
+        Calls accept integer IDs shaped (batch_size, length) and return logits shaped (batch_size, length, vocab_size).
+        Recurrent state persists across calls with the same batch size until reset_state is invoked.
+
+        Reference: J. Elman. Finding structure in time. Cognitive science 14.2 (1990).
 
         Args:
             encoder: An index to vocabulary encoder.
@@ -41,23 +43,11 @@ class RNNGenerator(Generator):
 
         self.cell = SimpleRNNCell(hidden_size, name="rnn_cell")
 
-        self.rnn = RNN(
-            self.cell, name="rnn_layer", return_sequences=True, stateful=True
-        )
+        self.rnn = RNN(self.cell, name="rnn_layer", return_sequences=True, stateful=True)
 
         self.linear = Dense(vocab_size, name="out")
 
     def call(self, x: tf.Tensor) -> tf.Tensor:
-        """Method that holds vital information whenever this class is called.
-
-        Args:
-            x: A tensorflow's tensor holding input data.
-
-        Returns:
-            (tf.Tensor): The same tensor after passing through each defined layer.
-
-        """
-
         x = self.embedding(x)
         x = self.rnn(x)
         x = self.linear(x)

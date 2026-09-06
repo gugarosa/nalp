@@ -1,22 +1,18 @@
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
+
 """Relational Memory Core generator."""
 
 import tensorflow as tf
 from tensorflow.keras.layers import RNN, Dense, Embedding
 
-from nalp.core import Generator
+from nalp.core.model import Generator
 from nalp.encoders.integer import IntegerEncoder
 from nalp.models.layers.relational_memory_cell import RelationalMemoryCell
 
 
 class RMCGenerator(Generator):
-    """An RMCGenerator class is the one in charge of
-    Relational Recurrent Neural Networks vanilla implementation.
-
-    References:
-        A. Santoro, et al. Relational recurrent neural networks.
-        Advances in neural information processing systems (2018).
-
-    """
+    """Generate vocabulary logits with stateful relational memory."""
 
     def __init__(
         self,
@@ -29,7 +25,14 @@ class RMCGenerator(Generator):
         n_blocks: int = 1,
         n_layers: int = 3,
     ) -> None:
-        """Initialization method.
+        """Initialize the token embedding, relational memory, and vocabulary projection.
+
+        Calls accept integer IDs shaped (batch_size, length) and return logits shaped (batch_size, length, vocab_size).
+        Record a statically known batch size on each call and retain recurrent state until reset_state is invoked.
+        Reset restores the cell's padded or truncated identity memory rather than zeroing it.
+
+        Reference: A. Santoro, et al. Relational recurrent neural networks.
+        Advances in neural information processing systems (2018).
 
         Args:
             encoder: An index to vocabulary encoder.
@@ -38,8 +41,8 @@ class RMCGenerator(Generator):
             n_slots: Number of memory slots.
             n_heads: Number of attention heads.
             head_size: Size of each attention head.
-            n_blocks: Number of feed-forward networks.
-            n_layers: Amout of layers per feed-forward network.
+            n_blocks: Number of attention and feed-forward refinement blocks.
+            n_layers: Number of layers per feed-forward network.
 
         """
 
@@ -49,27 +52,13 @@ class RMCGenerator(Generator):
 
         self.embedding = Embedding(vocab_size, embedding_size, name="embedding")
 
-        self.cell = RelationalMemoryCell(
-            n_slots, n_heads, head_size, n_blocks, n_layers, name="rmc_cell"
-        )
+        self.cell = RelationalMemoryCell(n_slots, n_heads, head_size, n_blocks, n_layers, name="rmc_cell")
 
-        self.rnn = RNN(
-            self.cell, name="rnn_layer", return_sequences=True, stateful=True
-        )
+        self.rnn = RNN(self.cell, name="rnn_layer", return_sequences=True, stateful=True)
 
         self.linear = Dense(vocab_size, name="out")
 
     def call(self, x: tf.Tensor) -> tf.Tensor:
-        """Method that holds vital information whenever this class is called.
-
-        Args:
-            x: A tensorflow's tensor holding input data.
-
-        Returns:
-            (tf.Tensor): The same tensor after passing through each defined layer.
-
-        """
-
         if x.shape[0] is not None:
             self.batch_size = x.shape[0]
 
@@ -80,13 +69,15 @@ class RMCGenerator(Generator):
         return x
 
     def reset_state(self) -> None:
-        """Restore the cell's initial memory before starting a new sequence."""
+        """Restore the cell's identity-based initial memory before starting a new sequence.
+
+        Leave unbuilt recurrent state unchanged and assign initial hidden and memory states in place.
+
+        """
 
         if self.rnn.states is None:
             return
 
-        initial_states = self.cell.get_initial_state(
-            batch_size=tf.shape(self.rnn.states[0])[0]
-        )
+        initial_states = self.cell.get_initial_state(batch_size=tf.shape(self.rnn.states[0])[0])
         for state, initial_state in zip(self.rnn.states, initial_states):
             state.assign(initial_state)

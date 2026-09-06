@@ -1,29 +1,22 @@
-from importlib.util import find_spec
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
 
-import pytest
+import tensorflow as tf
 
-tensorflow_available = find_spec("tensorflow") is not None
-pytestmark = pytest.mark.skipif(
-    not tensorflow_available, reason="TensorFlow is not installed"
+from nalp.models import DCGAN, GAN, WGAN
+from nalp.models.discriminators import EmbeddedTextDiscriminator, TextDiscriminator
+from nalp.models.generators import (
+    GumbelLSTMGenerator,
+    LSTMGenerator,
+    RMCGenerator,
+    StackedRNNGenerator,
 )
-
-if tensorflow_available:
-    import tensorflow as tf
-
-    from nalp.models import DCGAN, GAN, WGAN
-    from nalp.models.discriminators import EmbeddedTextDiscriminator, TextDiscriminator
-    from nalp.models.generators import (
-        GumbelLSTMGenerator,
-        LSTMGenerator,
-        RMCGenerator,
-        StackedRNNGenerator,
-    )
-    from nalp.models.layers import (
-        GumbelSoftmax,
-        MultiHeadAttention,
-        RelationalMemoryCell,
-    )
-    from nalp.models.layers.multi_head_attention import scaled_dot_product_attention
+from nalp.models.layers import (
+    GumbelSoftmax,
+    MultiHeadAttention,
+    RelationalMemoryCell,
+)
+from nalp.models.layers.multi_head_attention import scaled_dot_product_attention
 
 
 def setup_function():
@@ -56,6 +49,7 @@ def test_image_models_forward_with_public_configuration():
         clip=0.02,
         penalty=4,
     )
+
     assert (wgan.model_type, wgan.clip, wgan.penalty_lambda) == ("gp", 0.02, 4)
 
 
@@ -93,7 +87,9 @@ def test_text_models_forward():
 
     stacked = StackedRNNGenerator(vocab_size=7, embedding_size=4, hidden_size=(5, 6))
     stacked.reset_state()
+
     assert stacked(tokens).shape == (2, 3, 7)
+
     stacked.reset_state()
     stacked.reset_states()
 
@@ -115,9 +111,11 @@ def test_rmc_and_gumbel_config_round_trips():
         head_size=2,
         n_layers=1,
     )
+
     assert generator(tf.constant([[1, 2, 3], [2, 3, 4]])).shape == (2, 3, 7)
 
     gumbel = GumbelSoftmax.from_config(GumbelSoftmax(axis=1).get_config())
+
     assert gumbel.axis == 1
 
 

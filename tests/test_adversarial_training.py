@@ -1,3 +1,6 @@
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
+
 import numpy as np
 import pytest
 import tensorflow as tf
@@ -30,13 +33,8 @@ def _discrete_model(model_type):
 
 def _discriminator(logits):
     logits = tf.convert_to_tensor(logits, dtype=tf.float32)
-    return tf.keras.Sequential(
-        [
-            tf.keras.layers.Lambda(
-                lambda inputs: tf.gather(logits, inputs[:, 0])[:, None, :]
-            )
-        ]
-    )
+
+    return tf.keras.Sequential([tf.keras.layers.Lambda(lambda inputs: tf.gather(logits, inputs[:, 0])[:, None, :])])
 
 
 def test_maligan_rewards_are_normalized_real_class_odds():
@@ -107,7 +105,8 @@ def test_seqgan_rollouts_use_only_the_prefix_and_original_start(monkeypatch):
 
 def test_seqgan_rejects_zero_rollouts():
     model = _discrete_model(SeqGAN)
-    with pytest.raises(ValueError, match="n_rollouts"):
+
+    with pytest.raises(ValueError, match=r"^`n_rollouts` must be positive, but got 0\.$"):
         model._get_reward(tf.constant([[0, 1, 2]]), n_rollouts=0)
 
 
@@ -124,9 +123,7 @@ def test_seqgan_pretraining_records_generator_loss():
 
 @pytest.mark.parametrize("model_type", [MaliGAN, SeqGAN])
 @pytest.mark.parametrize("stage", ["pre_fit", "fit"])
-def test_discrete_training_scores_targets_not_input_context(
-    model_type, stage, monkeypatch
-):
+def test_discrete_training_scores_targets_not_input_context(model_type, stage, monkeypatch):
     model = _discrete_model(model_type)
     real_x = tf.zeros((2, 3), tf.int32)
     real_y = tf.ones((2, 3), tf.int32)
@@ -191,6 +188,7 @@ def test_discrete_models_pretrain_and_fit_one_batch(model_type):
     x = tf.constant([[0, 1, 2], [1, 2, 0]])
     y = tf.constant([[1, 2, 0], [2, 0, 1]])
     batches = tf.data.Dataset.from_tensors((x, y))
+
     model.pre_fit(batches, g_epochs=1, d_epochs=1)
     kwargs = {"n_rollouts": 2} if model_type is SeqGAN else {}
     model.fit(batches, epochs=1, d_epochs=1, **kwargs)
@@ -227,15 +225,13 @@ def test_gumbel_gans_train_after_pretraining(model_type):
     y = tf.constant([[1, 2, 0], [2, 0, 1]])
     model.G_pre_step(x, y)
     before = [weight.numpy().copy() for weight in model.G.trainable_variables]
+
     model.step(x, y)
 
     assert np.isfinite(model.G_loss.result())
     assert np.isfinite(model.D_loss.result())
     assert all(np.isfinite(weight.numpy()).all() for weight in model.weights)
-    assert any(
-        not np.array_equal(old, new.numpy())
-        for old, new in zip(before, model.G.trainable_variables)
-    )
+    assert any(not np.array_equal(old, new.numpy()) for old, new in zip(before, model.G.trainable_variables))
 
 
 @pytest.mark.parametrize("kind", ["gan", "dcgan", "wgan-wc", "wgan-gp"])
@@ -246,9 +242,7 @@ def test_image_models_train_one_batch(kind):
     else:
         kwargs = {"model_type": kind[-2:]} if kind.startswith("wgan") else {}
         model_type = WGAN if kwargs else DCGAN
-        model = model_type(
-            input_shape=(8, 8, 1), noise_dim=3, n_samplings=2, dropout_rate=0, **kwargs
-        )
+        model = model_type(input_shape=(8, 8, 1), noise_dim=3, n_samplings=2, dropout_rate=0, **kwargs)
         inputs = tf.random.normal((2, 8, 8, 1))
     model.compile(tf.keras.optimizers.SGD(0.001), tf.keras.optimizers.SGD(0.001))
 

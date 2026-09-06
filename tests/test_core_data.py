@@ -1,3 +1,10 @@
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
+
+import io
+import logging
+import sys
+
 import numpy as np
 import pytest
 from mido import Message, MidiFile, MidiTrack
@@ -24,7 +31,7 @@ def test_tokenize_filters_lowercases_and_selects_token_type():
     assert tokenize(text, "char") == list(cleaned)
     assert tokenize(text, "word") == ["hello", "world", "42", "next"]
 
-    with pytest.raises(RuntimeError, match="`char` or `word`"):
+    with pytest.raises(RuntimeError, match=r"^`corpus_type` must be `char` or `word`, but got 'sentence'\.$"):
         tokenize(text, "sentence")
 
     preprocess = pipeline(lower_case, valid_char, tokenize_to_word)
@@ -79,31 +86,62 @@ def test_audio_corpus_ignores_system_exclusive_and_other_channel_messages(tmp_pa
 def test_logging_helpers_preserve_public_api(tmp_path, monkeypatch):
     monkeypatch.setattr(nalp_logging, "LOG_FILE", str(tmp_path / "nalp.log"))
     logger = nalp_logging.get_logger("nalp.tests.public-api")
-    logger.to_file("request %s", "complete", extra={"request_id": "abc"})
+    console_handler = nalp_logging.get_console_handler()
+    file_handler = nalp_logging.get_timed_file_handler()
 
-    assert isinstance(logger, nalp_logging.Logger)
-    assert isinstance(nalp_logging.get_console_handler(), nalp_logging.StreamHandler)
-    assert isinstance(
-        nalp_logging.get_timed_file_handler(),
-        nalp_logging.TimedRotatingFileHandler,
-    )
-    assert (
-        (tmp_path / "nalp.log")
-        .read_text(encoding="utf-8")
-        .endswith("request complete\n")
-    )
+    try:
+        logger.to_file("request %s", "complete", extra={"request_id": "abc"})
 
-    logger.addFilter(lambda record: False)
-    logger.to_file("filtered")
-    assert "filtered" not in (tmp_path / "nalp.log").read_text(encoding="utf-8")
+        assert isinstance(logger, nalp_logging.Logger)
+        assert isinstance(console_handler, nalp_logging.StreamHandler)
+        assert isinstance(file_handler, nalp_logging.TimedRotatingFileHandler)
+        assert (tmp_path / "nalp.log").read_text(encoding="utf-8").endswith("request complete\n")
+
+        logger.addFilter(lambda record: False)
+        logger.to_file("filtered")
+
+        assert "filtered" not in (tmp_path / "nalp.log").read_text(encoding="utf-8")
+    finally:
+        for handler in [*logger.handlers, console_handler, file_handler]:
+            logger.removeHandler(handler)
+            handler.close()
+        logger.filters.clear()
+
+
+@pytest.mark.skipif(sys.version_info < (3, 12), reason="Replacement LogRecord filters require Python 3.12+")
+def test_logger_to_file_honors_replacement_record(tmp_path, monkeypatch):
+    logger = nalp_logging.Logger("nalp.tests.replacement", logging.INFO)
+    console_handler = logging.StreamHandler(io.StringIO())
+    console_handler.setLevel(logging.WARNING)
+    file_handler = logging.FileHandler(tmp_path / "replacement.log", encoding="utf-8")
+    logger.addHandler(console_handler)
+    logger.addHandler(file_handler)
+    replacement = logging.makeLogRecord({"msg": "replacement message", "levelno": logging.INFO})
+    logger.addFilter(lambda record: replacement)
+    console_calls = []
+    monkeypatch.setattr(console_handler, "handle", console_calls.append)
+    monkeypatch.setattr(console_handler, "setLevel", console_calls.append)
+
+    try:
+        logger.to_file("original message")
+
+        assert (tmp_path / "replacement.log").read_text(encoding="utf-8") == "replacement message\n"
+        assert console_calls == []
+        assert console_handler.stream.getvalue() == ""
+        assert console_handler.level == logging.WARNING
+        assert logger.handlers == [console_handler, file_handler]
+    finally:
+        for handler in [console_handler, file_handler]:
+            logger.removeHandler(handler)
+            handler.close()
 
 
 def test_integer_encoder_handles_unknown_and_nested_tokens():
     encoder = IntegerEncoder()
 
-    with pytest.raises(RuntimeError, match=r"learn\(\) prior to encode"):
+    with pytest.raises(RuntimeError, match=r"^`encoder` is None, call learn\(\) before encode\(\)\.$"):
         encoder.encode(["known"])
-    with pytest.raises(RuntimeError, match=r"learn\(\) prior to decode"):
+    with pytest.raises(RuntimeError, match=r"^`decoder` is None, call learn\(\) before decode\(\)\.$"):
         encoder.decode(np.array([0]))
 
     dictionary = {"<UNK>": 0, "known": 1}

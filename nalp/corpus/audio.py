@@ -1,23 +1,28 @@
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
+
 """Audio-related corpus."""
 
-from nalp.core import Corpus
+from pathlib import Path
+
+from nalp.core.corpus import Corpus
 from nalp.utils import loader
 
 
 class AudioCorpus(Corpus):
-    """An AudioCorpus class is used to defined the first step of the workflow.
+    """Build a vocabulary of note-on pitches from the first MIDI channel."""
 
-    It serves to load the raw audio, pre-process it and create their tokens and
-    vocabulary.
+    def __init__(self, from_file: str | Path, min_frequency: int = 1) -> None:
+        """Load MIDI note events and build their token mappings.
 
-    """
-
-    def __init__(self, from_file: str, min_frequency: int = 1) -> None:
-        """Initialization method.
+        Only channel-zero note_on messages become tokens, represented as decimal pitch strings.
 
         Args:
-            from_file: An input file to load the audio.
-            min_frequency: Minimum frequency of individual tokens.
+            from_file: MIDI source path.
+            min_frequency: Minimum pitch-token count before replacement with the unknown-token marker.
+
+        Raises:
+            OSError: The source file cannot be read.
 
         """
 
@@ -25,11 +30,7 @@ class AudioCorpus(Corpus):
 
         audio = loader.load_audio(from_file)
 
-        self.tokens = [
-            str(step.note)
-            for step in audio
-            if step.type == "note_on" and step.channel == 0
-        ]
+        self.tokens = [str(step.note) for step in audio if step.type == "note_on" and step.channel == 0]
 
         self._check_token_frequency()
         self._build()

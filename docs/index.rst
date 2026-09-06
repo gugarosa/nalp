@@ -41,6 +41,7 @@ of each generated prefix without mixing samples or timesteps.
     :maxdepth: 2
     :caption: Package Reference
 
+    contracts
     api
 
 

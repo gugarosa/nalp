@@ -1,48 +1,45 @@
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
+
 """Encoder-related class."""
 
 from typing import Any
 
 
 class Encoder:
-    """An Encoder class is responsible for receiving a Corpus and
-    enconding it on a representation (i.e., integer, word2vec).
-
-    """
+    """Define the learning, encoding, and decoding interface for token representations."""
 
     def __init__(self) -> None:
-        """Initialization method."""
+        """Initialize an encoder without a learned representation."""
 
         self.encoder: Any = None
 
     def learn(self) -> None:
-        """This method learns an encoding representation. Note that for each child,
-        you need to define your own learning algorithm (representation).
+        """Learn the representation implemented by a concrete encoder.
 
         Raises:
-            NotImplementedError.
+            NotImplementedError: The concrete encoder does not implement learning.
 
         """
 
-        raise NotImplementedError
+        raise NotImplementedError("`Encoder.learn` must be implemented by a subclass.")
 
     def encode(self) -> None:
-        """This method encodes new data based on previous learning. Also, note that you
-        need to define your own encoding algorithm when using its childs.
+        """Encode tokens using a concrete representation.
 
         Raises:
-            NotImplementedError.
+            NotImplementedError: The concrete encoder does not implement encoding.
 
         """
 
-        raise NotImplementedError
+        raise NotImplementedError("`Encoder.encode` must be implemented by a subclass.")
 
     def decode(self) -> None:
-        """This method decodes the encoded representation. Also, note that you
-        need to define your own encoding algorithm when using its childs.
+        """Decode a concrete representation back to tokens.
 
         Raises:
-            NotImplementedError.
+            NotImplementedError: The concrete encoder does not implement decoding.
 
         """
 
-        raise NotImplementedError
+        raise NotImplementedError("`Encoder.decode` must be implemented by a subclass.")

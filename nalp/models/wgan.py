@@ -1,28 +1,18 @@
+# Copyright (c) 2019-2026 Gustavo de Rosa.
+# Licensed under the Apache License, Version 2.0.
+
 """Wasserstein Generative Adversarial Network."""
 
 import tensorflow as tf
 from tensorflow.keras.utils import Progbar
 
-from nalp.core import Adversarial
-from nalp.core.dataset import Dataset
-from nalp.models.discriminators import ConvDiscriminator
-from nalp.models.generators import ConvGenerator
+from nalp.core.model import Adversarial
+from nalp.models.discriminators.conv import ConvDiscriminator
+from nalp.models.generators.conv import ConvGenerator
 
 
 class WGAN(Adversarial):
-    """A WGAN class is the one in charge of Wasserstein Generative Adversarial Networks
-    implementation with weight clipping or gradient penalty algorithms.
-
-    References:
-        M. Arjovsky, S. Chintala, L. Bottou.
-        Wasserstein gan.
-        Preprint arXiv:1701.07875 (2017).
-
-        I. Gulrajani, et al.
-        Improved training of wasserstein gans.
-        Advances in neural information processing systems (2017).
-
-    """
+    """Train a Wasserstein GAN with weight clipping or gradient penalty."""
 
     def __init__(
         self,
@@ -34,17 +24,24 @@ class WGAN(Adversarial):
         model_type: str = "wc",
         clip: float = 0.01,
         penalty: int = 10,
-    ):
-        """Initialization method.
+    ) -> None:
+        """Initialize the convolutional generator and Wasserstein critic.
+
+        Weight clipping constrains critic parameters after each update. Gradient penalty instead penalizes
+        gradient norms on interpolated real and generated images.
+
+        References: M. Arjovsky, S. Chintala, L. Bottou. Wasserstein gan. Preprint arXiv:1701.07875 (2017).
+        I. Gulrajani, et al. Improved training of wasserstein gans.
+        Advances in neural information processing systems (2017).
 
         Args:
-            input_shape: An input shape for the Generator.
-            noise_dim: Amount of noise dimensions for the Generator.
-            n_samplings: Number of down/up samplings to perform.
-            alpha: LeakyReLU activation threshold.
+            input_shape: Target image shape in height, width, and channels.
+            noise_dim: Number of noise dimensions for the generator.
+            n_samplings: Number of discriminator downsamplings and generator upsamplings.
+            alpha: Negative slope of the LeakyReLU activation.
             dropout_rate: Dropout activation rate.
-            model_type: Whether should use weight clipping (wc) or gradient penalty (gp).
-            clip: Clipping value for the Lipschitz constrain.
+            model_type: Algorithm selector for weight clipping ("wc") or gradient penalty ("gp").
+            clip: Symmetric critic weight bound for the Lipschitz constraint.
             penalty: Coefficient for the gradient penalty.
 
         """
@@ -59,17 +56,6 @@ class WGAN(Adversarial):
         self.penalty_lambda = penalty
 
     def _gradient_penalty(self, x: tf.Tensor, x_fake: tf.Tensor) -> tf.Tensor:
-        """Performs the gradient penalty procedure.
-
-        Args:
-            x: A tensor containing the real inputs.
-            x_fake: A tensor containing the fake inputs.
-
-        Returns:
-            (tf.Tensor): The penalization to be applied over the loss function.
-
-        """
-
         e = tf.random.uniform([x.shape[0], 1, 1, 1])
 
         x_penalty = x * e + (1 - e) * x_fake
@@ -79,9 +65,7 @@ class WGAN(Adversarial):
             y_penalty = self.D(x_penalty)
 
         penalty_gradients = tape.gradient(y_penalty, x_penalty)
-        penalty_gradients_norm = tf.sqrt(
-            tf.reduce_sum(tf.square(penalty_gradients), [1, 2, 3])
-        )
+        penalty_gradients_norm = tf.sqrt(tf.reduce_sum(tf.square(penalty_gradients), [1, 2, 3]))
 
         penalty = tf.reduce_mean((penalty_gradients_norm - 1) ** 2)
 
@@ -89,19 +73,19 @@ class WGAN(Adversarial):
 
     @tf.function
     def D_step(self, x: tf.Tensor) -> None:
-        """Performs a single batch optimization step over the discriminator.
+        """Update the critic once and accumulate its Wasserstein loss.
+
+        Apply gradient penalty inside the loss or clip weights after the update, according to model_type.
 
         Args:
-            x: A tensor containing the inputs.
+            x: Real channels-last image tensor with a fixed leading batch dimension.
 
         """
 
         z = tf.random.normal([x.shape[0], 1, 1, self.G.noise_dim])
         with tf.GradientTape() as tape:
-            # Generates new data, e.g., G(z)
             x_fake = self.G(z)
 
-            # Samples fake scores from D(G(z)) and real scores from D(x)
             y_fake = self.D(x_fake)
             y_real = self.D(x)
 
@@ -118,26 +102,21 @@ class WGAN(Adversarial):
         self.D_loss.update_state(D_loss)
 
         if self.model_type == "wc":
-            [
-                w.assign(tf.clip_by_value(w, -self.clip, self.clip))
-                for w in self.D.trainable_variables
-            ]
+            [w.assign(tf.clip_by_value(w, -self.clip, self.clip)) for w in self.D.trainable_variables]
 
     @tf.function
     def G_step(self, x: tf.Tensor) -> None:
-        """Performs a single batch optimization step over the generator.
+        """Update the generator once and accumulate its Wasserstein loss.
 
         Args:
-            x: A tensor containing the inputs.
+            x: Real image tensor whose leading dimension determines the generated batch size.
 
         """
 
         z = tf.random.normal([x.shape[0], 1, 1, self.G.noise_dim])
         with tf.GradientTape() as tape:
-            # Generates new data, e.g., G(z)
             x_fake = self.G(z)
 
-            # Samples fake targets from the discriminator, e.g., D(G(z))
             y_fake = self.D(x_fake)
 
             G_loss = -tf.reduce_mean(y_fake)
@@ -150,16 +129,18 @@ class WGAN(Adversarial):
 
     def fit(
         self,
-        batches: Dataset,
+        batches: tf.data.Dataset,
         epochs: int = 100,
         critic_steps: int = 5,
     ) -> None:
-        """Trains the model.
+        """Train the critic repeatedly before each generator update.
+
+        Reset loss metrics each epoch and append generator and discriminator losses to history.
 
         Args:
-            batches: Training batches containing samples.
+            batches: Finite dataset of channels-last image batches without labels and with fixed batch dimensions.
             epochs: The maximum number of training epochs.
-            critic_steps: Amount of discriminator epochs per training epoch.
+            critic_steps: Number of critic updates before each generator update.
 
         """
 
