@@ -10,8 +10,11 @@ repos:
       - id: check-toml
       - id: check-yaml
       - id: detect-private-key
+      # Corpus whitespace is training input, not source formatting
       - id: end-of-file-fixer
+        exclude: ^data/
       - id: trailing-whitespace
+        exclude: ^data/
   - repo: https://github.com/PyCQA/isort
     rev: 9.0.1
     hooks:

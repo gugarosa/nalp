@@ -75,6 +75,9 @@ These rules apply to library code, examples, tests, and documentation Python fil
 Black, isort with the Black profile, and Flake8 use a 120-character line length. Flake8's native configuration
 is shared by direct CLI invocation, editors, and pre-commit hooks.
 
+Raw corpora under `data/` are not source-formatting targets. Their line endings and trailing whitespace are
+training input, so whitespace-rewriting hooks exclude that directory.
+
 ```bash
 uv run pre-commit run --all-files
 uv run pytest
